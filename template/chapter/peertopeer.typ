@@ -53,7 +53,7 @@ To overcome these limitations, peer-to-peer (P2P) architectures emerged as an al
 
 Nevertheless, these benefits come at the cost of increased complexity. Moving from a 1–N to an N–N communication model introduces significant challenges in coordination, data consistency, and peer discovery. Security and trust management also become more difficult, as there is no central authority to authenticate or regulate interactions. Moreover, peers are heterogeneous, with varying reliability and performance. As a result, P2P systems must rely on adaptive and fault-tolerant protocols capable of handling a wide range of network conditions and potential attacks.
 
-Although today’s digital services (e.g. GAFAM) are mostly based on centralized architectures, the Internet itself was originally conceived as a decentralised system, as can be seen in the map of the ARPANET network (see @arpanet). Among the first Internet protocols, several exhibited decentralised or hybrid characteristics rather than a purely client–server model. SMTP and NNTP, for instance, rely on direct communication between independent servers — making them peer-to-peer at the inter-server level — while still following a client–server model for end users connecting to their local instance. Similarly, DNS introduced a distributed yet hierarchical naming system, in which authority is delegated across multiple autonomous zones rather than centralised in a single entity. Moreover, long before the Internet, human societies relied on decentralised networks of exchange, such as medieval trade routes or the Universal Postal Union. In that sense, peer-to-peer architectures reflect a natural and recurring pattern of human organisation.
+Although today’s digital services (e.g. GAFAM) are mostly based on centralized architectures, the Internet itself was originally conceived as a decentralised system, as can be seen in the map of the ARPANET network (see @arpanet). Although the Internet Protocol (IP) itself is not a single decentralised network (but rather a federation of interconnected operator networks), its inherently supports decentralisation, since any node can directly reach another by its IP address, without relying on a central server to route messages. Among the first Internet protocols, several exhibited decentralised or hybrid characteristics rather than a purely client–server model. SMTP and NNTP, for instance, rely on direct communication between independent servers — making them peer-to-peer at the inter-server level — while still following a client–server model for end users connecting to their local instance. Similarly, DNS introduced a distributed yet hierarchical naming system, in which authority is delegated across multiple autonomous zones rather than centralised in a single entity. Moreover, long before the Internet, human societies relied on decentralised networks of exchange, such as medieval trade routes or the Universal Postal Union. In that sense, peer-to-peer architectures reflect a natural and recurring pattern of human organisation.
 
 #figure(
   image("../../Images/1_ieIdnYcxt4kS71uA1QsFGw_arpanet.webp", width: 100%),
@@ -65,15 +65,40 @@ At that time, the growing demand for large-scale multimedia sharing—combined w
 
 This concept led to the creation of Napster #footnote[https://en.wikipedia.org/wiki/Napster] in 1999, one of the first large-scale file-sharing systems. Although Napster used a central index server to locate files, the data transfer itself occurred directly between peers, marking a key milestone in the history of P2P networking.
 
-== Physical vs Overlays Networks
+// other p2p protocols emerged
+// rise of bitorrent, Tribler
+// still used for example for sharing LLM
+// Also rise of TOR and mixnets
+// P2P of video stream (Streamroot)
+// P2P games
+// Grid & volunteer computing with Seti@home
+// even if it's not totally p2p it's proved that
+// distributed computing is possible
+// Skype: VoIP
+// 60% of traffic in 2004
+// return of p2p with Bitcoin and blockchain
+// Distributed social media (Mastodon, Bluesky)
+// IPFS
+// Golem, Sia, Filecoin => decentralized cloud
+// Decentralized identity
+// Lightning Network
+// Today Decentralized Learning (Gossip Learning) and other use-cases
+
+// == Physical vs Overlays Networks
+// how p2p use Internet for transmissions
+
+== Use cases
+
 
 == Structured vs Unstructured Networks
 
 // == Unstructured Networks
 
-== Random graph & Power-law networks
+// == Services in a p2p system
 
 == Peer sampling
+
+// == Random graph & Power-law networks
 
 == Metrics
 
