@@ -68,11 +68,8 @@ This concept led to the creation of Napster #footnote[https://en.wikipedia.org/w
 Gnutella is fully decentralised, as it does not rely on any central file index. Starting with version 0.6, it introduced the concept of ultrapeers @chawathe2003making — high-capacity nodes that help route queries and files across the network, improving scalability while preserving decentralisation.
 BitTorrent brought several notable innovations, including the tit-for-tat mechanism, which encourages fairness by balancing uploading and downloading among peers, and the use of the Kademlia Distributed Hash Table (DHT) for decentralised peer discovery @maymounkov2002kademlia — eliminating the need for central trackers or hierarchical nodes such as ultrapeers. Another notable protocol is Tribler #footnote[https://www.tribler.org/] #footnote[I contributed very briefly to the development of Tribler in 2017, https://github.com/Tribler/tribler/issues/3240], which builds upon BitTorrent while introducing several key innovations, including a distributed search engine and an anonymisation layer. Uniquely, Tribler is an academic project developed at Delft University of Technology (TU Delft) in the Netherlands @pouwelse2008tribler, aiming to create a fully self-sustaining and censorship-resistant file-sharing network.
 
-
-// other p2p protocols emerged
-// rise of bitorrent, Tribler
-// still used for example for sharing LLM
-// Also rise of TOR and mixnets
+During the same period, another use case for decentralised networks emerged: anonymisation systems. The Internet Protocol itself does not provide any built-in mechanism for user anonymity or end-to-end encryption. To address this, anonymous overlay networks were developed on top of the Internet, designed to conceal both the content and the origin of communications. These systems typically rely on multi-hop routing and layered encryption, offering a high level of confidentiality at the cost of higher latency and complexity. The most notable examples are Freenet #footnote[https://freenet.org/], I2P #footnote[https://geti2p.net/en/], and Tor #footnote[https://www.torproject.org/]. Although Tor is not entirely peer-to-peer—since a small number of directory authorities coordinate the list of relays—it remains a decentralised system and the most widely used anonymisation network, with around 7,000 active nodes worldwide.
+// Also rise of FreeNet, I2P, TOR
 // P2P of video stream (Streamroot)
 // P2P games
 // Grid & volunteer computing with Seti@home
@@ -80,7 +77,9 @@ BitTorrent brought several notable innovations, including the tit-for-tat mechan
 // distributed computing is possible
 // Skype: VoIP
 // 60% of traffic in 2004
+// Today way less but Bittorent still used for example for sharing LLM or Linux distribution
 // return of p2p with Bitcoin and blockchain
+// mixnets (NIM and Snowpack)
 // Distributed social media (Mastodon, Bluesky)
 // IPFS
 // Golem, Sia, Filecoin => decentralized cloud
@@ -88,9 +87,13 @@ BitTorrent brought several notable innovations, including the tit-for-tat mechan
 // Lightning Network
 // Today Decentralized Learning (Gossip Learning) and other use-cases
 
+
 // == Physical vs Overlays Networks
 // how p2p use Internet for transmissions
-
+// airdrop
+// wifi Direct
+// 5G Device to Device
+// Mesh Network
 // == Use cases
 
 == Structured vs Unstructured Networks
