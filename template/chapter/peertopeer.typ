@@ -20,11 +20,11 @@ diagram({
   edge(label("Client2"), "-", stroke: 1pt)
   edge(label("Client3"), "-", stroke: 1pt)
 
-  node((0,1.5), "Client1", name: "Client1", radius: 2em, stroke: 1pt, fill: blue.lighten(60%))
+  node((0,1.5), "Client", name: "Client1", radius: 2em, stroke: 1pt, fill: blue.lighten(60%))
 
-  node((1,1.5), "Client2", name: "Client2", radius: 2em, stroke: 1pt, fill: blue.lighten(60%))
+  node((1,1.5), "Client", name: "Client2", radius: 2em, stroke: 1pt, fill: blue.lighten(60%))
 
-  node((2,1.5), "Client3", name: "Client3", radius: 2em, stroke: 1pt, fill: blue.lighten(60%))  
+  node((2,1.5), "Client", name: "Client3", radius: 2em, stroke: 1pt, fill: blue.lighten(60%))  
 }),
   caption: [A client-server architecture, with 1 server and 3 clients.],
 ) <client-server-diagram>],
@@ -53,7 +53,8 @@ To overcome these limitations, peer-to-peer (P2P) architectures emerged as an al
 
 Nevertheless, these benefits come at the cost of increased complexity. Moving from a 1–N to an N–N communication model introduces significant challenges in coordination, data consistency, and peer discovery. Security and trust management also become more difficult, as there is no central authority to authenticate or regulate interactions. Moreover, peers are heterogeneous, with varying reliability and performance. As a result, P2P systems must rely on adaptive and fault-tolerant protocols capable of handling a wide range of network conditions and potential attacks.
 
-Although today’s digital services (e.g. GAFAM) are mostly based on centralized architectures, the Internet itself was originally conceived as a decentralised system, as can be seen in the map of the ARPANET network (see @arpanet). Although the Internet Protocol (IP) itself is not a single decentralised network (but rather a federation of interconnected operator networks), its inherently supports decentralisation, since any node can directly reach another by its IP address, without relying on a central server to route messages. Among the first Internet protocols, several exhibited decentralised or hybrid characteristics rather than a purely client–server model. SMTP and NNTP, for instance, rely on direct communication between independent servers — making them peer-to-peer at the inter-server level — while still following a client–server model for end users connecting to their local instance. Similarly, DNS introduced a distributed yet hierarchical naming system, in which authority is delegated across multiple autonomous zones rather than centralised in a single entity. Moreover, long before the Internet, human societies relied on decentralised networks of exchange, such as medieval trade routes or the Universal Postal Union. In that sense, peer-to-peer architectures reflect a natural and recurring pattern of human organisation.
+Although today’s digital services (e.g. GAFAM) are mostly based on centralized architectures, the Internet itself was originally conceived as a decentralised system, as illustrated by the ARPANET network (see @arpanet). While the Internet Protocol (IP) does not form a single decentralised network — but rather a federation of interconnected operator networks — it inherently supports decentralisation, as any node can directly reach another by its IP address without relying on a central server to route messages.
+Among the first Internet protocols, several exhibited decentralised or hybrid characteristics rather than a purely client–server model. SMTP and NNTP, for instance, rely on direct communication between independent servers — making them peer-to-peer at the inter-server level — while still following a client–server model for end users connecting to their local instance. Similarly, DNS introduced a distributed yet hierarchical naming system, in which authority is delegated across multiple autonomous zones rather than centralised in a single entity. Moreover, long before the Internet, human societies relied on decentralised networks of exchange, such as medieval trade routes or the Universal Postal Union. In that sense, peer-to-peer architectures reflect a natural and recurring pattern of human organisation.
 
 #figure(
   image("../../Images/1_ieIdnYcxt4kS71uA1QsFGw_arpanet.webp", width: 100%),
@@ -61,9 +62,12 @@ Although today’s digital services (e.g. GAFAM) are mostly based on centralized
 ) <arpanet>
 
 The idea of decentralisation, initially present in the Internet’s underlying protocols, resurfaced more visibly in the late 1990s as peer-to-peer applications began empowering users to exchange data directly with one another.
-At that time, the growing demand for large-scale multimedia sharing—combined with limited computing and networking resources (CPU, memory, bandwidth, and storage)—made it difficult for any single server to handle massive numbers of simultaneous downloads. Peer-to-peer networks addressed this limitation by enabling participants to contribute their own resources—especially upload bandwidth—to the system. Instead of downloading a 100 MB file from a single server, a user could download small chunks (e.g., 2 MB) from dozens of peers simultaneously, dramatically increasing throughput and scalability.
+At that time, the growing demand for large-scale multimedia sharing—combined with limited computing and networking resources (CPU, memory, bandwidth, and storage)—made it difficult for any single server to handle massive numbers of simultaneous downloads. Peer-to-peer networks addressed this limitation by enabling participants to contribute their own resources—especially upload bandwidth—to the system. For example, instead of downloading a 100 MB file from a single server, a user could download small chunks (e.g., 2 MB) from dozens of peers simultaneously, dramatically increasing throughput and scalability.
 
-This concept led to the creation of Napster #footnote[https://en.wikipedia.org/wiki/Napster] in 1999, one of the first large-scale file-sharing systems. Although Napster used a central index server to locate files, the data transfer itself occurred directly between peers, marking a key milestone in the history of P2P networking.
+This concept led to the creation of Napster #footnote[https://en.wikipedia.org/wiki/Napster] in 1999, one of the first large-scale file-sharing systems. Although Napster used a central index server to locate files, the data transfer itself occurred directly between peers, marking a key milestone in the history of P2P networking. Following Napster, other peer-to-peer file-sharing systems emerged, such as Gnutella #footnote[https://en.wikipedia.org/wiki/Gnutella] and BitTorrent #footnote[https://www.bittorrent.com/].
+Gnutella is fully decentralised, as it does not rely on any central file index. Starting with version 0.6, it introduced the concept of ultrapeers @chawathe2003making — high-capacity nodes that help route queries and files across the network, improving scalability while preserving decentralisation.
+BitTorrent brought several notable innovations, including the tit-for-tat mechanism, which encourages fairness by balancing uploading and downloading among peers, and the use of the Kademlia Distributed Hash Table (DHT) for decentralised peer discovery @maymounkov2002kademlia — eliminating the need for central trackers or hierarchical nodes such as ultrapeers. Another notable protocol is Tribler #footnote[https://www.tribler.org/] #footnote[I contributed very briefly to the development of Tribler in 2017, https://github.com/Tribler/tribler/issues/3240], which builds upon BitTorrent while introducing several key innovations, including a distributed search engine and an anonymisation layer. Uniquely, Tribler is an academic project developed at Delft University of Technology (TU Delft) in the Netherlands @pouwelse2008tribler, aiming to create a fully self-sustaining and censorship-resistant file-sharing network.
+
 
 // other p2p protocols emerged
 // rise of bitorrent, Tribler
@@ -87,8 +91,7 @@ This concept led to the creation of Napster #footnote[https://en.wikipedia.org/w
 // == Physical vs Overlays Networks
 // how p2p use Internet for transmissions
 
-== Use cases
-
+// == Use cases
 
 == Structured vs Unstructured Networks
 
