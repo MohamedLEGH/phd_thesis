@@ -105,7 +105,11 @@
 #include "template/chapter/introduction.typ"
 #include "template/chapter/peertopeer.typ"
 #include "template/chapter/elevator.typ"
-// #include "template/chapter/dummy_chapter.typ"
+#include "template/chapter/decentralized_learning.typ"
+#include "template/chapter/heal.typ"
+#include "template/chapter/heterogeneous_network.typ"
+#include "template/chapter/variants_heal.typ"
+#include "template/chapter/simulators.typ"
 #include "template/chapter/conclusions_outlook.typ"
 #include "template/chapter/appendix.typ"
 

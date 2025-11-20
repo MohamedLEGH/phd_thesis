@@ -1,16 +1,6 @@
 #import "@preview/fletcher:0.5.8" as fletcher: diagram, node, edge
 
-// TODO
-// Advantages and cons of centralized architecture vs p2p
-// how p2p use Internet for transmissions
-// Bitorrent
-// uses cases
-// Blockchain
-// IPFS
-// Lightning Network
-// I2P, Tor, mixnet
-
-= Foundations of Peer-to-Peer Networks <chap:p2p>
+= Peer-to-Peer Networks <chap:p2p>
 #grid(
   columns: (1fr, 1fr),
   [#figure(
@@ -95,7 +85,7 @@ By combining the guarantees of blockchain immutability, the programmability of s
 // airdrop
 // AirTag
 
-All of the peer-to-peer networks discussed so far are built on top of the IP layer, and therefore operate as overlay networks — virtual topologies that sit above the underlying Internet infrastructure. Later in this chapter, we will examine in detail how overlay networks function. It is worth noting, however, that decentralised communication networks can also be deployed without relying on the Internet — for instance, through Wi-Fi Direct #footnote[https://en.wikipedia.org/wiki/Wi-Fi_Direct] to form local mesh networks #footnote[https://en.wikipedia.org/wiki/Mesh_networking], via 5G Device-to-Device (D2D) communication, or even using technologies such as Bluetooth Mesh #footnote[https://en.wikipedia.org/wiki/Bluetooth_mesh_networking].
+All of the peer-to-peer networks discussed so far are built on top of the IP layer, and therefore operate as overlay networks — virtual topologies that sit above the underlying Internet infrastructure. Later in this chapter, we will examine in detail how overlay networks function. It is worth noting, however, that decentralised communication networks can also be deployed without relying on the Internet — for instance, through Wi-Fi Direct #footnote[https://en.wikipedia.org/wiki/Wi-Fi_Direct] to form local mesh networks #footnote[https://en.wikipedia.org/wiki/Mesh_networking], via 5G Device-to-Device (D2D) communication, or even using technologies such as Bluetooth Mesh #footnote[https://en.wikipedia.org/wiki/Bluetooth_mesh_networking] or Meshtatic #footnote[https://meshtastic.org/].
 
 == Structured vs Unstructured Networks
 // Chord, Pastry, Kademlia
@@ -103,6 +93,8 @@ All of the peer-to-peer networks discussed so far are built on top of the IP lay
 // == Unstructured Networks
 
 // == Services in a p2p system
+
+== Asynchronous communications
 
 == Peer sampling
 
@@ -115,4 +107,4 @@ All of the peer-to-peer networks discussed so far are built on top of the IP lay
 // == Use-cases
 // == History
 
-== Security
+// == Security

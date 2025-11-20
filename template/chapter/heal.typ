@@ -1,4 +1,4 @@
-= First contribution: Elevator <chap:elevator>
+= Second contribution: HEAL <chap:heal>
 
 == Description
 
@@ -7,5 +7,3 @@
 == Theoretical Analysis
 
 == Simulation-Based Evaluation
-
-== Implementation over TCP/IP
