@@ -85,24 +85,92 @@ By combining the guarantees of blockchain immutability, the programmability of s
 // airdrop
 // AirTag
 
-All of the peer-to-peer networks discussed so far are built on top of the IP layer, and therefore operate as overlay networks — virtual topologies that sit above the underlying Internet infrastructure. Later in this chapter, we will examine in detail how overlay networks function. It is worth noting, however, that decentralised communication networks can also be deployed without relying on the Internet — for instance, through Wi-Fi Direct #footnote[https://en.wikipedia.org/wiki/Wi-Fi_Direct] to form local mesh networks #footnote[https://en.wikipedia.org/wiki/Mesh_networking], via 5G Device-to-Device (D2D) communication, or even using technologies such as Bluetooth Mesh #footnote[https://en.wikipedia.org/wiki/Bluetooth_mesh_networking] or Meshtatic #footnote[https://meshtastic.org/].
+All of the peer-to-peer networks discussed so far are built on top of the IP layer, and therefore operate as overlay networks — virtual topologies that sit above the underlying Internet infrastructure. Later in this chapter, we will examine in detail how overlay networks function. It is worth noting, however, that decentralized communication networks can also be deployed without relying on the Internet — for instance, through Wi-Fi Direct #footnote[https://en.wikipedia.org/wiki/Wi-Fi_Direct] to form local mesh networks #footnote[https://en.wikipedia.org/wiki/Mesh_networking], via 5G Device-to-Device (D2D) communication, or even using technologies such as Bluetooth Mesh #footnote[https://en.wikipedia.org/wiki/Bluetooth_mesh_networking] or Meshtatic #footnote[https://meshtastic.org/].
+
+// Throughout this chapter, we examine key characteristics of peer-to-peer networks—such as network structure, communication patterns, peer discovery, fault-tolerance and performance metrics—which will allow us to define a taxonomy of these networks.
+
+In the remainder of this chapter, we will examine some key technical characteristics of peer-to-peer networks, with particular emphasis on unstructured networks.
 
 == Structured vs Unstructured Networks
+
+#grid(
+  columns: (1fr, 1fr),
+[#figure(
+diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
+node((0,0),"Peer", name: "1", radius: 2em)
+edge(label("5"), "-", stroke: 1pt)
+edge(label("2"), "-", stroke: 1pt)
+node((0.3,1),"Peer", name: "2", radius: 2em)
+edge(label("5"), "-", stroke: 1pt)
+edge(label("3"), "-", stroke: 1pt)
+node((1,1.5),"Peer", name: "3", radius: 2em)
+node((1.8,1),"Peer", name: "4", radius: 2em)
+edge(label("5"), "-", stroke: 1pt)
+node((1.8,0),"Peer", name: "5", radius: 2em)
+}),
+  caption: [An unstructured network.],
+) <p2p-unstructured>],
+[#figure(
+diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
+node((0,0),"Peer", name: "1", radius: 2em)
+edge( "-", stroke: 1pt)
+node((0.8,0.3),"Peer", name: "2", radius: 2em)
+edge( "-", stroke: 1pt)
+node((0.8,1.2),"Peer", name: "3", radius: 2em)
+edge( "-", stroke: 1pt)
+node((0,1.5),"Peer", name: "4", radius: 2em)
+edge( "-", stroke: 1pt)
+node((-0.8,1.2),"Peer", name: "6", radius: 2em)
+edge( "-", stroke: 1pt)
+node((-0.8,0.3),"Peer", name: "6", radius: 2em)
+edge(label("1"),"-", stroke: 1pt)
+
+}),
+  caption: [A structured network (ring).],
+) <p2p-structured>]
+)
+
+
+Peer-to-peer networks can be broadly divided into two categories: structured and unstructured networks. 
+As their name suggests, structured networks rely on a predefined and strictly enforced organization of the network topology. 
+This organization is dictated by a protocol that constrains how nodes join, connect, and interact within the system.
+
+In structured networks, each node is assigned a logical identifier, often derived from a hash function, and connections are established according to this identifier space. 
+As a result, the network forms a well-defined topology that enables deterministic and efficient routing, typically with logarithmic complexity in the number of nodes.
+
+When a node joins the network, it must follow the protocol rules to establish links only with a specific subset of authorized neighbors. 
+For instance, in ring-based topologies, each node maintains connections with its immediate predecessor and successor, forming a logical ring. 
+This structure guarantees that any node can be reached by traversing the ring in a finite number of hops.
+
+Node departures, whether voluntary or due to failures, require the remaining nodes to reconfigure their connections in order to preserve the global topology. 
+This maintenance process is essential to ensure the correctness of routing and data lookup operations, and is a defining characteristic of structured peer-to-peer systems.
+
+Structured peer-to-peer networks are most commonly implemented through Distributed Hash Tables (DHTs), which provide a scalable and fully decentralized mechanism for data storage and retrieval. In a DHT, both nodes and data items are mapped to a shared logical identifier space, typically using consistent hashing. Each data item is assigned to a node responsible for a specific region of this space, enabling an even distribution of storage and lookup responsibilities across the network.
+
+A defining property of structured peer-to-peer networks is their predictable routing complexity. DHT-based systems typically guarantee that lookup operations are completed in $O(log N)$ hops, where $N$ denotes the number of participating nodes. This logarithmic bound is achieved through carefully designed routing tables that allow each node to forward requests to peers that are progressively closer to the target identifier in the logical space. Such guarantees sharply contrast with unstructured networks, where resource discovery often relies on flooding or random walks, resulting in higher and less predictable communication overhead.
+
+
 // Chord, Pastry, Kademlia
 
 // == Unstructured Networks
 
 // == Services in a p2p system
 
-== Asynchronous communications
+// == Asynchronous communications
 
 == Peer sampling
 
 // == Random graph & Power-law networks
 
-== Metrics
-
 == Fault-tolerance
+
+// Structured peer-to-peer networks are designed to operate under dynamic conditions, commonly referred to as churn, where nodes may join and leave the system over time. 
+// To maintain correctness and connectivity, DHT protocols incorporate fault-tolerance mechanisms such as data replication, periodic stabilization procedures, and redundant routing entries. 
+// However, the effectiveness of these mechanisms relies on assumptions about churn rates and network size. 
+// Under excessive or highly correlated node departures, structured networks may experience temporary inconsistencies, degraded routing guarantees, or even partial disconnections. 
+// As a result, while structured networks can offer strong scalability and efficiency properties, they remain inherently more sensitive to churn than unstructured peer-to-peer systems.
+
+== Metrics
 
 // == Use-cases
 // == History
