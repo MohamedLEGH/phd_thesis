@@ -145,24 +145,34 @@ This structure guarantees that any node can be reached by traversing the ring in
 Node departures, whether voluntary or due to failures, require the remaining nodes to reconfigure their connections in order to preserve the global topology. 
 This maintenance process is essential to ensure the correctness of routing and data lookup operations, and is a defining characteristic of structured peer-to-peer systems.
 
-Structured peer-to-peer networks are most commonly implemented through Distributed Hash Tables (DHTs), which provide a scalable and fully decentralized mechanism for data storage and retrieval. In a DHT, both nodes and data items are mapped to a shared logical identifier space, typically using consistent hashing. Each data item is assigned to a node responsible for a specific region of this space, enabling an even distribution of storage and lookup responsibilities across the network.
+Structured peer-to-peer networks are most commonly implemented through Distributed Hash Tables (DHTs), which provide a scalable and fully decentralized mechanism for data storage and retrieval. In a DHT, both nodes and data items are mapped to a shared logical identifier space, typically using consistent hashing#footnote[https://en.wikipedia.org/wiki/Consistent_hashing]. Each data item is assigned to a node responsible for a specific region of this space, enabling an even distribution of storage and lookup responsibilities across the network. A DHT can be viewed as a decentralized database. 
+When a node searches for data, or more generally for a key associated with a value, that it does not store locally, it issues a request to the network. 
+This request is forwarded from node to node according to the routing protocol until it reaches the node whose identifier is closest to the searched key in the logical identifier space. 
+This node is responsible for the key and returns the requested data to the requester.
 
 A defining property of structured peer-to-peer networks is their predictable routing complexity. DHT-based systems typically guarantee that lookup operations are completed in $O(log N)$ hops, where $N$ denotes the number of participating nodes. This logarithmic bound is achieved through carefully designed routing tables that allow each node to forward requests to peers that are progressively closer to the target identifier in the logical space. Such guarantees sharply contrast with unstructured networks, where resource discovery often relies on flooding or random walks, resulting in higher and less predictable communication overhead.
 
+Among the seminal works on Distributed Hash Tables is Chord @stoica2001chord. 
+Chord relies on consistent hashing to assign both nodes and keys to a shared identifier space, typically generated using a cryptographic hash function such as SHA-1. 
+Nodes are logically organized in a ring topology, where each node is responsible for the keys whose identifiers fall between its predecessor and itself. In its simplest form, a ring-based organization would require up to $N$ hops to locate a key in a network of $N$ nodes. 
+To address this limitation, Chord introduces a routing structure called the _finger table_. 
+Each node maintains a finger table with $m$ entries, where the $i$-th entry points to the successor of $(n + 2^{i})$ in the identifier space, with $n$ denoting the identifier of the current node. These additional links provide shortcuts across the ring and allow lookup operations to be completed in $O(log N)$ hops with high probability.
 
-// Chord, Pastry, Kademlia
+Another famous protocol to build structured network is Pastry @rowstron2001pastry. In Pastry, each node is assigned a random identifier (nodeId). Each node maintains a list of the closest nodes (e.g., geographically), as well as a list of nodes with similar IDs. Each node also maintains a routing table to know where to route requests. When a node makes a request for a key, that request is sent to the node with the nodeId closest to the key, and the message is propagated from node to node until it finds the node that has the object corresponding to the key. Pastry is resilient to failures, and the protocol dynamically rebuilds neighbor lists.
+
+// Pastry, Kademlia
 
 // == Unstructured Networks
 
 // == Services in a p2p system
 
-// == Asynchronous communications
 
 == Peer sampling
 
 // == Random graph & Power-law networks
 
 == Fault-tolerance
+// == Asynchronous communications
 
 // Structured peer-to-peer networks are designed to operate under dynamic conditions, commonly referred to as churn, where nodes may join and leave the system over time. 
 // To maintain correctness and connectivity, DHT protocols incorporate fault-tolerance mechanisms such as data replication, periodic stabilization procedures, and redundant routing entries. 
