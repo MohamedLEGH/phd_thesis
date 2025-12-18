@@ -158,21 +158,48 @@ Nodes are logically organized in a ring topology, where each node is responsible
 To address this limitation, Chord introduces a routing structure called the _finger table_. 
 Each node maintains a finger table with $m$ entries, where the $i$-th entry points to the successor of $(n + 2^{i})$ in the identifier space, with $n$ denoting the identifier of the current node. These additional links provide shortcuts across the ring and allow lookup operations to be completed in $O(log N)$ hops with high probability.
 
-Another famous protocol to build structured network is Pastry @rowstron2001pastry. In Pastry, each node is assigned a random identifier (nodeId). Each node maintains a list of the closest nodes (e.g., geographically), as well as a list of nodes with similar IDs. Each node also maintains a routing table to know where to route requests. When a node makes a request for a key, that request is sent to the node with the nodeId closest to the key, and the message is propagated from node to node until it finds the node that has the object corresponding to the key. Pastry is resilient to failures, and the protocol dynamically rebuilds neighbor lists.
+Another well-known protocol for building structured peer-to-peer networks is Pastry@rowstron2001pastry. 
+In Pastry, each node is assigned a random identifier, called a _nodeId_, from a large identifier space. 
+Each node maintains several data structures to support efficient and robust routing, including a _routing table_ organized by shared identifier prefixes, a _leaf set_ containing nodes with numerically closest nodeIds, and a _neighborhood set_ composed of nodes that are close in terms of network proximity. When a node issues a request for a given key, the message is forwarded to nodes whose nodeIds share progressively longer prefixes with the key, until it reaches the node responsible for that key. 
+This prefix-based routing strategy enables efficient lookup operations while exploiting network locality. Pastry is resilient to node failures, as it dynamically repairs its routing structures in response to node joins and departures.
 
-// Pastry, Kademlia
 
-// == Unstructured Networks
+Kademlia @maymounkov2002kademlia is a widely used DHT protocol, notably employed by BitTorrent, as we have seen before. As in Pastry, each node in Kademlia is assigned a random identifier (nodeId) from a large identifier space. Kademlia defines a distance between identifiers using the XOR metric, which induces a logical tree-like structure over the identifier space.
 
-// == Services in a p2p system
+Each node maintains a routing table composed of multiple _k-buckets_, where each bucket stores up to $k$ node contacts whose identifiers fall within a specific range of XOR distances from the local node. When a node performs a lookup for a given key, it computes the XOR distance between the key and known node identifiers, and iteratively queries the nodes that are closest to the target key. This process is repeated until the node responsible for the key is reached. 
+Kademlia supports parallel and iterative lookups, which improves robustness and resilience to node failures.
 
+While structured networks, and in particular Kademlia, have been widely adopted in peer-to-peer systems for their scalability and efficient lookup guarantees, they exhibit limitations in highly dynamic environments. 
+Under extreme churn, the continuous maintenance of routing tables, neighbor sets, and replicated data can introduce significant overhead and may temporarily compromise routing consistency. 
+These challenges have motivated the exploration of alternative designs based on unstructured peer-to-peer networks. 
+Unlike structured systems, unstructured networks do not impose a predefined topology or DHT-based organization; instead, nodes establish and maintain connections in an ad-hoc fashion or rely on peer-sampling services to dynamically discover peers, favoring resilience and adaptability over deterministic lookup guarantees.
+
+// Unstructured peer-to-peer (P2P) networks constitute an alternative to structured overlay networks when flexibility and robustness under highly dynamic conditions are prioritized over strict lookup guarantees. 
+// In contrast to structured P2P systems, unstructured networks do not impose a predefined topology or a global data placement scheme such as a Distributed Hash Table. Instead, nodes maintain a partial and dynamic view of the network, establishing connections in an ad-hoc manner or through lightweight auxiliary services.
+
+Because of the absence of a global structure, unstructured P2P networks rely on a set of fundamental services to ensure connectivity, information dissemination, and resource discovery.
+A core component of such systems is the _peer sampling service_, whose role is to provide each node with a continuously refreshed, quasi-random subset of peers. This service is essential to preserve network connectivity, avoid topological bias, and prevent partitioning, especially in the presence of churn.
+
+In addition to peer sampling, unstructured P2P networks typically require several complementary services. _Membership management_ mechanisms are used to handle node arrivals and departures, ensuring that local neighbor sets remain up-to-date. _Neighbor selection and topology management_ strategies may be employed to shape the overlay according to specific objectives, such as latency reduction or load balancing.
+Furthermore, _information dissemination services_, often based on gossip or epidemic protocols, enable efficient broadcast, aggregation, and synchronization of state across the network. Finally, _resource discovery_ in unstructured networks generally relies on probabilistic techniques such as flooding, random walks, or gossip-based search, trading deterministic guarantees for scalability and resilience. Together, these services allow unstructured peer-to-peer networks to operate efficiently in highly dynamic and decentralized environments, making them particularly suitable for large-scale systems where strict structural maintenance would be costly or impractical.
+As part of our work, we focus on the peer sampling service, which constitutes a fundamental building block of unstructured peer-to-peer systems. 
 
 == Peer sampling
 
-// == Random graph & Power-law networks
+A peer sampling service provides each node with addresses of other nodes in the network, thereby enabling communication and maintaining connectivity.
+Typically, the objective is to supply node addresses that are as random and uniformly distributed as possible, so as to avoid structural bias and network partitioning.
 
-== Fault-tolerance
-// == Asynchronous communications
+Conceptually, a peer sampling service exposes a minimal interface composed of two main functions.
+An initialization function, _init()_, initializes the service at the node level, while a function _getPeer()_ returns the address of another node in the network.
+The returned address represents a partial and local view of the system rather than global knowledge.
+
+Peer sampling services can be implemented in a centralized manner, where a central entity maintains knowledge of all participating nodes and responds to sampling requests.
+While such an approach is simple, it suffers from scalability limitations and introduces a single point of failure.
+Alternatively, peer sampling can be implemented in a fully decentralized way, where nodes continuously exchange and update peer information using only local interactions.
+Decentralized peer sampling services are more scalable and resilient to churn, making them well suited for large-scale dynamic environments.
+
+
+// == Random graph & Power-law networks
 
 // Structured peer-to-peer networks are designed to operate under dynamic conditions, commonly referred to as churn, where nodes may join and leave the system over time. 
 // To maintain correctness and connectivity, DHT protocols incorporate fault-tolerance mechanisms such as data replication, periodic stabilization procedures, and redundant routing entries. 
@@ -186,3 +213,6 @@ Another famous protocol to build structured network is Pastry @rowstron2001pastr
 // == History
 
 // == Security
+
+== Fault-tolerance
+// == Asynchronous communications
