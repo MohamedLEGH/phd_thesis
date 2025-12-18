@@ -1,5 +1,7 @@
 #import "@preview/fletcher:0.5.8" as fletcher: diagram, node, edge
 
+#import "@preview/lovelace:0.3.0": *
+
 = Peer-to-Peer Networks <chap:p2p>
 #grid(
   columns: (1fr, 1fr),
@@ -186,17 +188,16 @@ As part of our work, we focus on the peer sampling service, which constitutes a 
 
 == Peer sampling
 
-A peer sampling service provides each node with addresses of other nodes in the network, thereby enabling communication and maintaining connectivity.
-Typically, the objective is to supply node addresses that are as random and uniformly distributed as possible, so as to avoid structural bias and network partitioning.
+A peer sampling service provides each node with addresses of other nodes in the network, thereby enabling communication and maintaining connectivity. Indeed, it is often impractical or impossible for a node to store the addresses of all other nodes in the network in memory, particularly in peer-to-peer networks, which can often contain several hundred thousand nodes. Furthermore, these nodes do not necessarily remain connected all the time, and the number of nodes in the network fluctuates constantly. Each node will therefore only maintain a limited number of addresses of other nodes in the network, known as the partial view or neighbor list of each node. There is therefore a need for a service that allows us to connect to other nodes in the network, particularly given the risk that all our neighbors may be disconnected and that we may thus find ourselves disconnected from the network due to a lack of neighbors with whom to communicate.
+Typically, the objective of a peer sampling service is to supply node addresses that are as random and uniformly distributed as possible, so as to avoid structural bias and network partitioning.
 
 Conceptually, a peer sampling service exposes a minimal interface composed of two main functions.
 An initialization function, _init()_, initializes the service at the node level, while a function _getPeer()_ returns the address of another node in the network.
-The returned address represents a partial and local view of the system rather than global knowledge.
 
-Peer sampling services can be implemented in a centralized manner, where a central entity maintains knowledge of all participating nodes and responds to sampling requests.
+Peer sampling services can be implemented in a centralized manner, where a central entity maintains knowledge of all participating nodes  and responds to sampling requests. 
 While such an approach is simple, it suffers from scalability limitations and introduces a single point of failure.
 Alternatively, peer sampling can be implemented in a fully decentralized way, where nodes continuously exchange and update peer information using only local interactions.
-Decentralized peer sampling services are more scalable and resilient to churn, making them well suited for large-scale dynamic environments.
+Decentralized peer sampling services are more scalable and allow the construction of fully decentralized peer-to-peer systems that don't need to rely on a centralized service.
 
 
 // == Random graph & Power-law networks
@@ -206,6 +207,8 @@ Decentralized peer sampling services are more scalable and resilient to churn, m
 // However, the effectiveness of these mechanisms relies on assumptions about churn rates and network size. 
 // Under excessive or highly correlated node departures, structured networks may experience temporary inconsistencies, degraded routing guarantees, or even partial disconnections. 
 // As a result, while structured networks can offer strong scalability and efficiency properties, they remain inherently more sensitive to churn than unstructured peer-to-peer systems.
+
+
 
 == Metrics
 
