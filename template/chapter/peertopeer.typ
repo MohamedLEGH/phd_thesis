@@ -199,15 +199,63 @@ While such an approach is simple, it suffers from scalability limitations and in
 Alternatively, peer sampling can be implemented in a fully decentralized way, where nodes continuously exchange and update peer information using only local interactions.
 Decentralized peer sampling services are more scalable and allow the construction of fully decentralized peer-to-peer systems that don't need to rely on a centralized service.
 
+// need to cite litterature about peer sampling service
+// give examples in details 
+Among the earliest decentralized protocols addressing membership management and peer sampling in large-scale distributed systems is Lightweight Probabilistic Broadcast (lpbcast), proposed by Eugster et al. @eugster2003lightweight. Lpbcast is a gossip-based publish/subscribe protocol designed to disseminate membership information and application events in highly dynamic and unstructured peer-to-peer environments. In this protocol, each node periodically exchanges gossip messages with a subset of peers selected from its local partial view. These messages encapsulate subscriptions, unsubscriptions, and published events, allowing nodes to progressively build and maintain a probabilistic view of the system. To ensure bounded resource consumption, lpbcast relies on fixed-size buffers to store received messages. When these buffers become full, messages are discarded using a probabilistic eviction strategy, favoring the removal of stale or redundant information while preserving dissemination efficiency. Node joins are handled through subscription messages initially sent to a single node and subsequently propagated through gossip; with high probability, these messages eventually reach all active nodes. Unsubscriptions follow a similar dissemination process but include timestamps to prevent outdated leave information from persisting indefinitely in the network. A key aspect of lpbcast is its peer weighting mechanism, which assigns weights to known peers based on the frequency of received notifications. Peers with higher weights are more likely to be removed from local views, a strategy that promotes peer diversity and prevents topological convergence, thereby reducing the risk of network partitioning under churn. The protocol offers probabilistic delivery guarantees rather than deterministic reliability, trading strict consistency for improved scalability, fault tolerance, and adaptability to dynamic membership. The authors provide a theoretical analysis of message dissemination time and partition probability, demonstrating that lpbcast achieves rapid and reliable propagation with limited overhead. Experimental evaluation combines simulations with real-world deployments conducted on two local-area networks composed of 60 and 65 SUN Ultra 10 workstations, respectively, interconnected via Fast Ethernet. Experiments involving up to 125 concurrent processes, each publishing 40 events per gossip round, confirm the protocol’s ability to scale while maintaining acceptable latency and network load.
 
-// == Random graph & Power-law networks
+Astrolabe, introduced by van Renesse et al. @van2003astrolabe, is a distributed information management system designed to support scalable monitoring, management, and data mining in large-scale distributed environments. Unlike fully decentralized peer-to-peer systems, Astrolabe relies on a hierarchical zoning architecture in which nodes are organized into nested zones forming a tree rooted at a global root zone. Each zone elects one or more designated routers responsible for aggregating and propagating information between hierarchical levels. While Astrolabe employs epidemic gossip protocols for information dissemination within and across zones, the presence of explicitly defined zones and routing roles makes the system fundamentally hierarchical rather than purely peer-to-peer. Within each zone, nodes periodically exchange state information using gossip, while inter-zone communication follows the hierarchy, with updates being propagated toward the least common ancestor zone and aggregated along the way. Each node maintains a peer list of logarithmic size relative to the system, ensuring scalability. Security is enforced through the use of public-key certificates, allowing authenticated communication and administrative control. Although Astrolabe avoids centralized servers, it is not fully decentralized: the hierarchical topology is manually configured, and system administrators are able to maintain a global view of the system state. The protocol was evaluated through simulations and experimentally deployed on the Emulab testbed with up to 126 agents running on 63 hosts, demonstrating the scalability and robustness of hierarchical gossip-based aggregation.
 
-// Structured peer-to-peer networks are designed to operate under dynamic conditions, commonly referred to as churn, where nodes may join and leave the system over time. 
-// To maintain correctness and connectivity, DHT protocols incorporate fault-tolerance mechanisms such as data replication, periodic stabilization procedures, and redundant routing entries. 
-// However, the effectiveness of these mechanisms relies on assumptions about churn rates and network size. 
-// Under excessive or highly correlated node departures, structured networks may experience temporary inconsistencies, degraded routing guarantees, or even partial disconnections. 
-// As a result, while structured networks can offer strong scalability and efficiency properties, they remain inherently more sensitive to churn than unstructured peer-to-peer systems.
+In contrast to hierarchical approaches, Ganesh, Kermarrec, and Massoulié introduced SCAMP @ganesh2003peer, one of the first fully decentralized peer-to-peer membership protocols designed for large-scale gossip-based systems. SCAMP abandons the assumption that nodes have access to a global membership list or even to the total number of participants, assumptions that are unrealistic in the presence of churn. Instead, each node maintains a partial view of the network, whose size remains logarithmic in the number of nodes, ensuring scalability and robustness. SCAMP relies on epidemic dissemination to propagate membership information and guarantees, with high probability, the strong atomicity property, meaning that a broadcast message eventually reaches all nodes. More precisely, if each node gossips to $log(n) + k$ peers on average, the probability of complete dissemination converges asymptotically to $e^(-e^-k)$. Membership dynamics are handled through explicit join and leave procedures. When a node joins the system, its identifier is disseminated through controlled random walks, and recipient nodes probabilistically decide whether to include it in their partial view, allowing the overlay to self-balance without any global coordination. Each node maintains both a partial view, representing its outgoing neighbor references, and an in-view list, corresponding to incoming references from other nodes. This distinction is exploited during graceful departures: when a node leaves, it informs its neighbors, which replace its identifier using the entries contained in its in-view list, preserving the desired average degree of the overlay. To cope with failures and churn, SCAMP incorporates heartbeat-based failure detection, lease mechanisms that periodically expire neighbor relationships, and re-subscription procedures for isolated nodes. An indirection mechanism with decreasing tokens further prevents overload and contributes to maintaining balanced partial views.
 
+Stavrou et al. introduced PROOFS @stavrou2004lightweight (P2P Randomized Overlays to Obviate Flash-
+crowd Symptoms), a lightweight protocol designed to cope with Internet flash crowds and sudden surges in demand for data in a network. PROOFS relies on the construction and continuous maintenance of a random overlay network through a shuffling mechanism, combined with a random-walk-based object lookup protocol. The shuffle operation consists of a periodic exchange of partial neighbor views between pairs of randomly selected peers: an initiating node selects a subset of its current neighbors (including itself) and sends this subset to a randomly chosen peer, which replies with a subset of its own partial view. Both nodes then update their local views by removing the exchanged entries and incorporating the received ones, thereby preserving a bounded view size while continuously randomizing the overlay. The authors provide theoretical guarantees showing that the resulting directed overlay exhibits strong resilience properties, including the ability to self-heal to avoid network partitions, ensuring eventual connectivity despite churn and failures. In @PROOFS-example we give an example of a shuffling operation in the PROOFS protocol. Node 1 sends addresses {itself, 2, 3} to node 4. Node 4 sends back {5,6,8}.
+
+#figure(
+  grid(
+  columns: (1fr, 1fr),
+diagram({
+node((0,0.5), "7", stroke: 1pt, name: "7", radius: 0.5em)
+edge("<|-")
+node((0.6,0.5), "1", stroke: 1pt, name: "1", radius: 0.5em, fill: blue.lighten(60%))
+edge(label("4"), "-|>")
+edge(label("2"), "-|>")
+edge(label("3"), "-|>")
+node((1.4,-0.1), "2", stroke: 1pt, name: "2", radius: 0.5em)
+node((0.6,1.2), "3", stroke: 1pt, name: "3", radius: 0.5em)
+node((1.2,0.5), "4", stroke: 1pt, name: "4", radius: 0.5em, fill: green.lighten(60%))
+edge(label("3"), "-|>")
+edge(label("8"), "-|>")
+edge(label("5"), "-|>")
+edge(label("6"), "-|>")
+node((2,-0.1), "5", stroke: 1pt, name: "5", radius: 0.5em)
+node((2,1.2), "6", stroke: 1pt, name: "6", radius: 0.5em)
+node((1.2,1.2), "8", stroke: 1pt, name: "8", radius: 0.5em)
+}),
+diagram({
+node((0,0.5), "7", stroke: 1pt, name: "7", radius: 0.5em)
+edge("<|-")
+node((0.6,0.5), "1", stroke: 1pt, name: "1", radius: 0.5em, fill: blue.lighten(60%))
+edge(label("5"), "-|>")
+edge(label("8"), "-|>")
+edge(label("6"), "-|>")
+node((1.4,-0.1), "2", stroke: 1pt, name: "2", radius: 0.5em)
+node((0.6,1.2), "3", stroke: 1pt, name: "3", radius: 0.5em)
+node((1.2,0.5), "4", stroke: 1pt, name: "4", radius: 0.5em, fill: green.lighten(60%))
+edge(label("1"), "-|>")
+edge(label("3"), "-|>")
+edge(label("2"), "-|>")
+node((2,-0.1), "5", stroke: 1pt, name: "5", radius: 0.5em)
+node((2,1.2), "6", stroke: 1pt, name: "6", radius: 0.5em)
+node((1.2,1.2), "8", stroke: 1pt, name: "8", radius: 0.5em)
+})
+)
+,
+  caption: [Before and after a shuffling operation in the PROOFS protocol.],
+) <PROOFS-example>
+// == Topology
+// === Random graph
+
+=== Power-law networks
 
 
 == Metrics
