@@ -2,6 +2,12 @@
 
 #import "@preview/lovelace:0.3.0": *
 
+#import "@preview/theorion:0.4.1": *
+#import cosmos.fancy: *
+// #import cosmos.rainbow: *
+// #import cosmos.clouds: *
+#show: show-theorion
+
 = Peer-to-Peer Networks <chap:p2p>
 #grid(
   columns: (1fr, 1fr),
@@ -39,7 +45,9 @@ node((1.8,0),"Peer", name: "5", radius: 2em)
 
 // Core concepts
 // Examples of p2p protocols
-// Review of the litterature
+// Review of the literature
+
+== History and use cases
 
 The client–server architecture is the most common communication model on the Internet. It is a natural fit for protocols such as HTTP, FTP, or SSH, where one central server provides services or data to multiple clients that request them.
 The main advantage of client–server architecture lies in its simplicity. The server manages client requests and coordinates their interactions, while users only need to establish a connection to this central point. Security is also easier to enforce, since it mainly involves securing the server.
@@ -81,7 +89,7 @@ There was a resurgence of interest in peer-to-peer technology in the 2010s, foll
 
 Building on the principle of immutability introduced by blockchain systems—where every transaction is permanently recorded and verifiable—new approaches emerged to apply similar ideas to data storage and sharing. One of the most influential of these systems is the InterPlanetary File System (IPFS) #footnote[https://ipfs.tech/]. Inspired by BitTorrent’s peer-to-peer file distribution, IPFS generalises and extends it by introducing content addressing: every piece of data is identified by the cryptographic hash of its content, ensuring both integrity and permanence. In addition, IPFS structures data using a Merkle Directed Acyclic Graph (Merkle DAG), allowing efficient deduplication and versioning, much like Git but at the scale of a global network.
 
-By combining the guarantees of blockchain immutability, the programmability of smart contracts, and the distributed storage capabilities of IPFS, new forms of decentralised cloud infrastructures have emerged. These systems aim to provide computing and storage services without relying on traditional centralised data centres. Notable examples include Golem #footnote[https://www.golem.network/], which offers a marketplace for distributed computing resources; Sia #footnote[https://sia.tech/], which enables decentralised cloud storage through cryptographically secured contracts; and Filecoin #footnote[https://filecoin.io/], which builds directly on top of IPFS to incentivise data storage and retrieval through a native cryptocurrency. Together, these projects illustrate the ongoing shift towards a decentralised Internet infrastructure, where computation and storage are shared and coordinated through peer-to-peer and blockchain mechanisms rather than controlled by central entities. This paradigm of distributing computation and coordination across multiple nodes naturally extends to the field of machine learning, giving rise to decentralised learning, which we will discuss in a later chapter, as it constitutes the main use case studied in this PhD.
+By combining the guarantees of blockchain immutability, the programmability of smart contracts, and the distributed storage capabilities of IPFS, new forms of decentralised cloud infrastructures have emerged. These systems aim to provide computing and storage services without relying on traditional centralised data centres. Notable examples include Golem #footnote[https://www.golem.network/], which offers a marketplace for distributed computing resources; Sia #footnote[https://sia.tech/], which enables decentralised cloud storage through cryptographically secured contracts; and Filecoin #footnote[https://filecoin.io/], which builds directly on top of IPFS to incentivise data storage and retrieval through a native cryptocurrency. Together, these projects illustrate the ongoing shift towards a decentralised Internet infrastructure, where computation and storage are shared and coordinated through peer-to-peer and blockchain mechanisms rather than controlled by central entities. This paradigm of distributing computation and coordination across multiple nodes naturally extends to the field of machine learning, giving rise to decentralized learning, which we will discuss in a later chapter, as it constitutes the main use case studied in this thesis.
 
 // Hors sujet mais intéressant:
 // Decentralized identity
@@ -95,7 +103,93 @@ All of the peer-to-peer networks discussed so far are built on top of the IP lay
 
 // Throughout this chapter, we examine key characteristics of peer-to-peer networks—such as network structure, communication patterns, peer discovery, fault-tolerance and performance metrics—which will allow us to define a taxonomy of these networks.
 
-In the remainder of this chapter, we will examine some key technical characteristics of peer-to-peer networks, with particular emphasis on unstructured networks.
+// In the remainder of this chapter, we will examine some key technical characteristics of peer-to-peer networks, with particular emphasis on unstructured networks.
+
+== Core concepts
+
+=== Overlay Networks
+
+One might wonder why we are interested in overlay networks. The motivation is straightforward. A physical network is typically static and simple—for example, a local network with a router, a computer, and possibly a printer—and its capabilities are largely fixed at creation. Modifying such a network requires physical changes to connections, which is cumbersome. In contrast, an overlay network is implemented on top of a physical network, so changes can be made through software, simply by modifying the protocol. This flexibility has driven the widespread adoption of overlay networks. The ability to easily reconfigure the network is particularly important for peer-to-peer systems, which require highly dynamic structures. While it is theoretically possible to implement a P2P protocol at the physical network level, doing so is complex and resource-intensive, whereas deploying it as an overlay network is simpler, faster, and more practical. An overlay network can also be implemented on top of a network that is itself an overlay network, such as the Lightning Network, which is on top of the Bitcoin network (itself on top of IP).
+
+#definition(title: "Overlay Network")[
+  An overlay network is a logical computer network that is layered on top of a physical network, where nodes establish virtual links that may not correspond to direct physical connections, enabling flexible routing, topology management, and distributed services. It is assumed that each participant in the network has a unique identifier (such as an IP address) and that it is sufficient to know the identifier of another node in order to contact it (send it a message).
+] <def:overlay-network>
+
+#example[
+  The Bitcoin network, which operates as a peer-to-peer protocol for decentralized transaction propagation, functions as an overlay network on top of the physical IP network.
+]
+
+Generally, a node in a network does not have knowledge of all other nodes, as storing all identifiers could require a large amount of memory and may be infeasible in dynamic networks where nodes frequently join or leave. In client-server architectures, each client knows only the server, which is sufficient for it to participate in the network. In contrast, peer-to-peer overlay networks rely on nodes maintaining a partial view of the network, containing a small subset of nodes. These partial views form the basis of the overlay topology and determine how nodes discover resources, route messages, and maintain connectivity in the network.
+
+#definition(title: "Partial View")[
+  A partial view of a network is the subset of participants known by a given node. It consists of a list of node identifiers, typically of limited size, representing only a fraction of the entire network.
+] <def:partial-view>
+
+#example[
+  In Bitcoin, each node typically knows only about a hundred addresses, some of which are obtained by contacting a peer discovery service (DNS seed) that provides the initial addresses to connect to.
+]
+
+=== Graph theory
+
+In order to study overlay networks, it is useful to adopt a mathematical representation that allows formalizing and comparing their properties. Graph theory provides a natural framework for this purpose. A network can be represented as a graph, where nodes correspond to servers or users, and edges represent connections between them. Depending on the nature of the connections, a network can be modeled as either undirected or directed: bidirectional connections (e.g., TCP connections) are naturally represented by undirected edges, while unidirectional connections (e.g., UDP connections) are better captured by directed edges. In overlay networks, edges do not correspond to direct physical connections, but rather to a node's virtual view of the network—that is, the subset of nodes that each node is aware of.
+#definition(title: "Undirected Graph")[
+  An undirected graph is an ordered pair $G = (V, E)$:
+  - $V$, a set of vertices (also called nodes or points);
+  - $E subset.eq {{x, y} bar.v x, y in V, x eq.not y}$, a set of edges (also called links or lines), which are unordered pairs of vertices (that is, an edge is associated with two distinct vertices).
+] <def:graph>
+
+#example[
+  An undirected graph with three vertices and three edges. 
+]
+#diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
+node((0,0),"", name: "1", radius: 1em)
+edge()
+edge(label("3"))
+node((1,0),"", name: "2", radius: 1em)
+edge()
+node((1,1),"", name: "3", radius: 1em)
+})
+
+#definition(title: "Directed Graph")[
+  A directed graph or digraph is a graph in which edges have orientations. A directed graph is an ordered pair $G = (V, E)$:
+  - $V$, a set of vertices (also called nodes or points);
+  - $E subset.eq {(x, y) bar.v (x, y) in V², x eq.not y}$, a set of edges (also called directed edges, directed links, directed lines, arrows or arcs) which are ordered pairs of vertices (that is, an edge is associated with two distinct vertices).
+  
+] <def:graph>
+
+#example[
+  A directed graph with three vertices and three directed edges. 
+]
+#diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
+node((0,0),"", name: "1", radius: 1em)
+edge("->")
+edge(label("3"), "->")
+node((1,0),"", name: "2", radius: 1em)
+edge("->")
+node((1,1),"", name: "3", radius: 1em)
+})
+
+=== Topology
+
+==== Random-graph
+
+==== Power-law
+
+=== Overlay management
+
+==== Structured network
+
+==== Unstructured network
+
+=== Dynamic Networks
+
+==== Failures
+
+==== Churn
+
+=== Security
+
+=== Metrics
 
 == Structured vs Unstructured Networks
 
