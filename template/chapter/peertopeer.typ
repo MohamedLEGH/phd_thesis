@@ -281,27 +281,213 @@ diagram({
   caption: [A hierarchical (or tree) topology, with 2 levels, the root server and the intermediate servers.],
 ) <tree-topology>
 
-==== Random-graph
+==== Random network
+In contrast to the deterministic topologies presented above, real-world networks are often not explicitly organized but instead emerge in a largely random manner. Social networks, for instance, are formed through independent and uncoordinated interactions between individuals, leading to structures that are difficult to predict or control globally. To model such systems, random network models have been widely studied, among which the Erdős–Rényi random graph @erdHos1959evolution is the most classical and intuitive. In this model, edges are created at random, either by fixing the probability of connection between any pair of nodes or by fixing the expected number of connections per node. Despite the apparent lack of structure, random graphs exhibit several desirable properties. When the average degree k is greater than a small constant (typically slightly above 2), the probability that the graph is connected rapidly approaches one as the network size grows. Moreover, the diameter of the graph remains relatively small, scaling logarithmically with the number of nodes, which ensures efficient information propagation. In the directed case, k usually denotes the out-degree of each node, while the in-degree follows a binomial distribution centered around k. These properties make random graphs attractive as baseline models for large-scale decentralized systems, even though they do not capture heterogeneity or hub formation observed in many real networks.
+
+#figure(
+diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
+node((0,0), name: "1", radius: 2em)
+edge(label("5"), "->", stroke: 1pt)
+edge(label("2"), "->", stroke: 1pt)
+node((0.3,1), name: "2", radius: 2em)
+edge(label("5"), "->", stroke: 1pt)
+edge(label("3"), "->", stroke: 1pt)
+node((1,1.5), name: "3", radius: 2em)
+edge(label("5"), "->", stroke: 1pt)
+edge(label("2"), "->", stroke: 1pt)
+node((1.8,1), name: "4", radius: 2em)
+edge(label("1"), "->", stroke: 1pt)
+edge(label("5"), "->", stroke: 1pt)
+node((1.8,0), name: "5", radius: 2em)
+edge(label("1"), "->", stroke: 1pt)
+edge(label("4"), "->", stroke: 1pt)
+}),
+  caption: [A random directed graph, $k=2$, with $k$ the outdegree of each node.],
+) <random-graph>
+
+#definition(title: "Erdős–Rényi Random Graph G(n, p)")[
+  Let $n in NN$ be the number of vertices and $p in [0, 1]$.
+  An Erdős–Rényi random graph $G(n, p)$ is defined as a random graph
+  $G = (V, E)$ where:
+  - $V = {1, 2, ..., n}$ is the set of vertices;
+  - for every unordered pair ${i, j} subset V$ with $i != j$,
+    the edge ${i, j}$ is included in $E$ independently with probability $p$:
+    $
+    forall i != j, quad Pr({i, j} in E) = p.
+    $
+] <def:Erdos-Renyi-Gnp>
+
+#definition(title: "Erdős–Rényi Random Graph G(n, m)")[
+  Let $n in NN$ be the number of vertices and $m in NN$ the number of edges.
+  An Erdős–Rényi random graph $G(n, m)$ is a random graph
+  $G = (V, E)$ where:
+  - $V = {1, 2, ..., n}$;
+  - $E$ is chosen uniformly at random among all subsets of
+    ${ {i, j} | i, j in V, i != j }$
+    such that $|E| = m$.
+] <def:Erdos-Renyi-Gnm>
+
+#definition(title: "Directed Random Graph with Fixed Outdegree")[
+  Let $n in NN$ be the number of nodes and $k in NN$ such that $k < n$.
+  A directed random graph $G = (V, E)$ with fixed outdegree $k$ is defined as follows:
+  - $V = {1, 2, ..., n}$;
+  - for each node $i in V$, exactly $k$ outgoing edges are created;
+  - the $k$ distinct destination nodes are selected uniformly at random
+    from $V$, without replacement.
+  
+  Formally, for each node $i$, the set of outgoing neighbors
+  $N_"out"(i)$ satisfies:
+  $
+  |N_"out"(i)| = k,
+  $
+  and each subset of size $k$ of $V$ is equally likely.
+] <def:Directed-Random-Graph>
 
 ==== Small world
 
+Small-world networks provide a more realistic representation of many real-world networks compared to classical random graphs. In such networks, the neighbors of a node are often also neighbors of each other, reflecting the common social phenomenon that “friends of my friends are also friends.” This property results in a high clustering coefficient, which contrasts with the Erdős–Rényi random graph, where clustering is typically very low. The Watts–Strogatz model @watts1998strogatz formalizes this concept by starting from a regular lattice and randomly rewiring a fraction of edges. These random long-range connections create shortcuts between distant parts of the network, significantly reducing the graph diameter while preserving local clusters. This combination of high clustering and small diameter makes small-world networks highly relevant for modeling social networks, communication systems, and peer-to-peer overlays, where local connectivity and fast information propagation are both crucial.
+
+#definition(title: "Watts-Strogatz Small-World Network")[
+  A Watts-Strogatz small-world network is generated by the following procedure:
+  1. Start with a regular ring lattice with $N$ nodes, each connected to $K$ nearest neighbors ($K/2$ on each side).
+  2. For each edge $(i,j)$, rewire it with probability $p$:
+     - Remove the edge $(i,j)$.
+     - Connect node $i$ to a randomly chosen node $k$ (excluding $i$ and avoiding duplicate edges).
+  3. Repeat for all edges.
+  
+  Parameters:
+  - $N$: number of nodes in the network.
+  - $K$: initial number of neighbors per node (must be even).
+  - $p$: rewiring probability, controlling the randomness of the network.
+  
+  Properties:
+  - High clustering coefficient compared to random graphs.
+  - Small average shortest-path length due to long-range shortcuts.
+] <def:watts-strogatz>
+
+#figure(
+diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
+node((0,0), name: "1", radius: 2em)
+edge(label("2"), "->", stroke: 1pt)
+edge(label("3"), "->", stroke: 1pt)
+edge(label("5"), "->", stroke: 1pt)
+node((0.3,1), name: "2", radius: 2em)
+edge(label("1"), "->", stroke: 1pt)
+edge(label("3"), "->", stroke: 1pt)
+node((1,1.5), name: "3", radius: 2em)
+edge(label("1"), "->", stroke: 1pt)
+node((1.8,1), name: "4", radius: 2em)
+edge(label("5"), "->", stroke: 1pt)
+node((1.8,0), name: "5", radius: 2em)
+edge(label("1"), "->", stroke: 1pt)
+edge(label("6"), "->", stroke: 1pt)
+node((3,0.4), name: "6", radius: 2em)
+edge(label("4"), "->", stroke: 1pt)
+}),
+  caption: [A directed small world network, with 2 clusters (left and right).],
+) <watts-strogatz-example>
+
 ==== Power-law
+The Erdős–Rényi and Watts–Strogatz models are interesting and can be used to model certain networks, but many real networks are more complex than simple random networks. In fact, real networks are heterogeneous, with hubs, i.e., nodes with many connections. Scale-free networks are a class of networks in which the degree distribution follows a power-law, meaning that most nodes have few connections while a small number of nodes, called hubs, have a very large number of connections. This property is observed in many real-world networks, such as the Internet, social networks, and citation networks. Scale-free networks also exhibit a self-similar or fractal topology: as the number of nodes increases, the overall structure of the network remains similar, and its statistical properties are preserved. This scalability is one reason why many real networks naturally adopt a scale-free topology. The Barabási–Albert (BA) model @barabasi1999emergence introduced a generative mechanism for scale-free networks based on growth and preferential attachment: starting from a small initial network, new nodes are added one by one and each new node connects to existing nodes with a probability proportional to their degree. This process leads to the emergence of hubs and a degree distribution with a typical power-law exponent around γ ≈ 3. Scale-free networks generally have a small diameter, which allows for efficient communication between nodes. However, the presence of hubs also introduces a vulnerability: the failure of one or more hubs can significantly degrade the connectivity of the network. Unlike classical random graphs, scale-free networks are highly heterogeneous, with a few highly connected nodes dominating the network structure, while most nodes have relatively few connections. Variants of the BA model have been proposed to limit the maximum degree of nodes, add constraints on connectivity, or increase resilience to failures.
+
+#definition(title: "Scale-Free Network")[
+  A scale-free network is a network whose degree distribution follows a power law: $P(k) tilde.basic k^{-gamma}$, where $P(k)$ is the probability that a node has degree $k$ and $gamma$ is a positive constant typically between 2 and 3. Most nodes have few connections, while a few nodes, called hubs, have many connections.
+
+  One classical generative model is the Barabási–Albert (BA) model:
+  1. Start with a small initial network of $m_0$ nodes.
+  2. At each time step, add a new node with $m <= m_0$ edges.
+  3. Each new edge connects to an existing node \(i\) with probability proportional to its degree:
+  
+    $Pi(i) = k_i/(sum_j k_j)$,
+  
+  where $k_i$ is the degree of node $i$. This preferential attachment process leads to the emergence of hubs and a power-law degree distribution.
+] <def:scale-free-network>
+
+#figure(
+diagram({
+  node((1,0), name: "ServerRoot", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
+  edge(label("Server1"), "-", stroke: 1pt)
+  edge(label("Server2"), "-", stroke: 1pt)
+  edge(label("Server3"), "-", stroke: 1pt)
+  edge(label("Client6"), "-", stroke: 1pt)
+
+  node((-1,1.5), name: "Server1", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
+  edge(label("Client1"), "-", stroke: 1pt)
+  edge(label("Client2"), "-", stroke: 1pt)
+  edge(label("Client3"), "-", stroke: 1pt)
+
+  node((0.5,1.5), name: "Server2", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
+  edge(label("Client4"), "-", stroke: 1pt)
+  edge(label("Client5"), "-", stroke: 1pt)
+
+  node((2,1.5), name: "Server3", radius: 2em, stroke: 1pt, fill: green.lighten(60%))  
+  edge(label("Client7"), "-", stroke: 1pt)
+  edge(label("Client8"), "-", stroke: 1pt)
+  edge(label("Client9"), "-", stroke: 1pt)
+
+  node((-3,2.8), name: "Client1", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
+
+  node((-2,2.8), name: "Client2", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
+
+  node((-1.2,2.8), name: "Client3", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
+
+  node((-0.5,2.8), name: "Client4", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
+
+  node((0.2,2.8), name: "Client5", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
+  
+  node((1,2.8), name: "Client6", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
+
+  node((1.8,2.8), name: "Client7", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
+  
+  node((2.5,2.8), name: "Client8", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
+
+  node((3.5,2.8), name: "Client9", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
+
+}),
+  caption: [A scale free network.],
+) <scale-free-schema>
 
 ==== Stochastic block model
+In real-world networks, randomness often coexists with community structures. Stochastic Block Models (SBM) @holland1983stochastic are a generalization of the classical Erdős–Rényi random graph and provide a flexible framework to model such networks. In an SBM, nodes are partitioned into communities (or blocks), and the probability of a link between two nodes depends on the communities to which they belong. This allows the generation of networks that appear random globally but exhibit strong local structures, highlighting the presence of communities. The model allows explicit control over the number and size of communities, as well as the intra- and inter-community connection probabilities, enabling the study of networks with varying modularity. Moreover, because SBM is probabilistic, multiple network instances can be generated from the same parameters, making it a powerful tool for benchmarking community detection algorithms and exploring structural properties of complex networks.
+
+#definition(title: "Stochastic Block Model")[
+  A Stochastic Block Model (SBM) is a generative model for random graphs with community structure. 
+  Consider a graph $G = (V, E)$ with $N$ nodes, and let the nodes be partitioned into $K$ disjoint blocks (or communities) $C_1, C_2, dots, C_K$.
+  The probability of an edge between two nodes depends only on the blocks to which they belong.
+  
+  Formally, let $B in [0,1]^{K times K}$ be a matrix of connection probabilities between blocks, where $B_{"ab"}$ is the probability that a node in block $C_a$ connects to a node in block $C_b$. Then, for each pair of nodes $(i,j)$:
+  
+  - If node $i in C_a$ and node $j in C_b$, the edge $(i,j)$ exists independently with probability $B_{"ab"}$:
+      $P((i,j) in E) = B_{"ab"}$.
+  
+  Special cases include:
+  - *Intra-block probabilities*: $B_{"aa"}$, the probability of connection between nodes within the same community.
+  - *Inter-block probabilities*: $B_{"ab"}$, $a eq.not b$, the probability of connection between nodes of different communities.
+  
+  SBM generalizes the Erdős–Rényi random graph, which corresponds to the case $K=1$.
+] <def:sbm>
 
 === Overlay management
+// overlay can be managed from above (centralized) but not realistic for p2p network
+// need a way to define the topology in a decentralized manner
+// usually determistic topology (like ring or tree) are build using a structured protocol that correspond to a structured network
+// on the contrary unstructured network that have no strong rules create random-like topologies
 
 ==== Structured network
 
 ==== Unstructured network
 
 === Dynamic Networks
+// real networks are not static
+// some node enter and exit the network
+// the number of nodes increase
+// some nodes experience failures
 
 ==== Failures
 
 ==== Churn
 
-=== Security
+// === Security
 
 === Metrics
 
