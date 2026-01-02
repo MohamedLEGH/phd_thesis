@@ -757,7 +757,7 @@ As part of our work, we focus on the peer sampling service, which constitutes a 
 
 
 
-== Peer sampling
+== Peer sampling in Unstructured Networks: Review of literature
 
 A peer sampling service provides each node with addresses of other nodes in the network, thereby enabling communication and maintaining connectivity. Indeed, it is often impractical or impossible for a node to store the addresses of all other nodes in the network in memory, particularly in peer-to-peer networks, which can often contain several hundred thousand nodes. Furthermore, these nodes do not necessarily remain connected all the time, and the number of nodes in the network fluctuates constantly. Each node will therefore only maintain a limited number of addresses of other nodes in the network, known as the partial view or neighbor list of each node. There is therefore a need for a service that allows us to connect to other nodes in the network, particularly given the risk that all our neighbors may be disconnected and that we may thus find ourselves disconnected from the network due to a lack of neighbors with whom to communicate.
 Typically, the objective of a peer sampling service is to supply node addresses that are as random and uniformly distributed as possible, so as to avoid structural bias and network partitioning.
@@ -921,7 +921,7 @@ Readers who wish to explore gossip networks in more depth can refer to this surv
 
 All the previously discussed protocols primarily aim at constructing random k-out graph topologies, in which each node maintains approximately k outgoing links and the distribution of incoming degrees follows a binomial law centered around k. Such topologies are known for their strong resilience to node crashes and churn: even when a large fraction of nodes fail or leave the system, the overlay graph remains connected with high probability. However, this robustness comes at a cost in terms of performance. In particular, information dissemination may be suboptimal, and some nodes can experience relatively high incoming degrees, leading to increased load. In contrast, alternative overlay structures introduce heterogeneity in the distribution of incoming degrees. These include power-law networks, where the degree distribution follows an exponential or heavy-tailed law, and scale-free networks, whose structure scales with the number of nodes in a self-similar manner. Although such topologies are generally less resilient to failures and churn, they often provide better performance for information dissemination, as highly connected nodes act as hubs that can rapidly spread information throughout the network.
 
-=== Power-law networks
+=== Peer sampling in Power-law networks
 
 // Gia
 Gia @chawathe2003making is an unstructured peer-to-peer overlay designed to address the scalability limitations of early Gnutella-like systems by explicitly accounting for heterogeneity in node capacities. Unlike structured overlays or DHT-based systems, Gia preserves the flexibility and robustness of unstructured networks while introducing mechanisms that significantly improve query efficiency and load management. The system is built around the notion of supernodes, although this role is not statically assigned: instead, nodes with higher capacity naturally emerge as better connected and more central in the overlay.
@@ -1073,16 +1073,11 @@ Fasino et al. (2021) @fasino2021generating present a method for generating large
 
 Meng and Zhou (2023) @meng2023scale revisit the concept of scale-free networks by highlighting the distinction between the degree distribution (DD) and the degree–degree distance distribution (DDDD). They show that networks exhibiting a power-law DD form only a subset of those with power-law DDDD, and that some networks may have non-power-law DD but still display power-law DDDD. The authors propose two models: a no-growth preferential attachment model, in which nodes are fixed and links are added internally based on degree-dependent probabilities, and a fitness-based model, where links form deterministically if the sum of node fitnesses exceeds a threshold. These approaches emphasize that network structure can emerge from internal rewiring or node fitness rather than growth, and suggest that DDDD provides a more comprehensive measure of scale-free properties than traditional degree distributions. The models are non-decentralized and do not consider churn.
 
+== Conclusion
+
 Over the past two decades, research on peer-to-peer and complex network topologies has explored multiple directions, ranging from classical random graph constructions to scale-free networks with power-law degree distributions. Various approaches have been considered, including algorithms that rely on global knowledge of the network and fully decentralized mechanisms, as well as techniques that impose limitations on hub formation to avoid overload. Studies have addressed both static and dynamic networks, examined the impact of node failures and churn, and compared multiple network models in terms of efficiency, robustness, and search performance. Despite this extensive body of work, significant challenges remain. In particular, there is still a need for fully decentralized networks that allow hubs to emerge naturally while maintaining resilience to failures and churn, achieving ultra-low diameters (e.g., diameter 2), and providing efficient routing and connectivity without centralized control. In the next chapter, we present our contributions toward designing such a network, combining self-organization, robustness, and minimal diameter within a decentralized framework.
 
-// == Metrics
-
-// == Use-cases
-// == History
-// == Graph theory
 // == Security
-
-// == Fault-tolerance
 // == Asynchronous communications
 
 // Brahms
