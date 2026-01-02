@@ -8,6 +8,7 @@
 // #import cosmos.clouds: *
 #show: show-theorion
 
+// = Decentralized Peer Sampling in Overlay Peer-to-Peer Networks <chap:p2p>
 = Peer-to-Peer Networks <chap:p2p>
 #grid(
   columns: (1fr, 1fr),
@@ -99,17 +100,14 @@ By combining the guarantees of blockchain immutability, the programmability of s
 // airdrop
 // AirTag
 
-All of the peer-to-peer networks discussed so far are built on top of the IP layer, and therefore operate as overlay networks — virtual topologies that sit above the underlying Internet infrastructure. Later in this chapter, we will examine in detail how overlay networks function. It is worth noting, however, that decentralized communication networks can also be deployed without relying on the Internet — for instance, through Wi-Fi Direct #footnote[https://en.wikipedia.org/wiki/Wi-Fi_Direct] to form local mesh networks #footnote[https://en.wikipedia.org/wiki/Mesh_networking], via 5G Device-to-Device (D2D) communication, or even using technologies such as Bluetooth Mesh #footnote[https://en.wikipedia.org/wiki/Bluetooth_mesh_networking] or Meshtatic #footnote[https://meshtastic.org/].
-
 // Throughout this chapter, we examine key characteristics of peer-to-peer networks—such as network structure, communication patterns, peer discovery, fault-tolerance and performance metrics—which will allow us to define a taxonomy of these networks.
 
 // In the remainder of this chapter, we will examine some key technical characteristics of peer-to-peer networks, with particular emphasis on unstructured networks.
 
 == Core concepts
+All of the peer-to-peer networks discussed so far are built on top of the IP layer, and therefore operate as overlay networks — virtual topologies that sit above the underlying Internet infrastructure. Later in this chapter, we will examine in detail how overlay networks function. It is worth noting, however, that decentralized communication networks can also be deployed without relying on the Internet — for instance, through Wi-Fi Direct #footnote[https://en.wikipedia.org/wiki/Wi-Fi_Direct] to form local mesh networks #footnote[https://en.wikipedia.org/wiki/Mesh_networking], via 5G Device-to-Device (D2D) communication, or even using technologies such as Bluetooth Mesh #footnote[https://en.wikipedia.org/wiki/Bluetooth_mesh_networking] or Meshtatic #footnote[https://meshtastic.org/]. One might wonder why we are interested in overlay networks. The motivation is straightforward. A physical network is typically static and simple—for example, a local network with a router, a computer, and possibly a printer—and its capabilities are largely fixed at creation. Modifying such a network requires physical changes to connections, which is cumbersome. In contrast, an overlay network is implemented on top of a physical network, so changes can be made through software, simply by modifying the protocol. This flexibility has driven the widespread adoption of overlay networks. The ability to easily reconfigure the network is particularly important for peer-to-peer systems, which require highly dynamic structures. While it is theoretically possible to implement a P2P protocol at the physical network level, doing so is complex and resource-intensive, whereas deploying it as an overlay network is simpler, faster, and more practical. An overlay network can also be implemented on top of a network that is itself an overlay network, such as the Lightning Network @poon2016bitcoin, which is on top of the Bitcoin network (itself on top of IP).
 
-=== Overlay Networks
-
-One might wonder why we are interested in overlay networks. The motivation is straightforward. A physical network is typically static and simple—for example, a local network with a router, a computer, and possibly a printer—and its capabilities are largely fixed at creation. Modifying such a network requires physical changes to connections, which is cumbersome. In contrast, an overlay network is implemented on top of a physical network, so changes can be made through software, simply by modifying the protocol. This flexibility has driven the widespread adoption of overlay networks. The ability to easily reconfigure the network is particularly important for peer-to-peer systems, which require highly dynamic structures. While it is theoretically possible to implement a P2P protocol at the physical network level, doing so is complex and resource-intensive, whereas deploying it as an overlay network is simpler, faster, and more practical. An overlay network can also be implemented on top of a network that is itself an overlay network, such as the Lightning Network, which is on top of the Bitcoin network (itself on top of IP).
+// === Overlay Networks
 
 #definition(title: "Overlay Network")[
   An overlay network is a logical computer network that is layered on top of a physical network, where nodes establish virtual links that may not correspond to direct physical connections, enabling flexible routing, topology management, and distributed services. It is assumed that each participant in the network has a unique identifier (such as an IP address) and that it is sufficient to know the identifier of another node in order to contact it (send it a message).
@@ -129,7 +127,27 @@ Generally, a node in a network does not have knowledge of all other nodes, as st
   In Bitcoin, even if the size of the network is more than 10 000 nodes, each node typically knows only about a hundred addresses, some of which are obtained by contacting a peer discovery service (DNS seed) that provides the initial addresses to connect to.
 ]
 
-=== Graph theory
+Peer-to-peer networks are rarely static. They are typically open systems in which nodes can join or leave at any time, either voluntarily or due to failures, network conditions, or resource constraints. As a result, the set of connections between participants continuously evolves, giving rise to what is commonly referred to as a dynamic network. Studying dynamic networks is inherently more challenging than studying static ones, since the topology is no longer fixed and must be described as a process evolving over time, which complicates both modeling and simulation. Nevertheless, dynamic networks provide a much more realistic representation of real-world peer-to-peer systems, where churn, failures, and protocol-driven topology changes are fundamental characteristics rather than exceptions.
+
+#definition(title: "Dynamic Network")[
+  A dynamic network is a network whose set of connections evolves over time. Links between nodes may be created, removed, or modified as a result of the protocol’s operation, node arrivals and departures, or failures within the network. As a consequence, the network topology is not fixed and must continuously adapt to changes in connectivity and participation.
+] <def:dynamic-network>
+
+#example[
+  In the Lightning Network, every time two users open a payment channel, a new connection is created in the overlay network. Conversely, closing a channel removes the corresponding connection. The number and the nature of channels continuously evolve, making the Lightning Network a highly dynamic overlay.
+]
+
+// In peer-to-peer networks, nodes are typically autonomous and can join or leave at any time. This openness makes the network highly dynamic, but also susceptible to failures. Among these, crash failures are significant to consider: they occur when a node suddenly becomes unable to communicate or process requests, effectively ceasing to participate in the network. Studying crash failures is crucial because they can break communication paths, reduce the network's connectivity, and impact the efficiency of routing or data dissemination. Understanding how networks tolerate such failures helps in designing more resilient and fault-tolerant overlay protocols.
+In peer-to-peer networks, nodes are typically autonomous and can join or leave at any time. This openness makes the network highly dynamic, but also susceptible to failures. Among these, crash failures are significant to consider: they occur when a node suddenly becomes unable to communicate or process requests, effectively ceasing to participate in the network. In addition, P2P networks experience churn, the continual process of nodes entering and leaving the network. The churn rate, often expressed as the percentage of nodes joining or leaving per cycle, is an important metric because high churn can disrupt connectivity, delay routing, and complicate data dissemination. Newly joining nodes must initialize themselves in the network, acquiring a partial view and performing any protocol-specific procedures to participate correctly. Studying crash failures and churn is crucial because a peer-to-peer network must be resilient to a high churn rate if it is to be deployed and used reliably in real-world scenarios.
+
+#definition(title: "Crash Failure")[
+  A crash failure is an event in which a node in the network stops functioning correctly, meaning it can no longer respond to messages or process requests. This can occur because the node is turned off, disconnected from the network, or overloaded (e.g., CPU saturation). A node experiencing a crash failure is effectively removed from the network until it recovers.
+] <def:crash-failure>
+
+#definition(title: "Churn")[
+Churn in a peer-to-peer network refers to the dynamic process of nodes joining and leaving the network. The churn rate is defined as the percentage of nodes that enter or exit the network during a given cycle. Nodes that leave are considered disconnected, similarly to a crash failure, while newly joining nodes must initialize themselves in the network, acquiring a partial view and performing any protocol-specific procedures required for participation.
+] <def:churn>
+// === Graph theory
 
 In order to study overlay networks, it is useful to adopt a mathematical representation that allows formalizing and comparing their properties. Graph theory provides a natural framework for this purpose. A network can be represented as a graph, where nodes correspond to servers or users, and edges represent connections between them. Depending on the nature of the connections, a network can be modeled as either undirected or directed: bidirectional connections (e.g., TCP connections) are naturally represented by undirected edges, while unidirectional connections (e.g., UDP connections) are better captured by directed edges. In overlay networks, edges do not correspond to direct physical connections, but rather to a node's virtual view of the network—that is, the subset of nodes that each node is aware of.
 #definition(title: "Undirected Graph")[
@@ -168,6 +186,147 @@ node((1,0),"", name: "2", radius: 1em)
 edge("->")
 node((1,1),"", name: "3", radius: 1em)
 })
+
+In many real-world systems, networks are not static objects but evolve continuously over time. Nodes may join or leave the network, and connections between nodes can appear or disappear as a result of failures, mobility, or protocol decisions. Static graph representations are therefore insufficient to capture the behavior of such systems. Dynamic graphs, also called temporal graphs, extend classical graph models by explicitly incorporating time, allowing the structure of the network to change over time. This formalism is particularly well suited to represent evolving processes such as peer-to-peer networks, social interactions, communication systems, or distributed protocols, where both the set of participants and their connections are inherently dynamic.
+
+#definition(title: "Dynamic (Temporal) Graph")[
+  A dynamic graph is a time-dependent graph $G = (V, E, T)$:
+  - $V$, a set of vertices (also called nodes);
+  - $T$, a time domain (discrete or continuous);
+  - $E subset.eq V times V times T$, a set of temporal edges, where an edge $(u, v, t)$ indicates that a connection between vertices $u$ and $v$ exists at time $t$.
+]
+<def:dynamic-graph>
+
+Markov chains provide a convenient mathematical framework to model the evolution of systems that change over time in a stochastic manner. A discrete-time Markov chain is defined as a sequence of random variables, where the state of the system at time $t+1$ depends only on its state at time $t$, a property known as the Markov property. In the context of peer-to-peer networks, discrete-time Markov chains are often used to model the evolution of the underlying dynamic graph, where each time step corresponds to a protocol round and the state represents the network topology or, more commonly, the local view of nodes. Node arrivals and departures (churn), link creation and removal, or neighbor exchanges can be captured through transition probabilities between states. This modeling approach enables the study of important properties such as convergence toward a stable or stationary distribution, which corresponds to a steady-state network topology, as well as the expected convergence time (or mixing time), which measures how quickly the network reaches this stable behavior. Such analyses are particularly useful to evaluate the robustness, scalability, and efficiency of decentralized overlay management protocols.
+
+#definition(title: "Discrete-Time Markov Chain")[
+  A discrete-time Markov chain (DTMC) is a stochastic process
+  $(X_t)_{t >= 0}$ taking values in a finite or countable state space
+  $S$, such that for all states $i, j in S$ and all
+  times $t >= 0$,
+  
+  $
+  P(X_{t+1} = j | X_t = i, X_{t-1}, ..., X_0)
+  =
+  P(X_{t+1} = j | X_t = i).
+  $
+
+  The dynamics of the chain are fully described by a transition matrix
+  $P = (p_"ij")$, where
+
+  $
+  p_"ij" = P(X_{t+1} = j | X_t = i).
+  $
+
+  Let $pi_t$ denote the probability distribution over states at time $t$.
+  The evolution of the system is given by
+
+  $
+  pi_"t+1" = pi_t P,
+  $
+
+  and, by induction,
+
+  $
+  pi_t = pi_0 P^t.
+  $
+
+  A distribution $pi$ is called a stationary (or stable) distribution if it
+  satisfies
+
+  $
+  pi = pi P,
+  $
+
+  and, when the chain is irreducible and aperiodic, the distribution $pi_t$
+  converges to $pi$ independently of the initial distribution $pi_0$:
+
+  $
+  lim_{t -> infinity} pi_0 P^t = pi.
+  $
+
+  The convergence speed is characterized by the mixing time, defined as
+
+  $
+  t_"mix"(epsilon)
+  =
+  min  t : max_pi_0 || pi_0 P^t - pi ||_"TV" <= epsilon \},
+  $
+
+  where $|| . ||_"TV"$ denotes the total variation distance.
+] <def:markov-chain>
+
+#example[
+  A simple discrete-time Markov chain with 2 states, denoted 1 and 2. From state 1, the system remains in the same state with probability 0.8 and transitions to state 2 with probability 0.2. State 2 is an absorbing state, since once it is reached, the system stays in this state with probability 1 and no transition back to state 1 is possible. As a consequence, the chain converges with probability 1 to state 2, independently of the initial state. 
+]
+#figure(diagram(
+	node-stroke: .1em,
+	node-fill: blue.lighten(60%),
+	// node-fill: gradient.radial(blue.lighten(80%), blue, center: (30%, 20%), radius: 80%),
+	spacing: 4em,
+	node((1,0), `1`, radius: 2em),
+	node((2,0), `2`, radius: 2em, extrude: (-2.5, 0)),
+	edge((1,0), (1,0), `0.8`, "-|>", bend: 130deg),
+	edge((2,0), (2,0), `1`, "-|>", bend: 130deg),
+	edge((1,0), (2,0), `0.2`, "-|>", bend: -40deg),
+),
+  // caption: [An example of Markov chain.],
+) <markov-chain-example>
+
+==== Metrics
+In a peer-to-peer network, the state of the network at a given instant can be represented as a graph, and we can compute various metrics on this graph to characterize its structure. Calculating these metrics is crucial to understand the network's properties, monitor its evolution over time, and compare different protocols. Metrics provide insights into connectivity, resilience, efficiency, and overall behavior of the network. Commonly used metrics include the indegree and outdegree distributions, the network diameter, the average path length, and the clustering coefficient, among others.
+
+The *indegree* and *outdegree* distributions are fundamental metrics that describe how connections are distributed among nodes. The outdegree distribution corresponds to the number of outgoing connections each node maintains, which in most peer-to-peer protocols reflects the size of each node's partial view. Consequently, the outdegree is often uniform across nodes and remains stable over time. In contrast, the indegree distribution represents the number of incoming connections a node receives and can vary significantly, especially in networks with dynamic topologies or evolving hubs. Monitoring the indegree distribution over time provides valuable insights into how the network adapts, which nodes are highly connected, and how load or influence is distributed.
+#definition(title: "Indegree and Outdegree Distributions")[
+  The *indegree (resp. outdegree) distribution* of a network represents the probability distribution of the number of incoming (resp. outgoing) connections of nodes over the entire network. In other words, it characterizes how the connections are spread among the nodes.
+  
+  - For a network following a random graph distribution (Erdős–Rényi model), the degree distribution follows
+    $P(k) = binom(n-1,k) p^k (1-p)^(n-1-k)$.
+  - For a network following a scale-free distribution (Barabási–Albert model), the degree distribution follows
+    $P(k) = C k^(-gamma)$, where $gamma$ is the power-law exponent and $C$ is a normalization constant.
+] <def:degree-distribution>
+
+The *clustering coefficient* is a fundamental metric in network analysis, as it measures the tendency of nodes to form tightly connected groups. Intuitively, it quantifies how likely it is that the neighbors of a node are also connected to each other. In random graphs, the clustering coefficient tends to be low because connections are made independently, whereas networks with hubs or communities usually exhibit a higher clustering coefficient. This metric provides insight into the local cohesiveness of the network and can reveal the presence of clusters or modular structures.
+
+#definition(title: "Clustering Coefficient")[
+The clustering coefficient 
+$C_i$ of a node $i$ is defined as the ratio between the number of edges connecting its neighbors and the total number of possible edges between them:
+$ C_i = (2e_i)/(k_(i)(k_i - 1)) $
+Where:
+- $e_i$ is the number of edges between the neighbors of node $i$ (i.e., the number of closed triangles including node $i$)
+- $k_i$ is the degree of node $i$, representing the total number of connections of that node.
+
+$ C = 1/n sum_(i=1)^(n) C_i $
+]
+
+The *average path length* of a network is an important metric that characterizes how efficiently information can be transmitted across the network. It corresponds to the mean of the shortest path lengths between all pairs of nodes. A small average path length indicates that any node can be reached from any other node in a relatively small number of steps, which is typical in small-world or scale-free networks. Conversely, in networks with long chains or sparse connectivity, the average path length tends to be larger.
+
+#definition(title: "Average Path Length")[
+The average path length $a$ of a network is defined as the mean of the shortest path lengths $d(s,t)$ between all pairs of distinct nodes $s$ and $t$ in the network:
+// s,t in V, s eq.not t
+
+$ a = sum_(s,t in V, s eq.not t) d(s,t)/(n(n-1)) $
+
+Where:
+- $V$ is the set of nodes in the network, with $|V| = n$
+- $d(s,t)$ is the length of the shortest path between nodes $s$ and $t$.
+]
+
+The *diameter* of a graph is a measure of the longest distance between any two vertices (nodes) in the graph, measured in terms of the number of edges. In other words, the diameter of a graph is the maximum shortest path between any pair of nodes in the network.
+
+While the average path length provides a basic measure of information dissemination efficiency in algorithms, it may overlook disparities in dissemination speed across different nodes within the network. An algorithm could potentially have a favorable average path length but still exhibit uneven dissemination speeds among nodes due to varying distances. Calculating the network's diameter, however, offers a more comprehensive assessment.
+
+#definition(title: "Diameter")[
+The diameter of a network $G$ is the length of the longest shortest path between any pair of nodes in the network:
+
+$
+"diam"(G) = max_(u,v in V) d(u, v)
+$
+
+Where:
+- $V$ is the set of nodes in the network
+- $d(u,v)$ is the length of the shortest path between nodes $u$ and $v$.
+]
 
 === Topology
 Network topology refers to the structural organization of a network, that is, the way nodes are interconnected and how links are arranged between them. In the context of overlay networks, topology is naturally described through the shape of the underlying graph, where nodes represent participants and edges represent logical connections. Different topologies lead to fundamentally different properties in terms of connectivity, robustness, routing efficiency, and scalability. Broadly, network topologies can be divided into two categories: deterministic and random. Deterministic topologies are defined by explicit construction rules that impose a fixed structure on the graph, such as stars, rings, trees, or meshes, where the presence of an edge is fully determined by the position or role of each node. In contrast, random topologies are generated according to probabilistic rules, where edges are created based on random processes or statistical constraints rather than fixed patterns. This category includes classical random graphs, as well as more advanced models from complex network theory such as small-world networks, power-law networks, and stochastic block models, which introduce community structure through probabilistic connection patterns. Random topologies are particularly relevant for modeling large-scale and dynamic peer-to-peer systems, where global coordination is impractical and network structure often emerges from local interactions.
@@ -467,32 +626,25 @@ In real-world networks, randomness often coexists with community structures. Sto
   SBM generalizes the Erdős–Rényi random graph, which corresponds to the case $K=1$.
 ] <def:sbm>
 
-=== Overlay management
-// overlay can be managed from above (centralized) but not realistic for p2p network
-// need a way to define the topology in a decentralized manner
-// usually determistic topology (like ring or tree) are build using a structured protocol that correspond to a structured network
-// on the contrary unstructured network that have no strong rules create random-like topologies
-
-==== Structured network
-
-==== Unstructured network
-
-=== Dynamic Networks
+// === Dynamic Networks
 // real networks are not static
 // some node enter and exit the network
 // the number of nodes increase
 // some nodes experience failures
 
-==== Failures
-
-==== Churn
+// ==== Failures
+// ==== Churn
 
 // === Security
 
 === Metrics
+// distribution of outdegree
+// distribution of indegree
+// diameter
+// average path length
+// clustering coefficient
 
-== Structured vs Unstructured Networks
-
+=== Overlay management
 #grid(
   columns: (1fr, 1fr),
 [#figure(
@@ -530,11 +682,20 @@ edge(label("1"),"-", stroke: 1pt)
 ) <p2p-structured>]
 )
 
-
+// overlay can be managed from above (centralized) but not realistic for p2p network
+// need a way to define the topology in a decentralized manner
+// usually determistic topology (like ring or tree) are build using a structured protocol that correspond to a structured network
+// on the contrary unstructured network that have no strong rules create random-like topologies
+Overlay management refers to the mechanisms used to construct, maintain, and adapt the logical topology of an overlay network. In centralized approaches, a single entity (or a small set of entities) is responsible for managing the network structure, which naturally leads to star or multi-star topologies. While such solutions are simple and efficient, they are not desirable in peer-to-peer systems, where decentralization, fault tolerance, and the absence of a single point of failure are key design goals. Consequently, overlay management in peer-to-peer networks must be performed in a fully decentralized manner.
 Peer-to-peer networks can be broadly divided into two categories: structured and unstructured networks. 
-As their name suggests, structured networks rely on a predefined and strictly enforced organization of the network topology. 
+// As their name suggests, structured networks rely on a predefined and strictly enforced organization of the network topology. 
 This organization is dictated by a protocol that constrains how nodes join, connect, and interact within the system.
 
+In structured peer-to-peer systems, overlay management is typically driven by deterministic rules, most often based on Distributed Hash Tables (DHTs). These systems enforce precise neighbor selection and routing constraints, resulting in deterministic topologies such as rings or hierarchical structures. In contrast, unstructured peer-to-peer systems do not impose strict placement or routing rules. Overlay management in such systems relies on randomized or adaptive neighbor selection, leading to random, small-world, or scale-free (power-law) topologies.
+
+Beyond topology construction, overlay management must continuously cope with network dynamics, including node arrivals, departures, and failures (churn), while preserving key properties such as connectivity, bounded diameter, load balancing, and robustness. The design of overlay management protocols therefore represents a trade-off between structural guarantees, scalability, maintenance overhead, and resilience to failures.
+
+==== Structured networks
 In structured networks, each node is assigned a logical identifier, often derived from a hash function, and connections are established according to this identifier space. 
 As a result, the network forms a well-defined topology that enables deterministic and efficient routing, typically with logarithmic complexity in the number of nodes.
 
@@ -574,6 +735,8 @@ Not all structured networks are based on DHTs. For example, Tiara @clouser2012ti
 While structured networks, and in particular Kademlia, have been widely adopted in peer-to-peer systems for their scalability and efficient lookup guarantees, they exhibit limitations in highly dynamic environments. 
 Under extreme churn, the continuous maintenance of routing tables, neighbor sets, and replicated data can introduce significant overhead and may temporarily compromise routing consistency. 
 These challenges have motivated the exploration of alternative designs based on unstructured peer-to-peer networks. 
+
+==== Unstructured network
 Unlike structured systems, unstructured networks do not impose a predefined topology or DHT-based organization; instead, nodes establish and maintain connections in an ad-hoc fashion or rely on peer-sampling services to dynamically discover peers, favoring resilience and adaptability over deterministic lookup guarantees.
 
 // Unstructured peer-to-peer (P2P) networks constitute an alternative to structured overlay networks when flexibility and robustness under highly dynamic conditions are prioritized over strict lookup guarantees. 
@@ -585,6 +748,14 @@ A core component of such systems is the _peer sampling service_, whose role is t
 In addition to peer sampling, unstructured P2P networks typically require several complementary services. _Membership management_ mechanisms are used to handle node arrivals and departures, ensuring that local neighbor sets remain up-to-date. _Neighbor selection and topology management_ strategies may be employed to shape the overlay according to specific objectives, such as latency reduction or load balancing.
 Furthermore, _information dissemination services_, often based on gossip or epidemic protocols, enable efficient broadcast, aggregation, and synchronization of state across the network. Finally, _resource discovery_ in unstructured networks generally relies on probabilistic techniques such as flooding, random walks, or gossip-based search, trading deterministic guarantees for scalability and resilience. Together, these services allow unstructured peer-to-peer networks to operate efficiently in highly dynamic and decentralized environments, making them particularly suitable for large-scale systems where strict structural maintenance would be costly or impractical.
 As part of our work, we focus on the peer sampling service, which constitutes a fundamental building block of unstructured peer-to-peer systems. 
+
+
+// == Structured vs Unstructured Networks
+
+
+
+
+
 
 == Peer sampling
 
