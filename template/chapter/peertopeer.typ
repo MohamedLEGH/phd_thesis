@@ -632,17 +632,7 @@ In real-world networks, randomness often coexists with community structures. Sto
 // the number of nodes increase
 // some nodes experience failures
 
-// ==== Failures
-// ==== Churn
-
 // === Security
-
-=== Metrics
-// distribution of outdegree
-// distribution of indegree
-// diameter
-// average path length
-// clustering coefficient
 
 === Overlay management
 #grid(
