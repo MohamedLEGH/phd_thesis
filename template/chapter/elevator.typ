@@ -182,7 +182,6 @@ We first evaluate the probability that $i$ appears in the list of successors of 
 
 Since the network contains $N$ nodes in total, and there are $c-h$ remaining slots in the list of successors of $m$ (the $h$ hub positions are already occupied), the probability that $i$ appears in this list can be written as:
 $Pr[i in "Succ"(m)] approx (c-h)/N.$
-]
 
 Here we assume independence in the selection of the $c-h$ nodes, which is not strictly true (as once a node has been chosen as a successor, it cannot be selected again). However, this approximation becomes reasonable when $N$ is large.
 
@@ -202,6 +201,87 @@ is approximately
 $
 p_1 approx (c-h)/N,
 $ using the large-$N$ approximation (independent sampling without replacement $approx$ with replacement).
+
+Assuming independence across the $c$ successors of $n$, the probability that $i$ belongs to _all_ those successor-lists is
+$
+p_2 approx p_1^c = ((c-h)/N)^c.
+$
+
+Thus the expected number (or by union bound, an upper bound on the probability) that _at least one_ non-hub $i$ satisfies this property for node $n$ is bounded by
+$
+(N-h)p_2 = (N-h)((c-h)/(N))^c.
+$
+
+If we now take the union over all $N$ nodes $n$ (assuming independence for an upper bound), we obtain an upper bound on the probability that some cache (in the whole network) receives such a random node that could replace an existing hub:
+$
+P_["new potential hub"] approx N (N-h) ((c-h)/N)^c.
+$ <eq:P_replace>
+
+This quantity is to be interpreted as a (pessimistic) upper bound on the probability that a potential hub appears at random and replaces an existing hub during one cycle.
+
+Assume that $c << N$ and $h << N$. Then the probability that a new potential hub appears, as computed in Equation @eq:P_replace, is very low. Consequently, the complementary probability, i.e., that no new potential hub appears, is practically equal to 1.
+
+Suppose a new potential hub does appear. This event can at most reduce the number of hubs for a single cycle, because the new potential hub affects only one node's cache. In the subsequent cycle, when this node updates its cache using the Elevator algorithm, it selects the same list of potential hubs as all other nodes, restoring the set of hubs to its previous configuration.
+
+Furthermore, the probability that a new potential hub appears in two consecutive cycles is approximately the square of the already small probability, making it even less likely. Therefore, we can safely neglect these events and conclude that, with high probability, the number of hubs cannot decrease after convergence.
+
+Finally, we consider the scenario where a potential hub is elected randomly by all nodes in the network, and this potential hub has an ID smaller than one of the existing hubs. In this case, the potential hub may replace an existing hub, causing the set of hubs to change. To prove (iii), we need to prove that with high probability, this scenario will not happen.
+
+We aim to compute the probability $p(x)$ that the intersection of all $N$ subsets $A_k$ contains exactly $x$ elements, where $x in \{0, 1, dots, m}$, and $m=c-h$.
+
+We first define $q(x)$, the probability that the intersection of the $N$ subsets $A_k$ contains at least $x$ elements:
+$
+q(x) = (binom(n,x) dot (binom(n-x,m-x))^N)/( binom(n,m))^N,
+$
+where
+    - $binom(n,x)$ is the number of ways to choose the $x$ elements that are common to all subsets $A_k$,
+    - $binom(n - x,m - x)$ is the number of ways to choose the remaining $m - x$ elements for each subset $A_k$, ensuring that the $x$ common elements are included,
+    - $binom(n,m)$ is the total number of ways to choose $m$ elements for each subset $A_k$.
+
+The probability $p(x)$ that the intersection contains exactly $x$ elements is then
+$
+p(x) = q(x) - q(x+1), quad x = 0, 1, dots, m-1,
+$
+and for the special case $x = m$:
+$
+p(m) = q(m) = 1/( binom(n,m))^(N-1).
+$
+
+Here,
+    - $q(x)$ is the probability that the intersection contains at least $x$ elements,
+    - $q(x+1)$ is the probability that the intersection contains at least $x+1$ elements,
+    - Subtracting $q(x+1)$ from $q(x)$ yields the probability that the intersection contains exactly $x$ elements.
+
+
+The probability that a new potential hub replaces an existing hub is extremely small for typical parameters $c << N$ and $h << N$.
+
+Indeed, we have
+$
+q(0) = P[X gt.eq 0],
+$
+which is the probability that there are at least 0 elements common to all subsets $A_k$. This can be computed as
+$
+q(0) = (binom(n,0)(binom(n,m))^N)/(binom(n,m) )^N.
+$
+
+Since
+$
+binom(n,0) = 1,
+$
+we obtain
+$
+q(0) = (1 dot (binom(n,m))^N)/(binom(n,m) )^N = 1.
+$
+
+For the other values, such as $q(1), q(2), dots$, these probabilities are extremely small when $c << N$ and $h << N$. Therefore, we have
+$
+p(0) = q(0) - q(1) approx 1,
+$
+where $p(0)$ represents the probability that the set of hubs does not change. This shows that, with very high probability, a randomly selected potential hub cannot replace any existing hub, confirming the stability of the set of hubs in the network.
+
+Combining these three cases, we conclude that the Elevator algorithm is stable: once the network has converged to $h$ hubs, this set remains unchanged with high probability in subsequent cycles.
+
+]
 
 == Simulation-Based Evaluation
 
