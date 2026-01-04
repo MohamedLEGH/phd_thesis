@@ -560,7 +560,203 @@ table(
 ), caption: [Cycles to reach $N$ for different values of $h$.],
 ) <timeh>
 
-
 == Simulation-Based Evaluation
 
+We evaluate our proposal by carrying out a simulation campaign.
+All simulations use the Java *PeerSim* simulator @p2p09-peersim.
+We have modified the simulator to add parallelism to accelerate computations.
+With Peersim, we implemented our algorithm Elevator, and state-of-the-art PROOFS @stavrou2004lightweight and Phenix @wouhaybi2004phenix algorithms [^elevator].
+Also, we used the implementation of Newscast provided by PeerSim.
+// A detailed description of these algorithms can be found in Appendix @sec:algorithms.
+We compared the performance of Elevator with these 3 algorithms.
+We chose to compare our proposed algorithm to these three algorithms as they are widely used in the literature.
+Newscast is used for gossip learning @ormandi2013gossip, PROOFS is a foundational algorithm, as Secure Cyclon @antonov2023securecyclon, one of the latest peer sampling algorithm in the literature, is based on Cyclon @voulgaris2005cyclon, itself based on PROOFS.
+Phenix is interesting as it has especially been conceived to be resilient to failures and Byzantine attacks and also to construct networks that have a low diameter.
+We did not include recent algorithms @xie2008scale; @bulut2013constructing; @lynn2024emergent that primarily focus on improving the power law distribution of the in-degrees @xie2008scale; @bulut2013constructing; @lynn2024emergent, as they are expected to behave similarly to Phenix [@wouhaybi2004phenix].
+
+[^elevator]: https://gitlab.lip6.fr/legheraba/elevator
+
+All simulations were run with a network of size *n* = 1000.
+As the Phenix network needs a growing network to work, we started the Phenix algorithm with a network size of 20 and capped the size of the network to 1000.
+The simulations were run during 1000 cycles, and we repeated each simulation 100 times.
+All simulations were started with a network initialized as a $k$-out random graph, with $k = c = 20$.
+All simulations were run on 16 vCPU, using 64G of memory, on a cluster composed of 10 servers, described in Table @table-cluster.
+
+#figure(
+  table(
+    columns: 4,
+    align: center,
+    table.header(
+      [Machine], [Memory], [Processors], [Cores]
+    ),
+    [DELL PowerEdge XE8545], [2 To], [2 x AMD EPYC 7543], [128 threads @ 2.80 GHz],
+    [DELL PowerEdge R750xa], [2 To], [2 x Intel Xeon Gold 6330], [112 threads @ 2.00 GHz],
+  ),
+  caption: [Description of the cluster],
+) <table-cluster>
+
+We evaluated the following metrics: in-degree distribution, clustering coefficient, average shortest path length, and diameter.
+
+The degree distributions of Newscast and PROOFS exhibit patterns akin to a normal distribution.
+We see similar results for Elevator, except for a distinct group of 10 hubs with an in-degree of 999.
+By contrast, the Phenix protocol's degree distribution conforms to a power-law distribution.
+
+PROOFS and Newscast maintain a low clustering coefficient during all simulations, as seen in Figure @fig:ClustCoef.
+On the contrary, Phenix and Elevator have both a clustering coefficient of around 0.6.
+For Phenix, the value is related to the power-law distribution of in-degree, and for Elevator, the value is linked to the presence of hubs, that are connected to everyone, and this automatically increases the value of the coefficient.
+
+As we can see in Figure @fig:AveragePathLength, Elevator has a very low average path length, with a value below 2.
+This value is due to the presence of hubs in the network, that permit to have a maximum distance of 2 between any 2 nodes.
+Phenix has the same value.
+PROOFS is very close, with a value around 2.15 and Newscast is a bit below 2.6.
+All these values are very good and thus we need to compute the diameter to discriminate between algorithms.
+
+In Figure @fig:Diameter, we see that Elevator gives a network with a diameter equal to 2.
+Again, this value is due to the presence of hubs in the network.
+The Phenix algorithm yields similar results.
+This is better than PROOFS and Newscast, which output respectively 3 and 4 for this metric.
+
+We also compared the algorithms according to their resilience to crashes, churn, and attacks on hubs, as shown below.
+// Additional results and the accompanying figures are included in the Appendix @sec:figures.
+
+=== Resilience to crashes
+
+We analyze the performance of the four algorithms when the network suffers crashes.
+To simulate a brutal failure we disconnected 50% of the nodes in the middle of the simulation, *i.e.*, in this case, we have disconnected 500 nodes at cycle 500 (as there are 1000 nodes in total and 1000 cycles).
+
+The performance of Elevator is not affected, as the in-degree distribution is still the same, and we have 10 hubs with an in-degree of 499.
+The degree distribution is also the same for Newscast and PROOFS.
+For Phenix, the degree distribution remains the same, with values going to a max of 999, even if there are only 500 nodes in the network.
+It's because the nodes have kept in their cache the addresses of (old) nodes who are no longer in the network.
+In Figure @fig:ClustCoefCrash, the clustering coefficient evolution shows that it is not affected by the crashes, as we have almost the same results as those obtained without a crash.
+The same observation holds for the average path length and the diameter, as we can see in Figures @fig:AveragePathLengthCrash and @fig:DiameterCrash.
+
+=== Resilience to churn
+
+We now analyze the performance of the four algorithms when the network is subject to churn.
+To simulate churn, we disconnected 10% of the nodes at each cycle and replaced them with the same amount of new nodes, each connected to 20 nodes uniformly at random.
+The churn occurs during 500 cycles, between cycle n°250 and cycle n°750.
+As the Phenix algorithm needs a growing network to work, the way we implement churn differs.
+Following previous work [@wouhaybi2004phenix], in the case of Phenix, we implement churn having the number of removed nodes less than the number of added nodes at each cycle, assuming nodes are removed following a normal distribution $cal(N)(0,1)$, for all cycles of the simulation.
+
+The in-degree distribution of Elevator remains the same, with 10 hubs.
+PROOFS seems affected by churn, as the mean degree distribution goes to 10 instead of 20 without churn.
+In Figure @fig:ClustCoefChurn we can observe that we have almost the same results as the results obtained without churn for the clustering coefficient.
+For the average path length, PROOFS is the most affected, with a value going from 2.25 without churn to a value of 2.5 with churn, and the value keep increasing after the end of the churn, going up to 2.75, as we can see in Figure @fig:AveragePathLengthChurn.
+In Figure @fig:DiameterChurn, we can see that the diameter varies with churn, with a mean going up to 3.25 instead of 2.0, but the values for Phenix and Elevator remain below the ones of Newscast and PROOFS.
+
+=== Resilience to hub-targeted attacks
+
+We hereby analyze the performance of the four algorithms after a targeted attack on the hubs during the execution of the simulation.
+To simulate a hub-targeted attack, we disconnected 10 nodes that have the highest in-degree in the middle of the simulated scenario.
+
+Logically, Newscast and PROOFS are not affected by the attack, as there are no hubs in the networks built by these algorithms.
+For Elevator, the in-degree distribution remains similar, with 10 high-in-degree peers that have each an in-degree of 989.
+We are thus confident in the capacity of our algorithm to promote new nodes to the position of hubs if the previous hubs were disconnected.
+In Figure @fig:ClustCoefCrashHub we can see that we have almost the same results as the results obtained without crashes for the clustering coefficient.
+Its the same for the average path length and the diameter, there is no impact, as we can see in Figure @fig:AveragePathLengthCrashHub and @fig:DiameterCrashHub.
+
+=== Summary
+
+We have compared the in-degree distribution of the network after the run of the Elevator algorithm for a various number of hubs in Figure @fig:degreeDistributionVariableNbHubs, and also for each context of simulation in Figure @fig:CompareContext.
+The shape of the degree distribution remains consistent across different hub counts, except for a scenario with 20 hubs where nodes exclusively connect to these hubs (resulting in a multi-star topology).
+This phenomenon aligns with the prescribed number of preferred connections (*h* = *c* = 20), where nodes exclusively link to elevated hub nodes, omitting random connections entirely.
+The shape of distribution also remains consistent across failure contexts.
+In Figure @fig:ElevatorContextCoefClust, @fig:ElevatorAveragePathLength and @fig:ElevatorDiameter, we compare Elevator across all contexts for the different metrics, and we can see that there are not many variations in values, as expected from the definition of our protocol and as seen in previous comparative analyses presented above.
+Another notable feature is that Elevator seems more stable than Phenix.
+This is because once the hubs are in place they do not change (except in the event of failures), which provides stability in terms of network diameter or average path length.
+
+#figure(
+  image("../../Images/Elevator/normal_1000_100xp_clustering_color.pdf", width: 85%),
+  caption: [Clustering coefficient computed during the simulation (no failures), for each algorithm, every 10 cycles],
+) <fig:ClustCoef>
+
+#figure(
+  image("../../Images/Elevator/normal_1000_100xp_average_path_color.pdf", width: 85%),
+  caption: [Average path length computed during the simulation (no failures), for each algorithm, every 10 cycles],
+) <fig:AveragePathLength>
+
+#figure(
+  image("../../Images/Elevator/normal_1000_100xp_diameter_color.pdf", width: 85%),
+  caption: [Diameter computed during the simulation (no failures), for each algorithm, every 10 cycles],
+) <fig:Diameter>
+
+#figure(
+  image("../../Images/Elevator/crash_1000_100xp_clustering_color.pdf", width: 85%),
+  caption: [Clustering coefficient computed with a 50% crash, for each algorithm, every 10 cycles],
+) <fig:ClustCoefCrash>
+
+#figure(
+  image("../../Images/Elevator/crash_1000_100xp_average_path_color.pdf", width: 85%),
+  caption: [Average path length computed with a 50% crash, for each algorithm, every 10 cycles],
+) <fig:AveragePathLengthCrash>
+
+#figure(
+  image("../../Images/Elevator/crash_1000_100xp_diameter_color.pdf", width: 85%),
+  caption: [Diameter computed with a 50% crash, for each algorithm, every 10 cycles],
+) <fig:DiameterCrash>
+
+#figure(
+  image("../../Images/Elevator/churn_1000_100xp_clustering_color.pdf", width: 85%),
+  caption: [Clustering coefficient computed with churn, for each algorithm, every 10 cycles],
+) <fig:ClustCoefChurn>
+
+#figure(
+  image("../../Images/Elevator/churn_1000_100xp_average_path_color.pdf", width: 85%),
+  caption: [Average path length computed with churn, for each algorithm, every 10 cycles],
+) <fig:AveragePathLengthChurn>
+
+#figure(
+  image("../../Images/Elevator/churn_1000_100xp_diameter_color.pdf", width: 85%),
+  caption: [Diameter computed with churn, for each algorithm, every 10 cycles],
+) <fig:DiameterChurn>
+
+#figure(
+  image("../../Images/Elevator/crash_hub_1000_100xp_clustering_color.pdf", width: 85%),
+  caption: [Clustering coefficient computed with a hub-targeted attack, for each algorithm, every 10 cycles],
+) <fig:ClustCoefCrashHub>
+
+#figure(
+  image("../../Images/Elevator/crash_hub_1000_100xp_average_path_color.pdf", width: 85%),
+  caption: [Average path length computed with a hub-targeted attack, for each algorithm, every 10 cycles],
+) <fig:AveragePathLengthCrashHub>
+
+#figure(
+  image("../../Images/Elevator/crash_hub_1000_100xp_diameter_color.pdf", width: 85%),
+  caption: [Diameter computed with a hub-targeted attack, for each algorithm, every 10 cycles],
+) <fig:DiameterCrashHub>
+
+#figure(
+  image("../../Images/Elevator/Elevator_1000_100xp_indegree_color.pdf", width: 85%),
+  caption: [In-degree distribution of the network, after the run of the Elevator algorithm, with a variable number of hubs (5 hubs, 10 hubs, 15 hubs, 20 hubs), no failures.],
+) <fig:degreeDistributionVariableNbHubs>
+
+#figure(
+  image("../../Images/Elevator/Elevator_context_1000_100xp_indegree_color.pdf", width: 85%),
+  caption: [In-degree distribution of the network, after the run of the Elevator algorithm, during each context (no failures, 50% crash, churn, and hub-targeted attack).],
+) <fig:CompareContext>
+
+#figure(
+  image("../../Images/Elevator/Elevator_context_1000_100xp_clustering_color.pdf", width: 85%),
+  caption: [Clustering of the network, after the run of the Elevator algorithm, during each context (no failures, 50% crash, churn, and hub-targeted attack).],
+) <fig:ElevatorContextCoefClust>
+
+#figure(
+  image("../../Images/Elevator/Elevator_context_1000_100xp_average_path_color.pdf", width: 85%),
+  caption: [Average path length of the network, after the run of the Elevator algorithm, during each context (no failures, 50% crash, churn, and hub-targeted attack).],
+) <fig:ElevatorAveragePathLength>
+
+#figure(
+  image("../../Images/Elevator/Elevator_context_1000_100xp_diameter_color.pdf", width: 85%),
+  caption: [Diameter of the network, after the run of the Elevator algorithm, during each context (no failures, 50% crash, churn, and hub-targeted attack).],
+) <fig:ElevatorDiameter>
+
+
 == Implementation over TCP/IP
+
+== Conclusion
+
+We proposed a novel peer sampling algorithm, Elevator, designed for unstructured P2P networks, which facilitates the organic promotion of specific nodes to serve as hubs. Our simulations confirm that the Elevator algorithm successfully maintains network connectivity, constructs networks with low diameters, achieves stability with a defined number of hubs (denoted as _h_), and demonstrates resilience against crashes, churn, and targeted attacks on hubs.
+The distinctive aspect of our work lies in our pursuit of developing an unstructured network model with inherent hub nodes. 
+We anticipate that this work will pave the way for a new category of algorithms known as "hub sampling algorithms", which could hold significant relevance for specific decentralized applications. For instance, such algorithms may accelerate the transmission of machine learning models in federated learning scenarios or automate the selection of validators in blockchain networks, thus potentially replacing the need for traditional proof-of-work protocols.
+While our current study does not delve into these specific use cases, we envision exploring federated learning applications within this network paradigm in future investigations. 
