@@ -283,6 +283,274 @@ Combining these three cases, we conclude that the Elevator algorithm is stable: 
 
 ]
 
+=== Convergence
+
+To reason about the convergence of the Elevator algorithm, we consider three possible scenarios after a protocol cycle:
+
+1. *Network disconnection:* the network becomes disconnected, in which case the system cannot converge to a stable state because nodes in different components cannot coordinate on a common set of hubs.
+
+2. *Multiple hub clusters:* two or more clusters form in the network, with each cluster choosing a distinct set of hubs. In this case, there is no convergence towards a stable state with a single set of $h$ hubs in the network.
+
+3. *Stable convergence:* the network converges towards a stable state with exactly $h$ hubs shared by all nodes.
+
+To prove convergence with high probability, it is therefore sufficient to show that the first two scenarios, i.e., network disconnection and formation of multiple hub clusters, are highly unlikely to occur in practice. Once these cases are ruled out, the system will converge to the stable set of $h$ hubs with high probability.
+
+#proposition[
+If the network contains at least one hub, then the network is strongly connected with high probability.
+] <prop:convergence1>
+
+#proof[
+The presence of at least one hub ensures that every node has an outgoing connection to the hub, which makes the network weakly connected. Additionally, each node has at least one random successor, chosen uniformly across the network, because each node requests a random incoming connection from the hub. Therefore, starting from any node $n$, any other node can be reached by following a sequence of random outgoing connections.
+
+It is possible that the network temporarily forms two or more clusters, in which case some nodes might not be reachable from others. However, this is unlikely:
+- If a node is in a small cluster, there is a high probability that it's random outgoing connection points to a node in another cluster.
+- If a node is in a big cluster, there are many nodes in its cluster, so it is likely that at least one node has a random outgoing connection to a node in another cluster.
+
+Even if after a protocol cycle the network is temporarily not strongly connected, it will regain strong connectivity with high probability in the next cycle, thanks to new random outgoing connections. Thus, the network may lose this property momentarily, but it will eventually recover it after a few cycles.
+]
+
+#proposition[
+If the network contains at least one hub, an additional hub will eventually appear with high probability.
+] <prop:convergence2>
+
+#proof[
+Each hub provides a random outgoing connection to every node in the network. This means there is a small, but non-zero, probability that all nodes points to the same node. If this occurs, that node will be selected as a new hub.
+
+Although the probability for all nodes to select the same node simultaneously is low, it is strictly greater than zero. Therefore, given enough protocol cycles, this event is bound to happen eventually. Consequently, the network will eventually contain at least one additional hub, beyond the original hub.
+]
+
+#proposition[
+Once the network reaches a state with a number of hubs between $1$ and $h-1$, this number cannot decrease.
+] <prop:convergence3>
+
+#proof[
+Consider a system state where the number of hubs is $h_i$, with $1 <= h_i <= h-1$. If a node is chosen as a hub, it will be included in the caches of other nodes according to the algorithm. In this scenario:
+
+- Any newly selected node as a hub increases the total number of hubs by $1$, but does not remove any of the previously selected hubs from the network.
+- Therefore, the set of existing hubs is preserved in subsequent cycles.
+
+As a consequence, the number of hubs in the network cannot decrease while it remains below $h$. This establishes that, once the system enters a state with $1 <= h_i <= h-1$ hubs, the number of hubs is non-decreasing until it reaches $h$.
+]
+
+#proposition[
+Let $h$ be the desired number of hubs in the network. Once the network contains at least one hub, it will converge with high probability to a stable state containing exactly $h$ hubs.
+] <prop:convergence4>
+
+#proof[
+From @prop:convergence1, we know that if the network contains at least one hub, it remains strongly connected with high probability.  
+From @prop:convergence2, we know that an additional hub will eventually appear with high probability.  
+From @prop:convergence3, we know that once the number of hubs is between $1$ and $h-1$, it cannot decrease.
+
+Combining these results, we can conclude the following:
+
+- Starting from a state with at least one hub, the network remains strongly connected.
+- Since the number of hubs cannot decrease, and there is always a non-zero probability for new hubs to appear (@prop:convergence2), the number of hubs will eventually increase until it reaches $h$.
+- Once the network reaches $h$ hubs, the system has converged to the desired stable state (as the number of hubs cannot exceed $h$ due to the algorithm’s selection mechanism).
+
+Therefore, starting from at least one hub, the network converges with high probability to the stable state with exactly $h$ hubs.
+]
+
+#proposition[
+With sufficiently large $c$, the Elevator algorithm generates at least one hub after a finite number of cycles with high probability.
+] <prop:convergence5>
+
+#proof[
+Initially, each node selects $c$ neighbors uniformly at random. With high probability, these selections are spread across the network and are representative of the network as a whole, ensuring that no isolated cluster is formed before the first cycle.
+
+Each node then selects $h$ nodes as potential hubs, following the preferential attachment rules of the Elevator protocol. With high probability, the chosen potential hubs form a subset representative of the entire network. Each node subsequently requests its potential hubs for random incoming connections. Since the potential hubs are representative of the network, with high probability, each node receives $c-h$ random incoming connections from a subset that is also representative of the network. Thus, after a cycle of the protocol, the list of successors of each node remains representative of the network, maintaining connectivity and minimizing the risk of cluster formation. This state is preserved in subsequent cycles.
+
+In the following cycles, nodes select the top $h$ candidates from their frequency maps. The number of potential hubs gradually decreases, until at least one node emerges as a hub.
+
+Therefore, with sufficiently large $c$, the probability of creating disconnected clusters is very low, and the algorithm converges to a state with at least one hub after a finite number of cycles with high probability.
+]
+
+#proposition[
+Starting from a random initial network, the Elevator algorithm converges with high probability to a stable state containing exactly $h$ hubs.
+] <prop:convergence6>
+
+#proof[
+From @prop:convergence5, we know that with sufficiently large $c$, the Elevator algorithm generates at least one hub after a finite number of cycles with high probability.  
+From @prop:convergence4, we know that once the network contains at least one hub, it will converge with high probability to a stable state containing exactly $h$ hubs.
+
+Combining these two results, we conclude that:
+
+- Starting from a random network, the algorithm generates the first hub with high probability (Proposition 6).
+- Once at least one hub exists, the network remains strongly connected, and additional hubs appear until the number of hubs reaches $h$ without decreasing (Proposition 5).
+- Therefore, the system converges with high probability to the desired stable state containing exactly $h$ hubs.
+]
+
+=== Time to Convergence
+
+Studying the convergence time of the Elevator algorithm directly on the full system is extremely challenging. The network can consist of thousands of nodes, each maintaining multiple outgoing connections, resulting in a dynamic graph with stochastic elements. Modeling the system using a Markov chain would be prohibitively complex, as it is practically impossible to compute the transition probabilities between all possible system states. 
+
+Therefore, we adopt a simplified model that captures the essential dynamics of the system while remaining analytically tractable. Our goal is to develop a model that reflects the behavior observed in simulations and experiments, namely the very rapid convergence observed in networks of 1,000 nodes, typically within 4 to 5 protocol cycles.
+
+==== Model A, Geometric Sequence
+
+We provide a simple analytical model to estimate the upper bound on the convergence time of our protocol. The idea is to track the evolution of the node with the highest initial indegree, and observe how quickly its popularity can grow due to the recursive selection mechanism.
+
+We consider a recursive mechanism where each node, at each cycle, selects as new successor the node that appears most frequently among its 2-hop neighbors. This induces a reinforcement effect: popular nodes attract more attention.
+
+Let us assume that a node $v$ has indegree $d_0 = i$ at cycle $t = 0$. Each of these $i$ predecessors has roughly $K$ neighbors (with $K=c$ the size of the cache). Hence, $v$ appears in up to $i · K$ 2-hop paths. If a fraction $p$ of these paths leads to new incoming edges for $v$ at the next cycle, then the indegree evolves as:
+
+$
+d_(t+1) = p · K · d_t
+$
+
+Such an equation has the general solution given by a geometric progression:
+
+$
+d_t = d_0 · (p · K)^t,
+$
+
+where $d_0 = i$ is the initial indegree at cycle $t = 0$.
+
+This shows that the indegree evolves exponentially with respect to the number of cycles $t$, growing or shrinking depending on the value of $p · K$.
+
+We define convergence as the moment when a node has indegree comparable to the size of the network, i.e.,
+
+$
+d_t ≥ N.
+$
+
+Using the closed-form expression
+
+$
+d_t = i · (p · K)^t,
+$
+
+we solve for $t$:
+
+$
+i · (p · K)^t ≥ N ⇒ (p · K)^t ≥ N / i ⇒ t ≥ log(N / i) / log(p · K).
+$
+
+This provides an upper bound on the number of cycles required for convergence.
+
+This bound captures a snowball effect: once a node accumulates a small advantage in indegree, it can quickly dominate due to positive feedback. Even if the exact dynamics involve noise and competition, this reasoning shows that convergence is fast (logarithmic in $N$), and largely driven by early centrality fluctuations.
+
+The geometric sequence model provides a first approximation of the convergence dynamics of the Elevator protocol, but it suffers from several important limitations. First, it assumes that the probability of being selected as a hub is strictly proportional to the current indegree, ignoring other structural effects of the network. Second, it neglects the presence of duplicate nodes in the second-degree neighborhoods, which can bias the distribution of choices. Third, the exponential growth curve derived from this model only reflects an average behavior, without capturing the stochastic fluctuations that arise in real network dynamics. Finally, the parameter $p$, representing the fraction of second-degree neighbors selecting a given hub, is chosen arbitrarily. These limitations highlights the need for a more refined model that naturally accounts for the saturation effect as the indegree approaches its maximum possible value. To address this issue, we introduce a logistic-based model, which provides a more realistic description of the slowdown in growth near the system’s capacity.
+
+==== Model B, Logistic Function with Dynamic Rate
+
+We decided to use a logistic function with a dynamic rate of growth to study the convergence time of the Elevator algorithm. This choice is well-suited to our case because the system is dynamic, with one or several hubs increasing their in-degree rapidly, initially in an approximately exponential manner. The rate of increase is not constant, but itself grows over time, before eventually slowing down as the in-degree approaches its upper bound, i.e., the size of the network.  
+
+We model the evolution of the in-degree growth (of the slowest hub) using the following function:
+
+$
+d(t) = (N) / (1 + a · exp(-(r_0 t + (1/2) δ_r t^2)))
+$
+
+where $N$ is the network size, $a$ is a scaling parameter, $r_0$ is the initial growth rate, and $δ_r$ controls the acceleration of the rate.  
+
+For our case, we selected the following values:  
+
+$
+r_0 = 2 + h / 10, quad
+δ_r = K / N, quad
+a = N / K - 1,
+$
+
+with $K=c$ is the size of the cache and $N$ the size of the network.
+
+These choices are motivated as follows: a larger $h$ increases the speed of convergence, since having multiple hubs accelerates the dissemination of hub information in the network. Although $K$ has little influence in practice, in theory a larger cache allows nodes to explore more candidates, which can also increase the convergence speed. Finally, a larger network size $N$ naturally increases the convergence time, as more nodes are required to reach consensus; however, the growth remains exponential, and thus convergence is still very fast in practice.
+
+==== Evaluation of models
+
+We evaluate the two proposed models (Model A: Geometric Growth Model and Model B: Logistic Function) by comparing them with the results obtained from simulations of the Elevator protocol. The goal of this comparison is to examine whether the theoretical models reproduce the same qualitative behavior observed in practice, in particular the progression curve of the hub node’s indegree over time. We will quantitatively assess the models by computing the mean absolute error (MAE) and the root mean squared error (RMSE) between the predicted curves and the simulation data. As we can see in Figures @ModelNsize, @Modelcachesize and @Modelnbhubs, the Logistic Model is closer to the data from the simulation, and in particular it's more accurate in situations where the values of K and h are changed. As we can see in Tables @Nfit, @Kfit and @hfit, the Logistic has almost always a better RMSE and MAE compared to the Geometric model, and sometimes with values very small, indicating that our model is very good at fitting to the data. If we look at convergence times (in Tables @timeN, @timeK and @timeh), the geometric model is often too fast in terms of convergence time. The logistic model is more pessimistic, but this suits us because we want to have an upper bound on convergence time, and in any case, convergence times remain very close to the simulation results. It should be noted that when calculating the convergence time, we used an approximation of $10^{-3}$ relative to the simulation value, given that the Logistic model never reaches the limit value but comes as close to it as possible.
+
+#figure(
+  image("../../Images/models/indegree_Nsize_comparison_models.pdf", width: 85%),
+  caption: [In-degree evolution of the hub, comparing models with simulation data, with N from 100 to 1000. K=20, h=10.],
+) <ModelNsize>
+
+#figure(
+  image("../../Images/models/indegree_cachesize_comparison_models.pdf", width: 85%),
+  caption: [In-degree evolution of the hub, comparing models with simulation data, with varying values for K. N=1000, h=10.],
+) <Modelcachesize>
+
+#figure(
+  image("../../Images/models/indegree_numberhubs_comparison_models.pdf", width: 85%),
+  caption: [In-degree evolution of the hub, comparing models with simulation data, with varying values for h. K=20, N=1000.],
+) <Modelnbhubs>
+
+#figure(
+table(
+  columns: 5,
+  align: center,
+  [
+    [$N$] [RMSE (Logistic)] [RMSE (Geometric)] [MAE (Logistic)] [MAE (Geometric)]
+    [100]  [2.38]  [1.30]   [1.09]  [0.72]
+    [200]  [3.92]  [15.79]  [1.82]  [5.93]
+    [500]  [21.04] [81.75]  [7.08]  [34.86]
+    [1000] [61.72] [221.44] [21.40] [93.59]
+  ],
+)) <Nfit>
+
+#figure(
+table(
+  columns: 5,
+  align: center,
+  [
+    [$K$] [RMSE (Logistic)] [RMSE (Geometric)] [MAE (Logistic)] [MAE (Geometric)]
+    [10] [118.58] [545.27] [48.77] [385.44]
+    [15] [46.23]  [311.61] [18.46] [155.40]
+    [20] [61.72]  [221.44] [21.40] [93.59]
+  ],
+)) <Kfit>
+
+#figure(
+table(
+  columns: 5,
+  align: center,
+  [
+    [$h$] [RMSE (Logistic)] [RMSE (Geometric)] [MAE (Logistic)] [MAE (Geometric)]
+    [1]  [19.95] [315.60] [9.13]  [174.91]
+    [5]  [85.72] [275.66] [35.31] [140.56]
+    [10] [61.72] [221.44] [21.40] [93.59]
+    [20] [30.61] [174.94] [10.64] [71.88]
+  ],
+)) <hfit>
+
+#figure(
+table(
+  columns: 4,
+  align: center,
+  [
+    [$N$] [Logistic] [Geometric] [Simulation]
+    [100]  [4] [2] [5]
+    [200]  [5] [2] [4]
+    [500]  [6] [3] [5]
+    [1000] [6] [3] [5]
+  ],
+)) <timeN>
+
+#figure(
+table(
+  columns: 4,
+  align: center,
+  [
+    [$K$] [Logistic] [Geometric] [Simulation]
+    [10] [7] [7] [4]
+    [15] [6] [4] [5]
+    [20] [6] [3] [5]
+  ],
+)) <timeK>
+
+#figure(
+table(
+  columns: 4,
+  align: center,
+  table.header(
+    [$h$], [Logistic], [Geometric], [Simulation]),
+    [1],  [9], [5], [7],
+    [5],  [7], [4], [6],
+    [10], [6], [3], [5],
+    [20], [5], [3], [3],
+), caption: [Cycles to reach $N$ for different values of $h$.],
+) <timeh>
+
+
 == Simulation-Based Evaluation
 
 == Implementation over TCP/IP
