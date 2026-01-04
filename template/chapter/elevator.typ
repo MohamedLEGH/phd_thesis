@@ -457,7 +457,7 @@ These choices are motivated as follows: a larger $h$ increases the speed of conv
 
 ==== Evaluation of models
 
-We evaluate the two proposed models (Model A: Geometric Growth Model and Model B: Logistic Function) by comparing them with the results obtained from simulations of the Elevator protocol. The goal of this comparison is to examine whether the theoretical models reproduce the same qualitative behavior observed in practice, in particular the progression curve of the hub node’s indegree over time. We will quantitatively assess the models by computing the mean absolute error (MAE) and the root mean squared error (RMSE) between the predicted curves and the simulation data. As we can see in Figures @ModelNsize, @Modelcachesize and @Modelnbhubs, the Logistic Model is closer to the data from the simulation, and in particular it's more accurate in situations where the values of K and h are changed. As we can see in Tables @Nfit, @Kfit and @hfit, the Logistic has almost always a better RMSE and MAE compared to the Geometric model, and sometimes with values very small, indicating that our model is very good at fitting to the data. If we look at convergence times (in Tables @timeN, @timeK and @timeh), the geometric model is often too fast in terms of convergence time. The logistic model is more pessimistic, but this suits us because we want to have an upper bound on convergence time, and in any case, convergence times remain very close to the simulation results. It should be noted that when calculating the convergence time, we used an approximation of $10^{-3}$ relative to the simulation value, given that the Logistic model never reaches the limit value but comes as close to it as possible.
+We evaluate the two proposed models (Model A: Geometric Growth Model and Model B: Logistic Function) by comparing them with the results obtained from simulations of the Elevator protocol. The goal of this comparison is to examine whether the theoretical models reproduce the same qualitative behavior observed in practice, in particular the progression curve of the hub node’s indegree over time. We will quantitatively assess the models by computing the mean absolute error (MAE) and the root mean squared error (RMSE) between the predicted curves and the simulation data. As we can see in  @ModelNsize, @Modelcachesize and @Modelnbhubs, the Logistic Model is closer to the data from the simulation, and in particular it's more accurate in situations where the values of K and h are changed. As we can see in @Nfit, @Kfit and @hfit, the Logistic has almost always a better RMSE and MAE compared to the Geometric model, and sometimes with values very small, indicating that our model is very good at fitting to the data. If we look at convergence times (in @timeN, @timeK and @timeh), the geometric model is often too fast in terms of convergence time. The logistic model is more pessimistic, but this suits us because we want to have an upper bound on convergence time, and in any case, convergence times remain very close to the simulation results. It should be noted that when calculating the convergence time, we used an approximation of $10^{-3}$ relative to the simulation value, given that the Logistic model never reaches the limit value but comes as close to it as possible.
 
 #figure(
   image("../../Images/models/indegree_Nsize_comparison_models.pdf", width: 85%),
@@ -475,67 +475,77 @@ We evaluate the two proposed models (Model A: Geometric Growth Model and Model B
 ) <Modelnbhubs>
 
 #figure(
-table(
-  columns: 5,
-  align: center,
-  [
-    [$N$] [RMSE (Logistic)] [RMSE (Geometric)] [MAE (Logistic)] [MAE (Geometric)]
-    [100]  [2.38]  [1.30]   [1.09]  [0.72]
-    [200]  [3.92]  [15.79]  [1.82]  [5.93]
-    [500]  [21.04] [81.75]  [7.08]  [34.86]
-    [1000] [61.72] [221.44] [21.40] [93.59]
-  ],
-)) <Nfit>
+  table(
+    columns: 5,
+    align: center,
+    table.header(
+      [$N$], [RMSE (Logistic)], [RMSE (Geometric)], [MAE (Logistic)], [MAE (Geometric)]
+    ),
+    [100],  [2.38],  [1.30],   [1.09],  [0.72],
+    [200],  [3.92],  [15.79],  [1.82],  [5.93],
+    [500],  [21.04], [81.75],  [7.08],  [34.86],
+    [1000], [61.72], [221.44], [21.40], [93.59],
+  ),
+  caption: [Comparison of Logistic and Geometric Models for Different $N$],
+) <Nfit>
 
 #figure(
-table(
-  columns: 5,
-  align: center,
-  [
-    [$K$] [RMSE (Logistic)] [RMSE (Geometric)] [MAE (Logistic)] [MAE (Geometric)]
-    [10] [118.58] [545.27] [48.77] [385.44]
-    [15] [46.23]  [311.61] [18.46] [155.40]
-    [20] [61.72]  [221.44] [21.40] [93.59]
-  ],
-)) <Kfit>
+  table(
+    columns: 5,
+    align: center,
+    table.header(
+      [$K$], [RMSE (Logistic)], [RMSE (Geometric)], [MAE (Logistic)], [MAE (Geometric)]
+    ),
+    [10], [118.58], [545.27], [48.77], [385.44],
+    [15], [46.23],  [311.61], [18.46], [155.40],
+    [20], [61.72],  [221.44], [21.40], [93.59],
+  ),
+  caption: [Comparison of Logistic and Geometric Models for Different $K$],
+) <Kfit>
 
 #figure(
-table(
-  columns: 5,
-  align: center,
-  [
-    [$h$] [RMSE (Logistic)] [RMSE (Geometric)] [MAE (Logistic)] [MAE (Geometric)]
-    [1]  [19.95] [315.60] [9.13]  [174.91]
-    [5]  [85.72] [275.66] [35.31] [140.56]
-    [10] [61.72] [221.44] [21.40] [93.59]
-    [20] [30.61] [174.94] [10.64] [71.88]
-  ],
-)) <hfit>
+  table(
+    columns: 5,
+    align: center,
+    table.header(
+      [$h$], [RMSE (Logistic)], [RMSE (Geometric)], [MAE (Logistic)], [MAE (Geometric)]
+    ),
+    [1],  [19.95], [315.60], [9.13],  [174.91],
+    [5],  [85.72], [275.66], [35.31], [140.56],
+    [10], [61.72], [221.44], [21.40], [93.59],
+    [20], [30.61], [174.94], [10.64], [71.88],
+  ),
+  caption: [Comparison of Logistic and Geometric Models for Different $h$],
+) <hfit>
 
 #figure(
-table(
-  columns: 4,
-  align: center,
-  [
-    [$N$] [Logistic] [Geometric] [Simulation]
-    [100]  [4] [2] [5]
-    [200]  [5] [2] [4]
-    [500]  [6] [3] [5]
-    [1000] [6] [3] [5]
-  ],
-)) <timeN>
+  table(
+    columns: 4,
+    align: center,
+    table.header(
+      [$N$], [Logistic], [Geometric], [Simulation]
+    ),
+    [100],  [4], [2], [5],
+    [200],  [5], [2], [4],
+    [500],  [6], [3], [5],
+    [1000], [6], [3], [5],
+  ),
+  caption: [Cycles to reach $N$ for different network sizes.],
+) <timeN>
 
 #figure(
-table(
-  columns: 4,
-  align: center,
-  [
-    [$K$] [Logistic] [Geometric] [Simulation]
-    [10] [7] [7] [4]
-    [15] [6] [4] [5]
-    [20] [6] [3] [5]
-  ],
-)) <timeK>
+  table(
+    columns: 4,
+    align: center,
+    table.header(
+      [$K$], [Logistic], [Geometric], [Simulation]
+    ),
+    [10], [7], [7], [4],
+    [15], [6], [4], [5],
+    [20], [6], [3], [5],
+  ),
+  caption: [Cycles to reach $N$ for different values of $K$.],
+) <timeK>
 
 #figure(
 table(
