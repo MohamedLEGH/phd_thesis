@@ -458,22 +458,21 @@ These choices are motivated as follows: a larger $h$ increases the speed of conv
 ==== Evaluation of models
 
 We evaluate the two proposed models (Model A: Geometric Growth Model and Model B: Logistic Function) by comparing them with the results obtained from simulations of the Elevator protocol. The goal of this comparison is to examine whether the theoretical models reproduce the same qualitative behavior observed in practice, in particular the progression curve of the hub node’s indegree over time. We will quantitatively assess the models by computing the mean absolute error (MAE) and the root mean squared error (RMSE) between the predicted curves and the simulation data. As we can see in  @ModelNsize, @Modelcachesize and @Modelnbhubs, the Logistic Model is closer to the data from the simulation, and in particular it's more accurate in situations where the values of K and h are changed. As we can see in @Nfit, @Kfit and @hfit, the Logistic has almost always a better RMSE and MAE compared to the Geometric model, and sometimes with values very small, indicating that our model is very good at fitting to the data. If we look at convergence times (in @timeN, @timeK and @timeh), the geometric model is often too fast in terms of convergence time. The logistic model is more pessimistic, but this suits us because we want to have an upper bound on convergence time, and in any case, convergence times remain very close to the simulation results. It should be noted that when calculating the convergence time, we used an approximation of $10^{-3}$ relative to the simulation value, given that the Logistic model never reaches the limit value but comes as close to it as possible.
-
-#figure(
-  image("../../Images/models/indegree_Nsize_comparison_models.pdf", width: 85%),
+#grid(
+    columns: 2,
+[#figure(
+  image("../../Images/models/indegree_Nsize_comparison_models.pdf"),
   caption: [In-degree evolution of the hub, comparing models with simulation data, with N from 100 to 1000. K=20, h=10.],
-) <ModelNsize>
-
-#figure(
-  image("../../Images/models/indegree_cachesize_comparison_models.pdf", width: 85%),
+) <ModelNsize>],
+[#figure(
+  image("../../Images/models/indegree_cachesize_comparison_models.pdf"),
   caption: [In-degree evolution of the hub, comparing models with simulation data, with varying values for K. N=1000, h=10.],
-) <Modelcachesize>
-
-#figure(
-  image("../../Images/models/indegree_numberhubs_comparison_models.pdf", width: 85%),
+) <Modelcachesize>],
+[#figure(
+  image("../../Images/models/indegree_numberhubs_comparison_models.pdf"),
   caption: [In-degree evolution of the hub, comparing models with simulation data, with varying values for h. K=20, N=1000.],
-) <Modelnbhubs>
-
+) <Modelnbhubs>]
+)
 #figure(
   table(
     columns: 5,
@@ -663,94 +662,170 @@ The shape of distribution also remains consistent across failure contexts.
 In @fig:ElevatorContextCoefClust, @fig:ElevatorAveragePathLength and @fig:ElevatorDiameter, we compare Elevator across all contexts for the different metrics, and we can see that there are not many variations in values, as expected from the definition of our protocol and as seen in previous comparative analyses presented above.
 Another notable feature is that Elevator seems more stable than Phenix.
 This is because once the hubs are in place they do not change (except in the event of failures), which provides stability in terms of network diameter or average path length.
-
-#figure(
-  image("../../Images/Elevator/normal_1000_100xp_clustering_color.pdf", width: 85%),
+#grid(
+  columns: 2,
+  [#figure(
+  image("../../Images/Elevator/normal_1000_100xp_clustering_color.pdf"),
   caption: [Clustering coefficient computed during the simulation (no failures), for each algorithm, every 10 cycles],
-) <fig:ClustCoef>
-
-#figure(
-  image("../../Images/Elevator/normal_1000_100xp_average_path_color.pdf", width: 85%),
+) <fig:ClustCoef>],
+[#figure(
+  image("../../Images/Elevator/normal_1000_100xp_average_path_color.pdf"),
   caption: [Average path length computed during the simulation (no failures), for each algorithm, every 10 cycles],
-) <fig:AveragePathLength>
-
-#figure(
-  image("../../Images/Elevator/normal_1000_100xp_diameter_color.pdf", width: 85%),
+) <fig:AveragePathLength>],
+[#figure(
+  image("../../Images/Elevator/normal_1000_100xp_diameter_color.pdf"),
   caption: [Diameter computed during the simulation (no failures), for each algorithm, every 10 cycles],
-) <fig:Diameter>
-
-#figure(
-  image("../../Images/Elevator/crash_1000_100xp_clustering_color.pdf", width: 85%),
+) <fig:Diameter>],
+[#figure(
+  image("../../Images/Elevator/crash_1000_100xp_clustering_color.pdf"),
   caption: [Clustering coefficient computed with a 50% crash, for each algorithm, every 10 cycles],
-) <fig:ClustCoefCrash>
-
-#figure(
-  image("../../Images/Elevator/crash_1000_100xp_average_path_color.pdf", width: 85%),
+) <fig:ClustCoefCrash>],
+[#figure(
+  image("../../Images/Elevator/crash_1000_100xp_average_path_color.pdf"),
   caption: [Average path length computed with a 50% crash, for each algorithm, every 10 cycles],
-) <fig:AveragePathLengthCrash>
-
-#figure(
-  image("../../Images/Elevator/crash_1000_100xp_diameter_color.pdf", width: 85%),
+) <fig:AveragePathLengthCrash>],
+[#figure(
+  image("../../Images/Elevator/crash_1000_100xp_diameter_color.pdf"),
   caption: [Diameter computed with a 50% crash, for each algorithm, every 10 cycles],
-) <fig:DiameterCrash>
-
-#figure(
-  image("../../Images/Elevator/churn_1000_100xp_clustering_color.pdf", width: 85%),
+) <fig:DiameterCrash>],
+[#figure(
+  image("../../Images/Elevator/churn_1000_100xp_clustering_color.pdf"),
   caption: [Clustering coefficient computed with churn, for each algorithm, every 10 cycles],
-) <fig:ClustCoefChurn>
-
-#figure(
-  image("../../Images/Elevator/churn_1000_100xp_average_path_color.pdf", width: 85%),
+) <fig:ClustCoefChurn>],
+[#figure(
+  image("../../Images/Elevator/churn_1000_100xp_average_path_color.pdf"),
   caption: [Average path length computed with churn, for each algorithm, every 10 cycles],
-) <fig:AveragePathLengthChurn>
-
-#figure(
-  image("../../Images/Elevator/churn_1000_100xp_diameter_color.pdf", width: 85%),
+) <fig:AveragePathLengthChurn>],
+[#figure(
+  image("../../Images/Elevator/churn_1000_100xp_diameter_color.pdf"),
   caption: [Diameter computed with churn, for each algorithm, every 10 cycles],
-) <fig:DiameterChurn>
-
-#figure(
-  image("../../Images/Elevator/crash_hub_1000_100xp_clustering_color.pdf", width: 85%),
+) <fig:DiameterChurn>],
+[#figure(
+  image("../../Images/Elevator/crash_hub_1000_100xp_clustering_color.pdf"),
   caption: [Clustering coefficient computed with a hub-targeted attack, for each algorithm, every 10 cycles],
-) <fig:ClustCoefCrashHub>
-
-#figure(
-  image("../../Images/Elevator/crash_hub_1000_100xp_average_path_color.pdf", width: 85%),
+) <fig:ClustCoefCrashHub>],
+[#figure(
+  image("../../Images/Elevator/crash_hub_1000_100xp_average_path_color.pdf"),
   caption: [Average path length computed with a hub-targeted attack, for each algorithm, every 10 cycles],
-) <fig:AveragePathLengthCrashHub>
-
-#figure(
-  image("../../Images/Elevator/crash_hub_1000_100xp_diameter_color.pdf", width: 85%),
+) <fig:AveragePathLengthCrashHub>],
+[#figure(
+  image("../../Images/Elevator/crash_hub_1000_100xp_diameter_color.pdf"),
   caption: [Diameter computed with a hub-targeted attack, for each algorithm, every 10 cycles],
-) <fig:DiameterCrashHub>
-
-#figure(
-  image("../../Images/Elevator/Elevator_1000_100xp_indegree_color.pdf", width: 85%),
+) <fig:DiameterCrashHub>],
+[#figure(
+  image("../../Images/Elevator/Elevator_1000_100xp_indegree_color.pdf"),
   caption: [In-degree distribution of the network, after the run of the Elevator algorithm, with a variable number of hubs (5 hubs, 10 hubs, 15 hubs, 20 hubs), no failures.],
-) <fig:degreeDistributionVariableNbHubs>
-
-#figure(
-  image("../../Images/Elevator/Elevator_context_1000_100xp_indegree_color.pdf", width: 85%),
+) <fig:degreeDistributionVariableNbHubs>],
+[#figure(
+  image("../../Images/Elevator/Elevator_context_1000_100xp_indegree_color.pdf"),
   caption: [In-degree distribution of the network, after the run of the Elevator algorithm, during each context (no failures, 50% crash, churn, and hub-targeted attack).],
-) <fig:CompareContext>
-
-#figure(
-  image("../../Images/Elevator/Elevator_context_1000_100xp_clustering_color.pdf", width: 85%),
+) <fig:CompareContext>],
+[#figure(
+  image("../../Images/Elevator/Elevator_context_1000_100xp_clustering_color.pdf"),
   caption: [Clustering of the network, after the run of the Elevator algorithm, during each context (no failures, 50% crash, churn, and hub-targeted attack).],
-) <fig:ElevatorContextCoefClust>
-
-#figure(
-  image("../../Images/Elevator/Elevator_context_1000_100xp_average_path_color.pdf", width: 85%),
+) <fig:ElevatorContextCoefClust>],
+[#figure(
+  image("../../Images/Elevator/Elevator_context_1000_100xp_average_path_color.pdf"),
   caption: [Average path length of the network, after the run of the Elevator algorithm, during each context (no failures, 50% crash, churn, and hub-targeted attack).],
-) <fig:ElevatorAveragePathLength>
-
-#figure(
-  image("../../Images/Elevator/Elevator_context_1000_100xp_diameter_color.pdf", width: 85%),
+) <fig:ElevatorAveragePathLength>],
+[#figure(
+  image("../../Images/Elevator/Elevator_context_1000_100xp_diameter_color.pdf"),
   caption: [Diameter of the network, after the run of the Elevator algorithm, during each context (no failures, 50% crash, churn, and hub-targeted attack).],
-) <fig:ElevatorDiameter>
-
+) <fig:ElevatorDiameter>]
+)
 
 == Implementation over TCP/IP
+
+To complement the simulation-based evaluation presented earlier, we implemented a fully operational version of the Elevator protocol over real TCP/IP networks. This implementation was carried out in collaboration with an undergraduate intern and serves two main purposes: (i) validating the feasibility of Elevator in a realistic peer-to-peer environment, and (ii) assessing its behavior under asynchronous execution, failures, and heterogeneous deployment conditions.
+
+=== Implementation choices and technological stack
+
+The implementation relies on the Go programming language #footnote[https://go.dev/] and the *libp2p* networking framework #footnote[https://libp2p.io/]. Go was chosen primarily for its strong support for concurrency through goroutines and channels, which naturally fits the highly concurrent nature of peer-to-peer protocols. In addition, Go provides efficient networking primitives and a mature ecosystem for building distributed systems.
+
+The *libp2p* library was used to implement the peer-to-peer communication layer. It provides abstractions for peer identities, transport protocols, stream multiplexing, and protocol negotiation, allowing the Elevator algorithm to be deployed over unstructured peer-to-peer overlays without relying on any centralized component. Communication between peers is performed over TCP/IP using libp2p streams, each stream being associated with a specific protocol identifier.
+
+In parallel, the standard `net/http` library was used to expose a lightweight HTTP interface on each node. This interface serves two roles: (i) enabling external control and monitoring of nodes (e.g., initialization, data collection, experiment orchestration), and (ii) facilitating the bootstrapping phase of the network.
+
+=== Node architecture
+
+Each peer in the network is an autonomous process characterized by:
+
+- a *libp2p port*, used exclusively for peer-to-peer communication and protocol execution;
+- an *HTTP port*, used for external control, initialization, and data collection.
+
+Upon startup, a node initializes its libp2p host and registers stream handlers for the Elevator protocol. Each handler corresponds to a specific message type (e.g., cache request or backward request) and defines the logic executed upon reception of a stream. At the same time, an HTTP server is launched in a separate goroutine, allowing the node to receive external commands without blocking protocol execution. A third goroutine is optionally used to process user input from the terminal, mainly for debugging and manual control during experiments.
+
+The node remains idle until its local cache has been fully initialized. Only once this condition is met does it start executing the Elevator protocol.
+
+=== Cache initialization and network bootstrapping
+
+Since the libp2p implementation targets unstructured peer-to-peer networks, no predefined topology is assumed. The initial overlay is therefore constructed externally in a bootstrapping phase.
+
+First, a configuration file listing all participating nodes (IP addresses and HTTP ports) is generated. Using this information, each node is assigned an initial cache of size (c), corresponding to a random (c)-out graph. The initial caches are generated offline and then distributed to the nodes through HTTP POST requests. Upon reception, each node stores the received cache locally and acknowledges successful initialization.
+
+This approach ensures that all nodes start from a well-defined and controlled initial state, while remaining faithful to the assumptions of the theoretical model.
+
+=== Execution of the Elevator protocol
+
+Once initialized, each node repeatedly executes the Elevator protocol in cycles. During each cycle, the following steps are performed:
+
+1. *Frequency map construction*  
+   The node queries all peers in its local cache for their respective caches using libp2p streams. The responses are aggregated into a frequency map that counts how often each peer appears.
+
+2. *Hub selection*  
+   The node selects the top-(h) peers with the highest frequencies as potential hubs and removes them from the frequency map.
+
+3. *Backward exploration*  
+   For each selected hub, the node requests a backward list (i.e., incoming neighbors) using a dedicated protocol message. These lists are merged to enrich the candidate set.
+
+4. *Cache reconstruction*  
+   A new cache of size (c) is built by combining the selected hubs with a subset of backward peers and, if necessary, additional randomly selected nodes.
+
+This process closely mirrors the algorithmic description introduced earlier, but operates over real network connections and asynchronous message exchanges.
+
+=== Execution modes and synchronization strategies
+
+To explore different execution semantics, three variants of the protocol were implemented:
+
+- *Synchronous start, synchronous cycles*  
+  All nodes start at a predefined time and execute each cycle in lockstep, waiting a fixed duration between cycles.
+
+- *Externally synchronized execution*  
+  A centralized controller periodically triggers the start of each cycle by sending HTTP requests to all nodes. While the Elevator protocol itself remains decentralized, this mode facilitates controlled experiments and reproducibility.
+
+- *Asynchronous execution*  
+  Nodes start simultaneously but wait a random duration between cycles. This mode reflects more realistic conditions, where nodes are not synchronized and operate independently.
+
+These variants allow us to study the robustness of Elevator under both idealized and realistic timing assumptions.
+
+=== Experimental validation
+
+The implementation was validated through a series of experiments on small- to medium-scale networks (ranging from 20 to 50 nodes), executed either on a single machine or distributed across two machines. Experiments confirmed the rapid emergence of hubs within the first few cycles, in line with the theoretical analysis and simulation results.
+
+Additional experiments simulated hub failures by forcibly disconnecting the highest-degree nodes during execution. In all cases, new hubs emerged naturally after a short transient phase, demonstrating the self-healing properties of the protocol. The presence of random connections in the cache played a crucial role in maintaining connectivity and enabling recovery.
+
+=== Practical observations
+
+From a systems perspective, the implementation revealed a high degree of concurrency, with a large number of goroutines active at runtime. This behavior is expected, as libp2p internally spawns goroutines for stream handling, connection management, and message processing. Despite this, the system remained stable and responsive throughout the experiments.
+
+Overall, this TCP/IP implementation confirms that Elevator is not only theoretically sound and effective in simulation, but also practical and robust when deployed over real peer-to-peer networks. It further demonstrates that the protocol tolerates asynchronous execution, node failures, and dynamic network conditions, making it suitable for realistic distributed environments.
+
+=== CPU Information Collection
+
+Monitoring CPU usage is a critical aspect of evaluating the performance and behavior of each node in the network. Metrics such as CPU utilization (%CPU), CPU time, and memory allocation provide insight into the resource consumption of individual processes. To automate this process, we developed the script `info.py`, which collects these metrics for all nodes and stores them in a CSV file for subsequent analysis. The script is executed at the end of the `launch_nodes.sh` script to ensure that metrics are captured throughout the lifetime of the experiment.
+
+The `info.py` script identifies all processes named `main` and retrieves their process identifiers (PIDs). Using these PIDs, it executes system commands to extract the desired metrics, including CPU and memory statistics. This approach enables precise monitoring of the computational load imposed by the Elevator protocol on each node.
+
+Following preliminary tests on a personal machine, the implementation and scripts were adapted to conduct experiments in a dedicated Linux environment. This allows for more controlled and scalable evaluation of the protocol under realistic system conditions.
+
+For the single-machine experiments, three configurations of the Elevator protocol were tested. In all configurations, the network consisted of 100 nodes executing 100 protocol cycles, with each node maintaining a cache of size 20. The three versions differed in the number of hubs: Version 1 used 10 hubs, Version 2 used 5 hubs, and Version 3 used a single hub. These experiments allowed us to evaluate the impact of varying the number of hubs on the stabilization and performance of the protocol while keeping other parameters constant. For all three versions, the experiments were conducted using 100 nodes with a cache size of 20 and 100 protocol cycles, while varying the number of hubs. The resulting graphs were consistent with those presented in the previous section, showing rapid stabilization of hubs within the first cycles, regardless of parameter variations. Analysis of CPU metrics revealed that certain nodes consumed nearly twice the %CPU and CPU time compared to others. These nodes were identified as the selected hubs, which aligns with the intrinsic definition of a hub: a node maintaining a large number of connections to other peers. Indeed, hubs transmit their caches to a larger subset of nodes, explaining the increased computational load observed.
+
+For the two-machine experiments, the network was distributed across a server and a local machine. The server hosted 99 nodes, while the local machine hosted a single node, resulting in a total of 100 nodes. All nodes executed 100 protocol cycles, and each maintained a cache of size 20. The experiment used 10 hubs. This configuration allowed us to observe the behavior and stabilization of hubs in a distributed setup spanning multiple machines, providing insight into the protocol's robustness under a heterogeneous deployment.
+
+The results obtained mirrored those of the single-machine experiments. Hubs consistently stabilized within the first cycles, demonstrating that the protocol behavior is robust under a distributed setup spanning multiple machines.
+
+
+Experimental results confirmed theoretical expectations, with rapid convergence to the preconfigured number of hubs across all tested scenarios. Variations in node parameters did not affect the overall stabilization behavior, illustrating the robustness of the Elevator protocol. Future work may involve scaling the experiments to larger networks distributed across more machines to assess performance at a greater scale and to compare results under more heterogeneous deployment conditions.
 
 == Conclusion
 

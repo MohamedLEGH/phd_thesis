@@ -101,7 +101,7 @@ Because we do not want an empty list of figures, we can add the logos from the c
 
 #lorem(20)
 
-In @table:irrational_numbers we compare some irrational numbers, my favourite one is marked in green.
+In @table:irrational_numbers we compare some irrational numbers, my favorite one is marked in green.
 
 #figure(
   caption: "Some irrational numbers.",
