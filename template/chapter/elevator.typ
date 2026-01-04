@@ -458,22 +458,21 @@ These choices are motivated as follows: a larger $h$ increases the speed of conv
 ==== Evaluation of models
 
 We evaluate the two proposed models (Model A: Geometric Growth Model and Model B: Logistic Function) by comparing them with the results obtained from simulations of the Elevator protocol. The goal of this comparison is to examine whether the theoretical models reproduce the same qualitative behavior observed in practice, in particular the progression curve of the hub node’s indegree over time. We will quantitatively assess the models by computing the mean absolute error (MAE) and the root mean squared error (RMSE) between the predicted curves and the simulation data. As we can see in  @ModelNsize, @Modelcachesize and @Modelnbhubs, the Logistic Model is closer to the data from the simulation, and in particular it's more accurate in situations where the values of K and h are changed. As we can see in @Nfit, @Kfit and @hfit, the Logistic has almost always a better RMSE and MAE compared to the Geometric model, and sometimes with values very small, indicating that our model is very good at fitting to the data. If we look at convergence times (in @timeN, @timeK and @timeh), the geometric model is often too fast in terms of convergence time. The logistic model is more pessimistic, but this suits us because we want to have an upper bound on convergence time, and in any case, convergence times remain very close to the simulation results. It should be noted that when calculating the convergence time, we used an approximation of $10^{-3}$ relative to the simulation value, given that the Logistic model never reaches the limit value but comes as close to it as possible.
-
-#figure(
-  image("../../Images/models/indegree_Nsize_comparison_models.pdf", width: 85%),
+#grid(
+    columns: 2,
+[#figure(
+  image("../../Images/models/indegree_Nsize_comparison_models.pdf"),
   caption: [In-degree evolution of the hub, comparing models with simulation data, with N from 100 to 1000. K=20, h=10.],
-) <ModelNsize>
-
-#figure(
-  image("../../Images/models/indegree_cachesize_comparison_models.pdf", width: 85%),
+) <ModelNsize>],
+[#figure(
+  image("../../Images/models/indegree_cachesize_comparison_models.pdf"),
   caption: [In-degree evolution of the hub, comparing models with simulation data, with varying values for K. N=1000, h=10.],
-) <Modelcachesize>
-
-#figure(
-  image("../../Images/models/indegree_numberhubs_comparison_models.pdf", width: 85%),
+) <Modelcachesize>],
+[#figure(
+  image("../../Images/models/indegree_numberhubs_comparison_models.pdf"),
   caption: [In-degree evolution of the hub, comparing models with simulation data, with varying values for h. K=20, N=1000.],
-) <Modelnbhubs>
-
+) <Modelnbhubs>]
+)
 #figure(
   table(
     columns: 5,
@@ -663,92 +662,77 @@ The shape of distribution also remains consistent across failure contexts.
 In @fig:ElevatorContextCoefClust, @fig:ElevatorAveragePathLength and @fig:ElevatorDiameter, we compare Elevator across all contexts for the different metrics, and we can see that there are not many variations in values, as expected from the definition of our protocol and as seen in previous comparative analyses presented above.
 Another notable feature is that Elevator seems more stable than Phenix.
 This is because once the hubs are in place they do not change (except in the event of failures), which provides stability in terms of network diameter or average path length.
-
-#figure(
-  image("../../Images/Elevator/normal_1000_100xp_clustering_color.pdf", width: 85%),
+#grid(
+  columns: 2,
+  [#figure(
+  image("../../Images/Elevator/normal_1000_100xp_clustering_color.pdf"),
   caption: [Clustering coefficient computed during the simulation (no failures), for each algorithm, every 10 cycles],
-) <fig:ClustCoef>
-
-#figure(
-  image("../../Images/Elevator/normal_1000_100xp_average_path_color.pdf", width: 85%),
+) <fig:ClustCoef>],
+[#figure(
+  image("../../Images/Elevator/normal_1000_100xp_average_path_color.pdf"),
   caption: [Average path length computed during the simulation (no failures), for each algorithm, every 10 cycles],
-) <fig:AveragePathLength>
-
-#figure(
-  image("../../Images/Elevator/normal_1000_100xp_diameter_color.pdf", width: 85%),
+) <fig:AveragePathLength>],
+[#figure(
+  image("../../Images/Elevator/normal_1000_100xp_diameter_color.pdf"),
   caption: [Diameter computed during the simulation (no failures), for each algorithm, every 10 cycles],
-) <fig:Diameter>
-
-#figure(
-  image("../../Images/Elevator/crash_1000_100xp_clustering_color.pdf", width: 85%),
+) <fig:Diameter>],
+[#figure(
+  image("../../Images/Elevator/crash_1000_100xp_clustering_color.pdf"),
   caption: [Clustering coefficient computed with a 50% crash, for each algorithm, every 10 cycles],
-) <fig:ClustCoefCrash>
-
-#figure(
-  image("../../Images/Elevator/crash_1000_100xp_average_path_color.pdf", width: 85%),
+) <fig:ClustCoefCrash>],
+[#figure(
+  image("../../Images/Elevator/crash_1000_100xp_average_path_color.pdf"),
   caption: [Average path length computed with a 50% crash, for each algorithm, every 10 cycles],
-) <fig:AveragePathLengthCrash>
-
-#figure(
-  image("../../Images/Elevator/crash_1000_100xp_diameter_color.pdf", width: 85%),
+) <fig:AveragePathLengthCrash>],
+[#figure(
+  image("../../Images/Elevator/crash_1000_100xp_diameter_color.pdf"),
   caption: [Diameter computed with a 50% crash, for each algorithm, every 10 cycles],
-) <fig:DiameterCrash>
-
-#figure(
-  image("../../Images/Elevator/churn_1000_100xp_clustering_color.pdf", width: 85%),
+) <fig:DiameterCrash>],
+[#figure(
+  image("../../Images/Elevator/churn_1000_100xp_clustering_color.pdf"),
   caption: [Clustering coefficient computed with churn, for each algorithm, every 10 cycles],
-) <fig:ClustCoefChurn>
-
-#figure(
-  image("../../Images/Elevator/churn_1000_100xp_average_path_color.pdf", width: 85%),
+) <fig:ClustCoefChurn>],
+[#figure(
+  image("../../Images/Elevator/churn_1000_100xp_average_path_color.pdf"),
   caption: [Average path length computed with churn, for each algorithm, every 10 cycles],
-) <fig:AveragePathLengthChurn>
-
-#figure(
-  image("../../Images/Elevator/churn_1000_100xp_diameter_color.pdf", width: 85%),
+) <fig:AveragePathLengthChurn>],
+[#figure(
+  image("../../Images/Elevator/churn_1000_100xp_diameter_color.pdf"),
   caption: [Diameter computed with churn, for each algorithm, every 10 cycles],
-) <fig:DiameterChurn>
-
-#figure(
-  image("../../Images/Elevator/crash_hub_1000_100xp_clustering_color.pdf", width: 85%),
+) <fig:DiameterChurn>],
+[#figure(
+  image("../../Images/Elevator/crash_hub_1000_100xp_clustering_color.pdf"),
   caption: [Clustering coefficient computed with a hub-targeted attack, for each algorithm, every 10 cycles],
-) <fig:ClustCoefCrashHub>
-
-#figure(
-  image("../../Images/Elevator/crash_hub_1000_100xp_average_path_color.pdf", width: 85%),
+) <fig:ClustCoefCrashHub>],
+[#figure(
+  image("../../Images/Elevator/crash_hub_1000_100xp_average_path_color.pdf"),
   caption: [Average path length computed with a hub-targeted attack, for each algorithm, every 10 cycles],
-) <fig:AveragePathLengthCrashHub>
-
-#figure(
-  image("../../Images/Elevator/crash_hub_1000_100xp_diameter_color.pdf", width: 85%),
+) <fig:AveragePathLengthCrashHub>],
+[#figure(
+  image("../../Images/Elevator/crash_hub_1000_100xp_diameter_color.pdf"),
   caption: [Diameter computed with a hub-targeted attack, for each algorithm, every 10 cycles],
-) <fig:DiameterCrashHub>
-
-#figure(
-  image("../../Images/Elevator/Elevator_1000_100xp_indegree_color.pdf", width: 85%),
+) <fig:DiameterCrashHub>],
+[#figure(
+  image("../../Images/Elevator/Elevator_1000_100xp_indegree_color.pdf"),
   caption: [In-degree distribution of the network, after the run of the Elevator algorithm, with a variable number of hubs (5 hubs, 10 hubs, 15 hubs, 20 hubs), no failures.],
-) <fig:degreeDistributionVariableNbHubs>
-
-#figure(
-  image("../../Images/Elevator/Elevator_context_1000_100xp_indegree_color.pdf", width: 85%),
+) <fig:degreeDistributionVariableNbHubs>],
+[#figure(
+  image("../../Images/Elevator/Elevator_context_1000_100xp_indegree_color.pdf"),
   caption: [In-degree distribution of the network, after the run of the Elevator algorithm, during each context (no failures, 50% crash, churn, and hub-targeted attack).],
-) <fig:CompareContext>
-
-#figure(
-  image("../../Images/Elevator/Elevator_context_1000_100xp_clustering_color.pdf", width: 85%),
+) <fig:CompareContext>],
+[#figure(
+  image("../../Images/Elevator/Elevator_context_1000_100xp_clustering_color.pdf"),
   caption: [Clustering of the network, after the run of the Elevator algorithm, during each context (no failures, 50% crash, churn, and hub-targeted attack).],
-) <fig:ElevatorContextCoefClust>
-
-#figure(
-  image("../../Images/Elevator/Elevator_context_1000_100xp_average_path_color.pdf", width: 85%),
+) <fig:ElevatorContextCoefClust>],
+[#figure(
+  image("../../Images/Elevator/Elevator_context_1000_100xp_average_path_color.pdf"),
   caption: [Average path length of the network, after the run of the Elevator algorithm, during each context (no failures, 50% crash, churn, and hub-targeted attack).],
-) <fig:ElevatorAveragePathLength>
-
-#figure(
-  image("../../Images/Elevator/Elevator_context_1000_100xp_diameter_color.pdf", width: 85%),
+) <fig:ElevatorAveragePathLength>],
+[#figure(
+  image("../../Images/Elevator/Elevator_context_1000_100xp_diameter_color.pdf"),
   caption: [Diameter of the network, after the run of the Elevator algorithm, during each context (no failures, 50% crash, churn, and hub-targeted attack).],
-) <fig:ElevatorDiameter>
-
+) <fig:ElevatorDiameter>]
+)
 
 == Implementation over TCP/IP
 
