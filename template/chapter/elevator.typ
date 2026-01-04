@@ -800,9 +800,9 @@ These variants allow us to study the robustness of Elevator under both idealized
 
 === Experimental validation
 
-The implementation was validated through a series of experiments on small- to medium-scale networks (ranging from 20 to 50 nodes), executed either on a single machine or distributed across two machines. Experiments confirmed the rapid emergence of hubs within the first few cycles, in line with the theoretical analysis and simulation results.
+The implementation was validated through a series of experiments on small- to medium-scale networks (ranging from 20 to 50 nodes), executed either on a single machine or distributed across two machines. Experiments confirmed the rapid emergence of hubs within the first few cycles, in line with the theoretical analysis and simulation results, as seen in @fig:Victor20nodes and @fig:Victor50nodes.
 
-Additional experiments simulated hub failures by forcibly disconnecting the highest-degree nodes during execution. In all cases, new hubs emerged naturally after a short transient phase, demonstrating the self-healing properties of the protocol. The presence of random connections in the cache played a crucial role in maintaining connectivity and enabling recovery.
+In @fig:VictorCrash, we show experiments that simulated hub failures by forcibly disconnecting the highest-degree nodes during execution. In all cases, new hubs emerged naturally after a short transient phase, demonstrating the self-healing properties of the protocol. The presence of random connections in the cache played a crucial role in maintaining connectivity and enabling recovery.
 
 === Practical observations
 
@@ -818,14 +818,52 @@ The `info.py` script identifies all processes named `main` and retrieves their p
 
 Following preliminary tests on a personal machine, the implementation and scripts were adapted to conduct experiments in a dedicated Linux environment. This allows for more controlled and scalable evaluation of the protocol under realistic system conditions.
 
-For the single-machine experiments, three configurations of the Elevator protocol were tested. In all configurations, the network consisted of 100 nodes executing 100 protocol cycles, with each node maintaining a cache of size 20. The three versions differed in the number of hubs: Version 1 used 10 hubs, Version 2 used 5 hubs, and Version 3 used a single hub. These experiments allowed us to evaluate the impact of varying the number of hubs on the stabilization and performance of the protocol while keeping other parameters constant. For all three versions, the experiments were conducted using 100 nodes with a cache size of 20 and 100 protocol cycles, while varying the number of hubs. The resulting graphs were consistent with those presented in the previous section, showing rapid stabilization of hubs within the first cycles, regardless of parameter variations. Analysis of CPU metrics revealed that certain nodes consumed nearly twice the %CPU and CPU time compared to others. These nodes were identified as the selected hubs, which aligns with the intrinsic definition of a hub: a node maintaining a large number of connections to other peers. Indeed, hubs transmit their caches to a larger subset of nodes, explaining the increased computational load observed.
+For the single-machine experiments, three configurations of the Elevator protocol were tested. In all configurations, the network consisted of 100 nodes executing 100 protocol cycles, with each node maintaining a cache of size 20. The three versions differed in the number of hubs: Version 1 used 10 hubs, Version 2 used 5 hubs, and Version 3 used a single hub. These experiments allowed us to evaluate the impact of varying the number of hubs on the stabilization and performance of the protocol while keeping other parameters constant. For all three versions, the experiments were conducted using 100 nodes with a cache size of 20 and 100 protocol cycles, while varying the number of hubs. The resulting graphs (@fig:Victor100nodes, @fig:Victor100nodesSynchrone and @fig:Victor100nodesAsynchrone) were consistent with those presented in the previous section, showing rapid stabilization of hubs within the first cycles, regardless of parameter variations. Analysis of CPU metrics revealed that certain nodes consumed nearly twice the %CPU and CPU time compared to others. These nodes were identified as the selected hubs, which aligns with the intrinsic definition of a hub: a node maintaining a large number of connections to other peers. Indeed, hubs transmit their caches to a larger subset of nodes, explaining the increased computational load observed.
 
-For the two-machine experiments, the network was distributed across a server and a local machine. The server hosted 99 nodes, while the local machine hosted a single node, resulting in a total of 100 nodes. All nodes executed 100 protocol cycles, and each maintained a cache of size 20. The experiment used 10 hubs. This configuration allowed us to observe the behavior and stabilization of hubs in a distributed setup spanning multiple machines, providing insight into the protocol's robustness under a heterogeneous deployment.
-
-The results obtained mirrored those of the single-machine experiments. Hubs consistently stabilized within the first cycles, demonstrating that the protocol behavior is robust under a distributed setup spanning multiple machines.
+For the two-machine experiments, the network was distributed across a server and a local machine. The server hosted 99 nodes, while the local machine hosted a single node, resulting in a total of 100 nodes. All nodes executed 100 protocol cycles, and each maintained a cache of size 20. The experiment used 10 hubs. This configuration allowed us to observe the behavior and stabilization of hubs in a distributed setup spanning multiple machines, providing insight into the protocol's robustness under a heterogeneous deployment. The results obtained mirrored those of the single-machine experiments. As seen in @fig:Victor100nodesCluster, @fig:Victor100nodesClusterSynchrone and @fig:Victor100nodesClusterAsynchrone, hubs consistently stabilized within the first cycles, demonstrating that the protocol behavior is robust under a distributed setup spanning multiple machines.
 
 
 Experimental results confirmed theoretical expectations, with rapid convergence to the preconfigured number of hubs across all tested scenarios. Variations in node parameters did not affect the overall stabilization behavior, illustrating the robustness of the Elevator protocol. Future work may involve scaling the experiments to larger networks distributed across more machines to assess performance at a greater scale and to compare results under more heterogeneous deployment conditions.
+
+#grid(
+  columns: 2,
+  [#figure(
+  image("../../Images/Victor/graphe_4HUBS_Cycles12.pdf"),
+  caption: [Number of hubs at each cycle, with $N=20$, $c=10$ and $h=4$],
+) <fig:Victor20nodes>],
+  [#figure(
+  image("../../Images/Victor/graphe_5HUBS_Cycles.pdf"),
+  caption: [Number of hubs at each cycle, with $N=50$, $c=10$ and $h=5$],
+) <fig:Victor50nodes>],
+  [#figure(
+  image("../../Images/Victor/graphe_4HUBS_deco_Cycles.pdf"),
+  caption: [Crash of the hubs in the middle of the experiment, with $N=50$, $c=10$ and $h=4$],
+) <fig:VictorCrash>],
+  [#figure(
+  image("../../Images/Victor/graphe_test_V1_10_HUBS.pdf"),
+  caption: [Number of hubs at each cycle, semi-synchronous, with $N=100$, $c=20$ and $h=10$],
+) <fig:Victor100nodes>],
+  [#figure(
+  image("../../Images/Victor/graphe_test_V2_5_HUBS.pdf"),
+  caption: [Number of hubs, synchronous mode, with $N=100$, $c=20$ and $h=10$],
+) <fig:Victor100nodesSynchrone>],
+  [#figure(
+  image("../../Images/Victor/graphe_test_V2_5_HUBS.pdf"),
+  caption: [Number of hubs, asynchronous mode, with $N=100$, $c=20$ and $h=1$],
+) <fig:Victor100nodesAsynchrone>],
+  [#figure(
+  image("../../Images/Victor/graphe_test2_V1.pdf"),
+  caption: [Experiments on a cluster of 2 machines, semi-synchronous mode, with $N=100$, $c=20$ and $h=10$],
+) <fig:Victor100nodesCluster>],
+  [#figure(
+  image("../../Images/Victor/graphe_test2_V2.pdf"),
+  caption: [Experiments on a cluster of 2 machines, synchronous mode, with $N=100$, $c=20$ and $h=10$],
+) <fig:Victor100nodesClusterSynchrone>],
+  [#figure(
+  image("../../Images/Victor/graphe_test2_V3.pdf"),
+  caption: [Experiments on a cluster of 2 machines, asynchronous mode, with $N=100$, $c=20$ and $h=10$],
+) <fig:Victor100nodesClusterAsynchrone>],
+)
 
 == Conclusion
 
