@@ -565,16 +565,14 @@ table(
 We evaluate our proposal by carrying out a simulation campaign.
 All simulations use the Java *PeerSim* simulator @p2p09-peersim.
 We have modified the simulator to add parallelism to accelerate computations.
-With Peersim, we implemented our algorithm Elevator, and state-of-the-art PROOFS @stavrou2004lightweight and Phenix @wouhaybi2004phenix algorithms [^elevator].
+With Peersim, we implemented our algorithm Elevator, and state-of-the-art PROOFS @stavrou2004lightweight and Phenix @wouhaybi2004phenix algorithms #footnote[https://gitlab.lip6.fr/legheraba/elevator].
 Also, we used the implementation of Newscast provided by PeerSim.
 // A detailed description of these algorithms can be found in Appendix @sec:algorithms.
 We compared the performance of Elevator with these 3 algorithms.
 We chose to compare our proposed algorithm to these three algorithms as they are widely used in the literature.
 Newscast is used for gossip learning @ormandi2013gossip, PROOFS is a foundational algorithm, as Secure Cyclon @antonov2023securecyclon, one of the latest peer sampling algorithm in the literature, is based on Cyclon @voulgaris2005cyclon, itself based on PROOFS.
 Phenix is interesting as it has especially been conceived to be resilient to failures and Byzantine attacks and also to construct networks that have a low diameter.
-We did not include recent algorithms @xie2008scale; @bulut2013constructing; @lynn2024emergent that primarily focus on improving the power law distribution of the in-degrees @xie2008scale; @bulut2013constructing; @lynn2024emergent, as they are expected to behave similarly to Phenix [@wouhaybi2004phenix].
-
-[^elevator]: https://gitlab.lip6.fr/legheraba/elevator
+We did not include recent algorithms @xie2008scale @bulut2013constructing @lynn2024emergent that primarily focus on improving the power law distribution of the in-degrees @xie2008scale @bulut2013constructing @lynn2024emergent, as they are expected to behave similarly to Phenix @wouhaybi2004phenix.
 
 All simulations were run with a network of size *n* = 1000.
 As the Phenix network needs a growing network to work, we started the Phenix algorithm with a network size of 20 and capped the size of the network to 1000.
@@ -601,17 +599,17 @@ The degree distributions of Newscast and PROOFS exhibit patterns akin to a norma
 We see similar results for Elevator, except for a distinct group of 10 hubs with an in-degree of 999.
 By contrast, the Phenix protocol's degree distribution conforms to a power-law distribution.
 
-PROOFS and Newscast maintain a low clustering coefficient during all simulations, as seen in Figure @fig:ClustCoef.
+PROOFS and Newscast maintain a low clustering coefficient during all simulations, as seen in @fig:ClustCoef.
 On the contrary, Phenix and Elevator have both a clustering coefficient of around 0.6.
 For Phenix, the value is related to the power-law distribution of in-degree, and for Elevator, the value is linked to the presence of hubs, that are connected to everyone, and this automatically increases the value of the coefficient.
 
-As we can see in Figure @fig:AveragePathLength, Elevator has a very low average path length, with a value below 2.
+As we can see in @fig:AveragePathLength, Elevator has a very low average path length, with a value below 2.
 This value is due to the presence of hubs in the network, that permit to have a maximum distance of 2 between any 2 nodes.
 Phenix has the same value.
 PROOFS is very close, with a value around 2.15 and Newscast is a bit below 2.6.
 All these values are very good and thus we need to compute the diameter to discriminate between algorithms.
 
-In Figure @fig:Diameter, we see that Elevator gives a network with a diameter equal to 2.
+In @fig:Diameter, we see that Elevator gives a network with a diameter equal to 2.
 Again, this value is due to the presence of hubs in the network.
 The Phenix algorithm yields similar results.
 This is better than PROOFS and Newscast, which output respectively 3 and 4 for this metric.
@@ -628,8 +626,8 @@ The performance of Elevator is not affected, as the in-degree distribution is st
 The degree distribution is also the same for Newscast and PROOFS.
 For Phenix, the degree distribution remains the same, with values going to a max of 999, even if there are only 500 nodes in the network.
 It's because the nodes have kept in their cache the addresses of (old) nodes who are no longer in the network.
-In Figure @fig:ClustCoefCrash, the clustering coefficient evolution shows that it is not affected by the crashes, as we have almost the same results as those obtained without a crash.
-The same observation holds for the average path length and the diameter, as we can see in Figures @fig:AveragePathLengthCrash and @fig:DiameterCrash.
+In @fig:ClustCoefCrash, the clustering coefficient evolution shows that it is not affected by the crashes, as we have almost the same results as those obtained without a crash.
+The same observation holds for the average path length and the diameter, as we can see in @fig:AveragePathLengthCrash and @fig:DiameterCrash.
 
 === Resilience to churn
 
@@ -641,9 +639,9 @@ Following previous work [@wouhaybi2004phenix], in the case of Phenix, we impleme
 
 The in-degree distribution of Elevator remains the same, with 10 hubs.
 PROOFS seems affected by churn, as the mean degree distribution goes to 10 instead of 20 without churn.
-In Figure @fig:ClustCoefChurn we can observe that we have almost the same results as the results obtained without churn for the clustering coefficient.
-For the average path length, PROOFS is the most affected, with a value going from 2.25 without churn to a value of 2.5 with churn, and the value keep increasing after the end of the churn, going up to 2.75, as we can see in Figure @fig:AveragePathLengthChurn.
-In Figure @fig:DiameterChurn, we can see that the diameter varies with churn, with a mean going up to 3.25 instead of 2.0, but the values for Phenix and Elevator remain below the ones of Newscast and PROOFS.
+In @fig:ClustCoefChurn we can observe that we have almost the same results as the results obtained without churn for the clustering coefficient.
+For the average path length, PROOFS is the most affected, with a value going from 2.25 without churn to a value of 2.5 with churn, and the value keep increasing after the end of the churn, going up to 2.75, as we can see in @fig:AveragePathLengthChurn.
+In @fig:DiameterChurn, we can see that the diameter varies with churn, with a mean going up to 3.25 instead of 2.0, but the values for Phenix and Elevator remain below the ones of Newscast and PROOFS.
 
 === Resilience to hub-targeted attacks
 
@@ -653,16 +651,16 @@ To simulate a hub-targeted attack, we disconnected 10 nodes that have the highes
 Logically, Newscast and PROOFS are not affected by the attack, as there are no hubs in the networks built by these algorithms.
 For Elevator, the in-degree distribution remains similar, with 10 high-in-degree peers that have each an in-degree of 989.
 We are thus confident in the capacity of our algorithm to promote new nodes to the position of hubs if the previous hubs were disconnected.
-In Figure @fig:ClustCoefCrashHub we can see that we have almost the same results as the results obtained without crashes for the clustering coefficient.
-Its the same for the average path length and the diameter, there is no impact, as we can see in Figure @fig:AveragePathLengthCrashHub and @fig:DiameterCrashHub.
+In @fig:ClustCoefCrashHub we can see that we have almost the same results as the results obtained without crashes for the clustering coefficient.
+Its the same for the average path length and the diameter, there is no impact, as we can see in @fig:AveragePathLengthCrashHub and @fig:DiameterCrashHub.
 
 === Summary
 
-We have compared the in-degree distribution of the network after the run of the Elevator algorithm for a various number of hubs in Figure @fig:degreeDistributionVariableNbHubs, and also for each context of simulation in Figure @fig:CompareContext.
+We have compared the in-degree distribution of the network after the run of the Elevator algorithm for a various number of hubs in @fig:degreeDistributionVariableNbHubs, and also for each context of simulation in @fig:CompareContext.
 The shape of the degree distribution remains consistent across different hub counts, except for a scenario with 20 hubs where nodes exclusively connect to these hubs (resulting in a multi-star topology).
 This phenomenon aligns with the prescribed number of preferred connections (*h* = *c* = 20), where nodes exclusively link to elevated hub nodes, omitting random connections entirely.
 The shape of distribution also remains consistent across failure contexts.
-In Figure @fig:ElevatorContextCoefClust, @fig:ElevatorAveragePathLength and @fig:ElevatorDiameter, we compare Elevator across all contexts for the different metrics, and we can see that there are not many variations in values, as expected from the definition of our protocol and as seen in previous comparative analyses presented above.
+In @fig:ElevatorContextCoefClust, @fig:ElevatorAveragePathLength and @fig:ElevatorDiameter, we compare Elevator across all contexts for the different metrics, and we can see that there are not many variations in values, as expected from the definition of our protocol and as seen in previous comparative analyses presented above.
 Another notable feature is that Elevator seems more stable than Phenix.
 This is because once the hubs are in place they do not change (except in the event of failures), which provides stability in terms of network diameter or average path length.
 
