@@ -103,6 +103,7 @@
 
 // ------------------- content -------------------
 #include "template/chapter/introduction.typ"
+#include "template/chapter/model.typ"
 #include "template/chapter/peertopeer.typ"
 #include "template/chapter/elevator.typ"
 #include "template/chapter/decentralized_learning.typ"
