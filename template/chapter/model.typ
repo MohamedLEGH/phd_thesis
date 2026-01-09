@@ -48,10 +48,15 @@ A node has:
 In the BitTorrent protocol, a machine running a BitTorrent client constitutes a node in the peer-to-peer network. The node is identified by its IP address and a PeerID, and communication relies on the underlying TCP/IP network.]
 
 We assume that:
-- Each node _n_ has a list of addresses of other nodes in the network in its local state. This list is called the *partial view*  or the *neighbours* of _n_. The size of this list is $c$, with $c << N$, and $N$ the size of the network.
+- Each node _n_ has a list of addresses of other nodes in the network in its local state. This list is called the *partial view*  or the *neighbours* of _n_. We consider that participants have an unbounded memory, although the size of their partial view is bounded by the constant $c$, with $c << N$, and $N$ the size of the network.
+
 - It is necessary to know the address of a node in order to send it a message. Thus, each node communicates only with its neighbours in the network.
 
 - When a node receives a message, it can respond to that message even if that node is not in the list of its neighbours. This is because we assume that it receives the address of the sender (along with the message).
+
+- All nodes are identical in terms of capabilities: same computing power, same (underlying) network connectivity. We therefore abstract the capabilities of the nodes, as we are primarily interested in the interactions between them.
+
+- The address of each node has no connection with the capabilities or identity of a node. It has no influence on the functioning of the network. We can therefore abstract it as a random but unique value for each node, between $0$ and $N-1$, where $N$ is the size of the network.
 
 - Each node executes the same *protocol*.
 
@@ -73,12 +78,20 @@ In particular, we assume that:
 1. the physical network is connected, i.e., any node can eventually reach any other node,
 2. nodes can send messages to other nodes, and messages are routed to their intended destination.
 
-We assume a reliable communication network: messages are neither lost nor corrupted. 
+// We assume a reliable communication network: messages are neither lost nor corrupted. 
 // Message delivery is asynchronous, with arbitrary but finite delays. 
+We abstract away message transmission by assuming that the underlying physical network is reliable. In particular, message delivery is assumed to be instantaneous, and messages are neither lost nor corrupted. Under this abstraction, peer-to-peer algorithms do not need to explicitly account for network-level delays or failures.
 
 === Time Assumptions
 
-- Nodes execute asynchronously and do not share a global clock.
+
+Regarding time and node synchronization, we distinguish two execution models.
+
+In the first model, nodes are fully asynchronous. Each node executes independently and may send messages at arbitrary times, without any form of global synchronization. There is no notion of a shared clock or execution step, and nodes progress according to their own local pace.
+
+In the second model, nodes execute their actions according to a global notion of time, structured into discrete steps called cycles. In this setting, all nodes conceptually perform their actions once per cycle. Two variants of this model can be considered. In the first variant, nodes execute sequentially within a cycle: each node performs its actions one after another, and a cycle is completed once all nodes have finished their execution. While this assumption is not realistic in practical systems, it greatly simplifies modeling and simulation. In the second variant, all nodes execute simultaneously and instantaneously within each cycle. This assumption is also unrealistic in practice, but is commonly adopted to facilitate theoretical analysis and simulation.
+
+// - Nodes execute asynchronously and do not share a global clock.
 
 === Failure Models
 
