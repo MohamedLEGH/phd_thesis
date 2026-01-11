@@ -48,15 +48,15 @@ A node has:
 In the BitTorrent protocol, a machine running a BitTorrent client constitutes a node in the peer-to-peer network. The node is identified by its IP address and a PeerID, and communication relies on the underlying TCP/IP network.]
 
 We assume that:
+- All nodes are assumed to be identical in terms of capabilities, in particular regarding computing power and access to the underlying communication network. We deliberately abstract away any form of node heterogeneity, as our primary focus is on the interactions induced by the protocol rather than on resource disparities between nodes.
+
+- The address of a node carries no semantic information about its capabilities, role, or properties, and has no influence on the behavior of the protocol. It is solely used as a unique identifier to enable message routing. Consequently, we abstract node addresses as random but unique values in the range $[0, N-1]$, where $N$ denotes the size of the network.
+
 - Each node _n_ has a list of addresses of other nodes in the network in its local state. This list is called the *partial view*  or the *neighbours* of _n_. We consider that participants have an unbounded memory, although the size of their partial view is bounded by the constant $c$, with $c << N$, and $N$ the size of the network.
 
-- It is necessary to know the address of a node in order to send it a message. Thus, each node communicates only with its neighbours in the network.
+- It is necessary to know the address of a node in order to send it a message. Thus, each node communicates only with its direct *neighbours* in the peer-to-peer network.
 
-- When a node receives a message, it can respond to that message even if that node is not in the list of its neighbours. This is because we assume that it receives the address of the sender (along with the message).
-
-- All nodes are identical in terms of capabilities: same computing power, same (underlying) network connectivity. We therefore abstract the capabilities of the nodes, as we are primarily interested in the interactions between them.
-
-- The address of each node has no connection with the capabilities or identity of a node. It has no influence on the functioning of the network. We can therefore abstract it as a random but unique value for each node, between $0$ and $N-1$, where $N$ is the size of the network.
+- When a node receives a message, it can respond to that message even if that node is not in the list of its *neighbours*. This is because we assume that it receives the address of the sender (along with the message).
 
 - Each node executes the same *protocol*.
 
@@ -70,17 +70,29 @@ A peer-to-peer protocol is a distributed algorithm executed by each node in the 
 The protocol is executed independently by all nodes. Each node follows the same protocol specification, but may exhibit different behaviors depending on its local state, its partial view of the network, and the messages it receives.
 ]
 
+=== Execution Model
+
+We assume that each peer-to-peer protocol executed by a node is composed of two main components: an initialization function and a main protocol function.
+
+The initialization function is executed once when a node joins the system. During this phase, the node initializes its local state, including in particular its partial view of the network, i.e., its list of neighbors.
+
+After initialization, the node executes the main protocol logic in the form of an infinite loop. This reflects the fact that peer-to-peer protocols are typically designed to run continuously and do not have a predefined termination condition.
+
+We assume that each iteration of the protocol loop is executed atomically: a node cannot be interrupted in the middle of a protocol cycle, and no two executions of the protocol logic overlap on the same node.
+
+If, during its execution, a node contacts another node, the contacted node processes the incoming request using a background execution thread. The internal scheduling of protocol execution and background message handling is abstracted away. The handling of incoming requests is also assumed to be atomic, and responses are generated and returned instantaneously.
+
 === Network Primitives
 
-We abstract the underlying physical network, as peer-to-peer algorithms do not directly operate on physical networking mechanisms. We assume that the physical network provides basic communication primitives required by the overlay network.
+We abstract the underlying physical network, as peer-to-peer algorithms do not directly operate on physical networking mechanisms. We assume that the underlying network provides basic communication primitives required by the overlay network.
 
 In particular, we assume that:
-1. the physical network is connected, i.e., any node can eventually reach any other node,
+1. the underlying network is connected, i.e., any node can eventually reach any other node,
 2. nodes can send messages to other nodes, and messages are routed to their intended destination.
 
 // We assume a reliable communication network: messages are neither lost nor corrupted. 
 // Message delivery is asynchronous, with arbitrary but finite delays. 
-We abstract away message transmission by assuming that the underlying physical network is reliable. In particular, message delivery is assumed to be instantaneous, and messages are neither lost nor corrupted. Under this abstraction, peer-to-peer algorithms do not need to explicitly account for network-level delays or failures.
+We abstract away message transmission by assuming that the underlying network is *reliable*. In particular, message delivery is assumed to be instantaneous, and messages are neither lost nor corrupted. Under this abstraction, peer-to-peer algorithms do not need to explicitly account for network-level delays or failures.
 
 === Time Assumptions
 
@@ -93,6 +105,24 @@ In the second model, nodes execute their actions according to a global notion of
 
 // - Nodes execute asynchronously and do not share a global clock.
 
+// === Failure Models
+
+// - Nodes may fail by crashing. A node may crash due to hardware failure, software failure, or network disconnection. Regardless of the cause, the effect is the same: a crashed node cannot send or receive messages, nor can it perform any local computation.
+
 === Failure Models
 
-- Nodes may fail by crashing. A node may crash due to hardware failure, software failure, or network disconnection. Regardless of the cause, the effect is the same: a crashed node cannot send or receive messages, nor can it perform any local computation.
+We distinguish two main classes of failures in peer-to-peer systems: crash failures and Byzantine failures.
+
+==== Crash Failures
+
+A node may experience a crash failure due to various causes, such as hardware faults, software errors, or permanent network disconnection. From the perspective of the system model, the specific cause of the failure is irrelevant, as the observable effect is always the same.
+
+When a node crashes, it permanently stops executing the protocol. As a consequence, a crashed node no longer updates its local state, does not send messages, and cannot receive or process incoming messages. Any attempt by another node to contact a crashed node results in the absence of a response. We assume that crash failures are permanent: a crashed node never recovers and never rejoins the system. Peer-to-peer protocols must explicitly account for crash failures in order to avoid undesirable behaviors such as deadlocks, where a node waits indefinitely for a response from a failed node.
+
+==== Byzantine Failures
+
+In contrast to crash failures, a Byzantine node remains active but no longer follows the prescribed protocol. Instead, it behaves according to an arbitrary (Byzantine) strategy.
+
+Byzantine behaviors can take many forms, including sending incorrect, inconsistent, or misleading messages, selectively responding to certain nodes, or attempting to disrupt the protocol execution. The common characteristic of Byzantine nodes is that they act maliciously, with the goal of corrupting the protocol execution or degrading the overall behavior of the peer-to-peer network.
+
+Unless stated otherwise, Byzantine nodes are assumed to have full control over their local state and outgoing messages, while still being subject to the constraints of the underlying communication network.
