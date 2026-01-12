@@ -31,7 +31,7 @@ cetz.canvas({
  
   // Arrow labels
   let labels = (
-    "Physical and Logical Network Layer",
+    "Network Layer",
     "Overlay Layer",
     "Aggregation Layer",
     "Application Layer",
@@ -39,8 +39,7 @@ cetz.canvas({
   for i in range(4) {
     rect((0, i*spacing), (w, h + (i*spacing)), name: "rect_"+str(i), fill: colors.at(i)) 
   
-    content((0.5, i * spacing), (w, h + (i*spacing) - 0.5), labels.at(i))
-  
+    content("rect_"+str(i), labels.at(i))  
   }
 }), caption: [Architecture]
 ) <fig:system-architecture>
