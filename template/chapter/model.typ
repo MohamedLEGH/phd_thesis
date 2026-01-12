@@ -13,7 +13,7 @@
 == Notations
 TODO
 
-== System Model
+== Peer-to-Peer System Model
 A peer-to-peer system is composed of a set $N$ of peers, also referred to as nodes, that communicate by exchanging messages over a network without relying on any central authority. Messages may represent control information, data items, or application-level payloads, and are assumed to have finite length and arbitrary content.
 
 #definition(title: "Peer to Peer system")[
@@ -230,43 +230,354 @@ In the second model, nodes execute their actions according to a global notion of
 
 // - Nodes execute asynchronously and do not share a global clock.
 
-== Metrics
-In a peer-to-peer network, the state of the network at a given instant can be represented as a graph, and we can compute various metrics on this graph to characterize its structure. Calculating these metrics is crucial to understand the network's properties, monitor its evolution over time, and compare different protocols. Metrics provide insights into connectivity, resilience, efficiency, and overall behavior of the network. Commonly used metrics include the indegree and outdegree distributions, the network diameter, the average path length, and the clustering coefficient, among others.
+== Topology Models
+Network topology refers to the structural organization of a network, that is, the way nodes are interconnected and how links are arranged between them. In the context of overlay networks, topology is naturally described through the shape of the underlying graph, where nodes represent participants and edges represent logical connections. Different topologies lead to fundamentally different properties in terms of connectivity, robustness, routing efficiency, and scalability. Broadly, network topologies can be divided into two categories: deterministic and random. Deterministic topologies are defined by explicit construction rules that impose a fixed structure on the graph, such as stars, rings, trees, or meshes, where the presence of an edge is fully determined by the position or role of each node. In contrast, random topologies are generated according to probabilistic rules, where edges are created based on random processes or statistical constraints rather than fixed patterns. This category includes classical random graphs, as well as more advanced models from complex network theory such as small-world networks, power-law networks, and stochastic block models, which introduce community structure through probabilistic connection patterns. Random topologies are particularly relevant for modeling large-scale and dynamic peer-to-peer systems, where global coordination is impractical and network structure often emerges from local interactions. In this chapter, network topologies are not viewed as static structures, but as reference models describing the possible shapes of snapshot graphs $G(t)$ induced by peer-to-peer protocols over time.
 
-The *indegree* and *outdegree* distributions are fundamental metrics that describe how connections are distributed among nodes. The outdegree distribution corresponds to the number of outgoing connections each node maintains, which in most peer-to-peer protocols reflects the size of each node's partial view. Consequently, the outdegree is often uniform across nodes and remains stable over time. In contrast, the indegree distribution represents the number of incoming connections a node receives and can vary significantly, especially in networks with dynamic topologies or evolving hubs. Monitoring the indegree distribution over time provides valuable insights into how the network adapts, which nodes are highly connected, and how load or influence is distributed.
-#definition(title: "Indegree and Outdegree Distributions")[
-  The *indegree (resp. outdegree) distribution* of a network represents the probability distribution of the number of incoming (resp. outgoing) connections of nodes over the entire network. In other words, it characterizes how the connections are spread among the nodes.
+==== Mesh
+A mesh network topology corresponds to a complete graph, in which every node is directly connected to every other node in the network. This topology offers optimal communication properties, as any node can reach any other node in a single hop, resulting in a graph diameter equal to one and minimal latency for message dissemination. Such full connectivity also provides high redundancy, making the network inherently robust to individual link failures. However, these advantages come at a prohibitive cost in large-scale systems. Each node must maintain a connection with all other nodes, leading to a quadratic growth in the number of links and significant overhead in terms of bandwidth, memory, and connection management. Moreover, a mesh topology requires each node to know the complete list of participants in the network, which is impractical or impossible in dynamic environments where nodes frequently join and leave. As a result, mesh networks are inherently static and do not scale well, limiting their applicability to small, tightly controlled systems rather than large peer-to-peer or highly dynamic overlay networks.
+
+#figure(diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
+node((0,0), name: "1", radius: 2em)
+edge(label("2"), "-", stroke: 1pt)
+edge(label("3"), "-", stroke: 1pt)
+edge(label("4"), "-", stroke: 1pt)
+node((1,1), name: "2", radius: 2em)
+edge(label("3"), "-", stroke: 1pt)
+edge(label("4"), "-", stroke: 1pt)
+node((0, 1), name: "3", radius: 2em)
+edge(label("4"), "-", stroke: 1pt)
+node((1,0), name: "4", radius: 2em)
+}),
+  caption: [A mesh network with 4 nodes.],
+) <mesh-network>
+
+==== Star
+A star network topology corresponds, from a graph-theoretic perspective, to a graph in which all nodes are connected to a single central node, often referred to as the hub. This topology naturally maps to a client–server architecture, where the central node acts as a server and all other nodes act as clients. Communication between any two clients must pass through the central node, which results in a graph diameter equal to two and enables fast message exchanges with low hop count. The simplicity of this topology makes it easy to deploy, manage, and control, and clients only need to maintain a single connection to participate in the network. However, the central node constitutes a critical bottleneck, as it must handle all communications and can become overloaded as the network grows. More importantly, it represents a single point of failure: if the server crashes, is disconnected, or is compromised, the entire network becomes unavailable.
+#figure(
+diagram({
+  node((1,0), name: "Server", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
+  edge(label("Client1"), "-", stroke: 1pt)
+  edge(label("Client2"), "-", stroke: 1pt)
+  edge(label("Client3"), "-", stroke: 1pt)
+
+  node((0,1.5), name: "Client1", radius: 2em, stroke: 1pt, fill: blue.lighten(60%))
+
+  node((1,1.5), name: "Client2", radius: 2em, stroke: 1pt, fill: blue.lighten(60%))
+
+  node((2,1.5), name: "Client3", radius: 2em, stroke: 1pt, fill: blue.lighten(60%))  
+}),
+  caption: [A star topology.],
+) <star-topology>
+==== Multi stars
+A multi-star topology can be seen as an extension of the star topology in which several central nodes coexist, each forming a local star with a subset of clients. From a graph-theoretic point of view, this corresponds to a collection of star subgraphs that may or may not be interconnected. This topology is widely used in cloud systems, for instance in distributed databases where a primary server is supported by one or more replica servers that can take over in case of failure or overload. Multi-star architectures are also common in geographically distributed systems, where services are replicated across multiple regions to reduce latency and provide better quality of service to users worldwide. Several variants of multi-star topologies exist: in some designs, clients are connected to all available servers, while in others each client is connected to a single server at a time; similarly, servers may be fully interconnected, partially connected, or completely isolated from each other. Compared to a single-star topology, multi-star networks improve scalability, fault tolerance, and availability, but they still rely on centralized components at the level of each star. As a result, they remain more structured and less decentralized than peer-to-peer topologies, and require coordination mechanisms for load balancing, leader election, or consistency among servers.
+#figure(
+diagram({
+  node((0,0), name: "Server 1", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
+  edge(label("Client1"), "-", stroke: 1pt)
+  edge(label("Client2"), "-", stroke: 1pt)
+  edge(label("Client3"), "-", stroke: 1pt)
+  node((2,0), name: "Server 2", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
+  edge(label("Client1"), "-", stroke: 1pt)
+  edge(label("Client2"), "-", stroke: 1pt)
+  edge(label("Client3"), "-", stroke: 1pt)
+
+  node((0,1.5), name: "Client1", radius: 2em, stroke: 1pt, fill: blue.lighten(60%))
+
+  node((1,1.5), name: "Client2", radius: 2em, stroke: 1pt, fill: blue.lighten(60%))
+
+  node((2,1.5), name: "Client3", radius: 2em, stroke: 1pt, fill: blue.lighten(60%))  
+}),
+  caption: [A mult-stars topology, with 2 servers and 3 clients. Each client is connected to each server.],
+) <star-topology>
+
+==== Ring
+A ring topology corresponds to a graph in which each node maintains exactly two connections, typically referred to as its left and right neighbors, forming a closed cycle. From a graph-theoretic perspective, this structure is a simple cycle graph. Ring topologies require coordination mechanisms between nodes, as well-defined rules are needed to handle the addition or removal of one or more nodes without breaking the ring and disconnecting the network. In particular, join and leave operations must ensure that neighbor relationships are consistently updated to preserve connectivity. The diameter of a ring network grows linearly with the number of nodes, i.e., it is proportional to $N$, which leads to potentially high communication latency as information may need to traverse many intermediate nodes. To mitigate this limitation, many ring-based systems introduce additional long-range links, often inspired by skip lists, allowing nodes to bypass large portions of the ring and significantly reduce routing and propagation times. Such enhancements improve efficiency while preserving the simplicity and locality properties of the underlying ring structure.
+#figure(
+diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
+node((0,0), name: "1", radius: 2em)
+edge( "-", stroke: 1pt)
+node((0.8,0.3), name: "2", radius: 2em)
+edge( "-", stroke: 1pt)
+node((0.8,1.2), name: "3", radius: 2em)
+edge( "-", stroke: 1pt)
+node((0,1.5), name: "4", radius: 2em)
+edge( "-", stroke: 1pt)
+node((-0.8,1.2), name: "6", radius: 2em)
+edge( "-", stroke: 1pt)
+node((-0.8,0.3), name: "6", radius: 2em)
+edge(label("1"),"-", stroke: 1pt)
+
+}),
+  caption: [A ring topology, with 6 nodes.],
+) <ring>
+
+==== Hierarchical
+A hierarchical network topology corresponds to a graph structured as a tree, where nodes are organized into different levels with parent–child relationships. This topology is commonly used in large-scale systems such as the Domain Name System (DNS), which relies on a hierarchical structure of authorities, ranging from root servers at the top level to top-level domain servers and authoritative name servers below. Compared to a star topology, hierarchical networks scale more effectively, as intermediate nodes distribute and absorb part of the workload, reducing the burden on any single central node. However, this topology remains largely static and is inherently fragile to failures. If an intermediate node fails, all its descendants become disconnected from the rest of the network, and a failure at the root level can impact the entire system. As a result, hierarchical topologies often require additional mechanisms such as redundancy, replication, or failover strategies to improve fault tolerance and availability.
+#figure(
+diagram({
+  node((1,0), name: "ServerRoot", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
+  edge(label("Server1"), "-", stroke: 1pt)
+  edge(label("Server2"), "-", stroke: 1pt)
+  edge(label("Server3"), "-", stroke: 1pt)
+
+  node((0,1.5), name: "Server1", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
+  edge(label("Client1"), "-", stroke: 1pt)
+  edge(label("Client2"), "-", stroke: 1pt)
+
+  node((1,1.5), name: "Server2", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
+  edge(label("Client3"), "-", stroke: 1pt)
+
+  node((2,1.5), name: "Server3", radius: 2em, stroke: 1pt, fill: green.lighten(60%))  
+  edge(label("Client4"), "-", stroke: 1pt)
+
+  node((-1,2.8), name: "Client1", radius: 2em, stroke: 1pt, fill: blue.lighten(60%))
+
+  node((0,2.8), name: "Client2", radius: 2em, stroke: 1pt, fill: blue.lighten(60%))
+
+  node((1,2.8), name: "Client3", radius: 2em, stroke: 1pt, fill: blue.lighten(60%))
+
+  node((2,2.8), name: "Client4", radius: 2em, stroke: 1pt, fill: blue.lighten(60%))
+
+}),
+  caption: [A hierarchical (or tree) topology, with 2 levels, the root server and the intermediate servers.],
+) <tree-topology>
+
+==== Random network
+In contrast to the deterministic topologies presented above, real-world networks are often not explicitly organized but instead emerge in a largely random manner. Social networks, for instance, are formed through independent and uncoordinated interactions between individuals, leading to structures that are difficult to predict or control globally. To model such systems, random network models have been widely studied, among which the Erdős–Rényi random graph @erdHos1959evolution is the most classical and intuitive. In this model, edges are created at random, either by fixing the probability of connection between any pair of nodes or by fixing the expected number of connections per node. Despite the apparent lack of structure, random graphs exhibit several desirable properties. When the average degree k is greater than a small constant (typically slightly above 2), the probability that the graph is connected rapidly approaches one as the network size grows. Moreover, the diameter of the graph remains relatively small, scaling logarithmically with the number of nodes, which ensures efficient information propagation. In the directed case, k usually denotes the out-degree of each node, while the in-degree follows a binomial distribution centered around k. These properties make random graphs attractive as baseline models for large-scale decentralized systems, even though they do not capture heterogeneity or hub formation observed in many real networks.
+
+#figure(
+diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
+node((0,0), name: "1", radius: 2em)
+edge(label("5"), "->", stroke: 1pt)
+edge(label("2"), "->", stroke: 1pt)
+node((0.3,1), name: "2", radius: 2em)
+edge(label("5"), "->", stroke: 1pt)
+edge(label("3"), "->", stroke: 1pt)
+node((1,1.5), name: "3", radius: 2em)
+edge(label("5"), "->", stroke: 1pt)
+edge(label("2"), "->", stroke: 1pt)
+node((1.8,1), name: "4", radius: 2em)
+edge(label("1"), "->", stroke: 1pt)
+edge(label("5"), "->", stroke: 1pt)
+node((1.8,0), name: "5", radius: 2em)
+edge(label("1"), "->", stroke: 1pt)
+edge(label("4"), "->", stroke: 1pt)
+}),
+  caption: [A random directed graph, $k=2$, with $k$ the outdegree of each node.],
+) <random-graph>
+
+#definition(title: "Erdős–Rényi Random Graph G(n, p)")[
+  Let $n in NN$ be the number of vertices and $p in [0, 1]$.
+  An Erdős–Rényi random graph $G(n, p)$ is defined as a random graph
+  $G = (V, E)$ where:
+  - $V = {1, 2, ..., n}$ is the set of vertices;
+  - for every unordered pair ${i, j} subset V$ with $i != j$,
+    the edge ${i, j}$ is included in $E$ independently with probability $p$:
+    $
+    forall i != j, quad Pr({i, j} in E) = p.
+    $
+] <def:Erdos-Renyi-Gnp>
+
+#definition(title: "Erdős–Rényi Random Graph G(n, m)")[
+  Let $n in NN$ be the number of vertices and $m in NN$ the number of edges.
+  An Erdős–Rényi random graph $G(n, m)$ is a random graph
+  $G = (V, E)$ where:
+  - $V = {1, 2, ..., n}$;
+  - $E$ is chosen uniformly at random among all subsets of
+    ${ {i, j} | i, j in V, i != j }$
+    such that $|E| = m$.
+] <def:Erdos-Renyi-Gnm>
+
+#definition(title: "Directed Random Graph with Fixed Outdegree")[
+  Let $n in NN$ be the number of nodes and $k in NN$ such that $k < n$.
+  A directed random graph $G = (V, E)$ with fixed outdegree $k$ is defined as follows:
+  - $V = {1, 2, ..., n}$;
+  - for each node $i in V$, exactly $k$ outgoing edges are created;
+  - the $k$ distinct destination nodes are selected uniformly at random
+    from $V$, without replacement.
   
-  - For a network following a random graph distribution (Erdős–Rényi model), the degree distribution follows
-    $P(k) = binom(n-1,k) p^k (1-p)^(n-1-k)$.
-  - For a network following a scale-free distribution (Barabási–Albert model), the degree distribution follows
-    $P(k) = C k^(-gamma)$, where $gamma$ is the power-law exponent and $C$ is a normalization constant.
+  Formally, for each node $i$, the set of outgoing neighbors
+  $N_"out"(i)$ satisfies:
+  $
+  |N_"out"(i)| = k,
+  $
+  and each subset of size $k$ of $V$ is equally likely.
+] <def:Directed-Random-Graph>
+
+==== Small world
+
+Small-world networks provide a more realistic representation of many real-world networks compared to classical random graphs. In such networks, the neighbors of a node are often also neighbors of each other, reflecting the common social phenomenon that “friends of my friends are also friends.” This property results in a high clustering coefficient, which contrasts with the Erdős–Rényi random graph, where clustering is typically very low. The Watts–Strogatz model @watts1998strogatz formalizes this concept by starting from a regular lattice and randomly rewiring a fraction of edges. These random long-range connections create shortcuts between distant parts of the network, significantly reducing the graph diameter while preserving local clusters. This combination of high clustering and small diameter makes small-world networks highly relevant for modeling social networks, communication systems, and peer-to-peer overlays, where local connectivity and fast information propagation are both crucial.
+
+#definition(title: "Watts-Strogatz Small-World Network")[
+  A Watts-Strogatz small-world network is generated by the following procedure:
+  1. Start with a regular ring lattice with $N$ nodes, each connected to $K$ nearest neighbors ($K/2$ on each side).
+  2. For each edge $(i,j)$, rewire it with probability $p$:
+     - Remove the edge $(i,j)$.
+     - Connect node $i$ to a randomly chosen node $k$ (excluding $i$ and avoiding duplicate edges).
+  3. Repeat for all edges.
+  
+  Parameters:
+  - $N$: number of nodes in the network.
+  - $K$: initial number of neighbors per node (must be even).
+  - $p$: rewiring probability, controlling the randomness of the network.
+  
+  Properties:
+  - High clustering coefficient compared to random graphs.
+  - Small average shortest-path length due to long-range shortcuts.
+] <def:watts-strogatz>
+
+#figure(
+diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
+node((0,0), name: "1", radius: 2em)
+edge(label("2"), "->", stroke: 1pt)
+edge(label("3"), "->", stroke: 1pt)
+edge(label("5"), "->", stroke: 1pt)
+node((0.3,1), name: "2", radius: 2em)
+edge(label("1"), "->", stroke: 1pt)
+edge(label("3"), "->", stroke: 1pt)
+node((1,1.5), name: "3", radius: 2em)
+edge(label("1"), "->", stroke: 1pt)
+node((1.8,1), name: "4", radius: 2em)
+edge(label("5"), "->", stroke: 1pt)
+node((1.8,0), name: "5", radius: 2em)
+edge(label("1"), "->", stroke: 1pt)
+edge(label("6"), "->", stroke: 1pt)
+node((3,0.4), name: "6", radius: 2em)
+edge(label("4"), "->", stroke: 1pt)
+}),
+  caption: [A directed small world network, with 2 clusters (left and right).],
+) <watts-strogatz-example>
+
+==== Power-law
+The Erdős–Rényi and Watts–Strogatz models are interesting and can be used to model certain networks, but many real networks are more complex than simple random networks. In fact, real networks are heterogeneous, with hubs, i.e., nodes with many connections. Scale-free networks are a class of networks in which the degree distribution follows a power-law, meaning that most nodes have few connections while a small number of nodes, called hubs, have a very large number of connections. This property is observed in many real-world networks, such as the Internet, social networks, and citation networks. Scale-free networks also exhibit a self-similar or fractal topology: as the number of nodes increases, the overall structure of the network remains similar, and its statistical properties are preserved. This scalability is one reason why many real networks naturally adopt a scale-free topology. The Barabási–Albert (BA) model @barabasi1999emergence introduced a generative mechanism for scale-free networks based on growth and preferential attachment: starting from a small initial network, new nodes are added one by one and each new node connects to existing nodes with a probability proportional to their degree. This process leads to the emergence of hubs and a degree distribution with a typical power-law exponent around γ ≈ 3. Scale-free networks generally have a small diameter, which allows for efficient communication between nodes. However, the presence of hubs also introduces a vulnerability: the failure of one or more hubs can significantly degrade the connectivity of the network. Unlike classical random graphs, scale-free networks are highly heterogeneous, with a few highly connected nodes dominating the network structure, while most nodes have relatively few connections. Variants of the BA model have been proposed to limit the maximum degree of nodes, add constraints on connectivity, or increase resilience to failures.
+
+#definition(title: "Scale-Free Network")[
+  A scale-free network is a network whose degree distribution follows a power law: $P(k) tilde.basic k^{-gamma}$, where $P(k)$ is the probability that a node has degree $k$ and $gamma$ is a positive constant typically between 2 and 3. Most nodes have few connections, while a few nodes, called hubs, have many connections.
+
+  One classical generative model is the Barabási–Albert (BA) model:
+  1. Start with a small initial network of $m_0$ nodes.
+  2. At each time step, add a new node with $m <= m_0$ edges.
+  3. Each new edge connects to an existing node \(i\) with probability proportional to its degree:
+  
+    $Pi(i) = k_i/(sum_j k_j)$,
+  
+  where $k_i$ is the degree of node $i$. This preferential attachment process leads to the emergence of hubs and a power-law degree distribution.
+] <def:scale-free-network>
+
+#figure(
+diagram({
+  node((1,0), name: "ServerRoot", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
+  edge(label("Server1"), "-", stroke: 1pt)
+  edge(label("Server2"), "-", stroke: 1pt)
+  edge(label("Server3"), "-", stroke: 1pt)
+  edge(label("Client6"), "-", stroke: 1pt)
+
+  node((-1,1.5), name: "Server1", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
+  edge(label("Client1"), "-", stroke: 1pt)
+  edge(label("Client2"), "-", stroke: 1pt)
+  edge(label("Client3"), "-", stroke: 1pt)
+
+  node((0.5,1.5), name: "Server2", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
+  edge(label("Client4"), "-", stroke: 1pt)
+  edge(label("Client5"), "-", stroke: 1pt)
+
+  node((2,1.5), name: "Server3", radius: 2em, stroke: 1pt, fill: green.lighten(60%))  
+  edge(label("Client7"), "-", stroke: 1pt)
+  edge(label("Client8"), "-", stroke: 1pt)
+  edge(label("Client9"), "-", stroke: 1pt)
+
+  node((-3,2.8), name: "Client1", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
+
+  node((-2,2.8), name: "Client2", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
+
+  node((-1.2,2.8), name: "Client3", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
+
+  node((-0.5,2.8), name: "Client4", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
+
+  node((0.2,2.8), name: "Client5", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
+  
+  node((1,2.8), name: "Client6", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
+
+  node((1.8,2.8), name: "Client7", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
+  
+  node((2.5,2.8), name: "Client8", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
+
+  node((3.5,2.8), name: "Client9", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
+
+}),
+  caption: [A scale free network.],
+) <scale-free-schema>
+
+==== Stochastic block model
+In real-world networks, randomness often coexists with community structures. Stochastic Block Models (SBM) @holland1983stochastic are a generalization of the classical Erdős–Rényi random graph and provide a flexible framework to model such networks. In an SBM, nodes are partitioned into communities (or blocks), and the probability of a link between two nodes depends on the communities to which they belong. This allows the generation of networks that appear random globally but exhibit strong local structures, highlighting the presence of communities. The model allows explicit control over the number and size of communities, as well as the intra- and inter-community connection probabilities, enabling the study of networks with varying modularity. Moreover, because SBM is probabilistic, multiple network instances can be generated from the same parameters, making it a powerful tool for benchmarking community detection algorithms and exploring structural properties of complex networks.
+
+#definition(title: "Stochastic Block Model")[
+  A Stochastic Block Model (SBM) is a generative model for random graphs with community structure. 
+  Consider a graph $G = (V, E)$ with $N$ nodes, and let the nodes be partitioned into $K$ disjoint blocks (or communities) $C_1, C_2, dots, C_K$.
+  The probability of an edge between two nodes depends only on the blocks to which they belong.
+  
+  Formally, let $B in [0,1]^{K times K}$ be a matrix of connection probabilities between blocks, where $B_{"ab"}$ is the probability that a node in block $C_a$ connects to a node in block $C_b$. Then, for each pair of nodes $(i,j)$:
+  
+  - If node $i in C_a$ and node $j in C_b$, the edge $(i,j)$ exists independently with probability $B_{"ab"}$:
+      $P((i,j) in E) = B_{"ab"}$.
+  
+  Special cases include:
+  - *Intra-block probabilities*: $B_{"aa"}$, the probability of connection between nodes within the same community.
+  - *Inter-block probabilities*: $B_{"ab"}$, $a eq.not b$, the probability of connection between nodes of different communities.
+  
+  SBM generalizes the Erdős–Rényi random graph, which corresponds to the case $K=1$.
+] <def:sbm>
+
+== Metrics
+
+In a peer-to-peer network, the state of the system at a given instant can be represented as a graph snapshot of the underlying time-varying graph. Various metrics can then be computed on this graph in order to characterize the structure of the network, monitor its evolution over time, and compare different peer-to-peer protocols.
+
+Metrics provide insights into connectivity, resilience, efficiency, and overall behavior of the network. In the context of time-varying graphs, these metrics can be computed either on a single snapshot $G(t)$ or observed as time-dependent quantities $m(t) = m(G(t))$ that evolve as the network topology changes.
+
+Commonly used metrics include the indegree and outdegree distributions, the clustering coefficient, the average path length, and the network diameter.
+
+The *indegree* and *outdegree* distributions are fundamental metrics that describe how connections are distributed among nodes at a given time.
+
+In a time-varying graph $G = (V, E, T)$, these distributions are computed on a snapshot $G(t) = (V(t), E(t))$ of the network. The outdegree of a node corresponds to the number of outgoing edges it maintains at time $t$, which in most peer-to-peer protocols reflects the size of the node's partial view. As a result, the outdegree is often bounded and relatively stable over time.
+
+In contrast, the indegree represents the number of incoming edges a node receives and may vary significantly across nodes. Monitoring the indegree distribution over time provides valuable insights into how the network adapts, which nodes become highly connected, and whether hubs or imbalances emerge.
+#definition(title: "Indegree and Outdegree Distributions")[
+The *indegree (resp. outdegree) distribution* of a network at time $t$ is the probability distribution of the number of incoming (resp. outgoing) edges of nodes in the graph snapshot $G(t)$.
+
+- For a network following a random graph distribution (Erdős–Rényi model), the degree distribution follows:
+  $P(k) = binom(n-1, k) p^k (1-p)^(n-1-k)$.
+
+- For a network following a scale-free distribution (Barabási–Albert model), the degree distribution follows:
+  $P(k) = C k^(-gamma)$,
+  where $gamma$ is the power-law exponent and $C$ is a normalization constant.
 ] <def:degree-distribution>
 
-The *clustering coefficient* is a fundamental metric in network analysis, as it measures the tendency of nodes to form tightly connected groups. Intuitively, it quantifies how likely it is that the neighbors of a node are also connected to each other. In random graphs, the clustering coefficient tends to be low because connections are made independently, whereas networks with hubs or communities usually exhibit a higher clustering coefficient. This metric provides insight into the local cohesiveness of the network and can reveal the presence of clusters or modular structures.
+The *clustering coefficient* measures the tendency of nodes to form tightly connected groups. It quantifies how likely it is that the neighbors of a node are also connected to each other.
+
+In a dynamic peer-to-peer network, the clustering coefficient can be computed at each time step on the snapshot $G(t)$, yielding a time-dependent metric that reflects the local cohesiveness of the network as it evolves. This metric is particularly useful for identifying the emergence of clusters or community structures.
 
 #definition(title: "Clustering Coefficient")[
-The clustering coefficient 
-$C_i$ of a node $i$ is defined as the ratio between the number of edges connecting its neighbors and the total number of possible edges between them:
-$ C_i = (2e_i)/(k_(i)(k_i - 1)) $
-Where:
-- $e_i$ is the number of edges between the neighbors of node $i$ (i.e., the number of closed triangles including node $i$)
-- $k_i$ is the degree of node $i$, representing the total number of connections of that node.
+The clustering coefficient $C_i(t)$ of a node $i$ at time $t$ is defined as:
+$ C_i(t) = (2 e_i(t)) / (k_i(t)(k_i(t) - 1)) $
 
-$ C = 1/n sum_(i=1)^(n) C_i $
+Where:
+- $e_i(t)$ is the number of edges between the neighbors of node $i$ in $G(t)$,
+- $k_i(t)$ is the degree of node $i$ at time $t$.
+
+The average clustering coefficient of the network at time $t$ is:
+$ C(t) = 1 /(|V(t)|) sum_(i in V(t)) C_i(t) $
 ]
 
-The *average path length* of a network is an important metric that characterizes how efficiently information can be transmitted across the network. It corresponds to the mean of the shortest path lengths between all pairs of nodes. A small average path length indicates that any node can be reached from any other node in a relatively small number of steps, which is typical in small-world or scale-free networks. Conversely, in networks with long chains or sparse connectivity, the average path length tends to be larger.
+The *average path length* characterizes the efficiency of information dissemination in the network. It corresponds to the mean of the shortest path lengths between all pairs of nodes.
+
+In time-varying graphs, the average path length is computed on each snapshot $G(t)$, allowing the observation of its evolution over time. A decreasing average path length may indicate improved connectivity or the emergence of highly connected nodes.
 
 #definition(title: "Average Path Length")[
-The average path length $a$ of a network is defined as the mean of the shortest path lengths $d(s,t)$ between all pairs of distinct nodes $s$ and $t$ in the network:
-// s,t in V, s eq.not t
-
-$ a = sum_(s,t in V, s eq.not t) d(s,t)/(n(n-1)) $
+The average path length $a(t)$ of the network at time $t$ is defined as:
+$ a(t) = sum_(s, t' in V(t), s eq.not t') d(s, t') / (|V(t)| (|V(t)| - 1)) $
 
 Where:
-- $V$ is the set of nodes in the network, with $|V| = n$
-- $d(s,t)$ is the length of the shortest path between nodes $s$ and $t$.
+- $d(s, t')$ is the length of the shortest path between nodes $s$ and $t'$ in $G(t)$.
 ]
 
 The *diameter* of a graph is a measure of the longest distance between any two vertices (nodes) in the graph, measured in terms of the number of edges. In other words, the diameter of a graph is the maximum shortest path between any pair of nodes in the network.
@@ -274,14 +585,32 @@ The *diameter* of a graph is a measure of the longest distance between any two v
 While the average path length provides a basic measure of information dissemination efficiency in algorithms, it may overlook disparities in dissemination speed across different nodes within the network. An algorithm could potentially have a favorable average path length but still exhibit uneven dissemination speeds among nodes due to varying distances. Calculating the network's diameter, however, offers a more comprehensive assessment.
 
 #definition(title: "Diameter")[
-The diameter of a network $G$ is the length of the longest shortest path between any pair of nodes in the network:
+The diameter of a network at time $t$ is defined as the length of the longest shortest path between any pair of nodes in the snapshot $G(t)$:
 
 $
-"diam"(G) = max_(u,v in V) d(u, v)
+"diam"(G(t)) = max_(u, v in V(t)) d(u, v)
 $
 
 Where:
-- $V$ is the set of nodes in the network
+- $V(t)$ is the set of nodes in the network at time $t$.
 - $d(u,v)$ is the length of the shortest path between nodes $u$ and $v$.
 ]
 
+Beyond local and global structural metrics, connectivity properties play a central role in the analysis of peer-to-peer networks.  Connectivity metrics computed on $G(t)$ allow us to characterize whether the network remains operational, how information can propagate, and how resilient the topology is to node failures or churn.
+
+
+#definition(title: "Weakly and Strongly Connected Components")[
+Let $G(t) = (V(t), E(t))$ be a directed graph representing a snapshot of a peer-to-peer network at time $t$.
+
+- A *strongly connected component (SCC)* is a maximal subset of nodes $C subset.eq V(t)$ such that for every pair of nodes $u, v \in C$, there exists a directed path from $u$ to $v$ and from $v$ to $u$.
+
+- A *weakly connected component (WCC)* is a maximal subset of nodes $C subset.eq V(t)$ such that the underlying undirected graph obtained by ignoring edge directions is connected.
+
+The set of weakly or strongly connected components induces a partition of the vertex set $V(t)$. The number of such components characterizes the fragmentation level of the network at time $t$.
+] <def:connectivity>
+
+In typical operating conditions, peer-to-peer protocols aim to maintain a connected topology, and the snapshot graph $G(t)$ usually consists of a single weakly connected component. To assess the robustness of the network, we study how connectivity degrades under node removals.
+
+Starting from a connected snapshot, nodes are removed uniformly at random, one by one, simulating failures or departures. After each removal, we recompute the number of weakly and strongly connected components. The evolution of these quantities provides a quantitative measure of the network’s resilience: a topology is considered robust if it remains weakly connected, or fragments slowly, despite node failures.
+
+This analysis allows us to compare protocols in terms of fault tolerance and structural stability, independently of their specific message-passing behavior.
