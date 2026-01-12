@@ -167,15 +167,15 @@ The global state of the peer-to-peer system at time $t$ is given by the tuple
 $S(t) = (s_v(t))_{v in V(t)}$,
 which aggregates the local states of all nodes currently present in the system.
 
-The evolution of the system results from the asynchronous composition of the local state machines, combined with the temporal evolution of the underlying time-varying graph, which constrains possible communications between nodes.
+The evolution of the system results from the  composition of the local state machines, combined with the temporal evolution of the underlying time-varying graph, which constrains possible communications between nodes.
 
 From this perspective, the peer-to-peer system can be viewed as a large, distributed state machine whose global behavior emerges from the interaction of local protocols executed by individual nodes.
 ] <def:p2p-global>
 
-=== Dynamicity of the System
-
 The execution model described above directly induces a dynamic evolution of the peer-to-peer network. As nodes repeatedly execute the protocol, both the local views of nodes and the global network topology may change over time.
 Thus a first level of dynamicity arises from the protocol execution itself. After each execution of the protocol loop, a node may update its partial view of the network, for instance by adding, removing, or replacing neighbors. As a consequence, the set of outgoing edges of a node in the overlay graph may change from one protocol cycle to another. At this level of dynamicity, the set of nodes remains constant, and only the edge set of the graph evolves over time.
+
+=== Churn
 
 A second level of dynamicity is introduced by churn, that is, the dynamic arrival and departure of nodes in the system. We model churn as a temporally localized phenomenon rather than a permanent one. Specifically, churn occurs during a predefined period spanning several protocol cycles.
 
@@ -185,6 +185,27 @@ After the churn period ends, no further nodes join or leave the system. The prot
 
 This modeling choice reflects the fact that continuous churn keeps the system in a permanently unstable state. By separating churn phases from stabilization phases, we can explicitly study the resilience and self-healing properties of the peer-to-peer protocol.
 
+// === Failure Models
+
+// - Nodes may fail by crashing. A node may crash due to hardware failure, software failure, or network disconnection. Regardless of the cause, the effect is the same: a crashed node cannot send or receive messages, nor can it perform any local computation.
+
+=== Failure Models
+
+We distinguish two main classes of failures in peer-to-peer systems: crash failures and Byzantine failures.
+
+==== Crash Failures
+
+A node may experience a crash failure due to various causes, such as hardware faults, software errors, or permanent network disconnection. From the perspective of the system model, the specific cause of the failure is irrelevant, as the observable effect is always the same.
+
+When a node crashes, it permanently stops executing the protocol. As a consequence, a crashed node no longer updates its local state, does not send messages, and cannot receive or process incoming messages. Any attempt by another node to contact a crashed node results in the absence of a response. We assume that crash failures are permanent: a crashed node never recovers and never rejoins the system. Peer-to-peer protocols must explicitly account for crash failures in order to avoid undesirable behaviors such as deadlocks, where a node waits indefinitely for a response from a failed node.
+
+==== Byzantine Failures
+
+In contrast to crash failures, a Byzantine node remains active but no longer follows the prescribed protocol. Instead, it behaves according to an arbitrary (Byzantine) strategy.
+
+Byzantine behaviors can take many forms, including sending incorrect, inconsistent, or misleading messages, selectively responding to certain nodes, or attempting to disrupt the protocol execution. The common characteristic of Byzantine nodes is that they act maliciously, with the goal of corrupting the protocol execution or degrading the overall behavior of the peer-to-peer network.
+
+Unless stated otherwise, Byzantine nodes are assumed to have full control over their local state and outgoing messages, while still being subject to the constraints of the underlying communication network.
 
 === Network Primitives
 
@@ -209,25 +230,58 @@ In the second model, nodes execute their actions according to a global notion of
 
 // - Nodes execute asynchronously and do not share a global clock.
 
-// === Failure Models
+== Metrics
+In a peer-to-peer network, the state of the network at a given instant can be represented as a graph, and we can compute various metrics on this graph to characterize its structure. Calculating these metrics is crucial to understand the network's properties, monitor its evolution over time, and compare different protocols. Metrics provide insights into connectivity, resilience, efficiency, and overall behavior of the network. Commonly used metrics include the indegree and outdegree distributions, the network diameter, the average path length, and the clustering coefficient, among others.
 
-// - Nodes may fail by crashing. A node may crash due to hardware failure, software failure, or network disconnection. Regardless of the cause, the effect is the same: a crashed node cannot send or receive messages, nor can it perform any local computation.
+The *indegree* and *outdegree* distributions are fundamental metrics that describe how connections are distributed among nodes. The outdegree distribution corresponds to the number of outgoing connections each node maintains, which in most peer-to-peer protocols reflects the size of each node's partial view. Consequently, the outdegree is often uniform across nodes and remains stable over time. In contrast, the indegree distribution represents the number of incoming connections a node receives and can vary significantly, especially in networks with dynamic topologies or evolving hubs. Monitoring the indegree distribution over time provides valuable insights into how the network adapts, which nodes are highly connected, and how load or influence is distributed.
+#definition(title: "Indegree and Outdegree Distributions")[
+  The *indegree (resp. outdegree) distribution* of a network represents the probability distribution of the number of incoming (resp. outgoing) connections of nodes over the entire network. In other words, it characterizes how the connections are spread among the nodes.
+  
+  - For a network following a random graph distribution (Erdős–Rényi model), the degree distribution follows
+    $P(k) = binom(n-1,k) p^k (1-p)^(n-1-k)$.
+  - For a network following a scale-free distribution (Barabási–Albert model), the degree distribution follows
+    $P(k) = C k^(-gamma)$, where $gamma$ is the power-law exponent and $C$ is a normalization constant.
+] <def:degree-distribution>
 
-=== Failure Models
+The *clustering coefficient* is a fundamental metric in network analysis, as it measures the tendency of nodes to form tightly connected groups. Intuitively, it quantifies how likely it is that the neighbors of a node are also connected to each other. In random graphs, the clustering coefficient tends to be low because connections are made independently, whereas networks with hubs or communities usually exhibit a higher clustering coefficient. This metric provides insight into the local cohesiveness of the network and can reveal the presence of clusters or modular structures.
 
-We distinguish two main classes of failures in peer-to-peer systems: crash failures and Byzantine failures.
+#definition(title: "Clustering Coefficient")[
+The clustering coefficient 
+$C_i$ of a node $i$ is defined as the ratio between the number of edges connecting its neighbors and the total number of possible edges between them:
+$ C_i = (2e_i)/(k_(i)(k_i - 1)) $
+Where:
+- $e_i$ is the number of edges between the neighbors of node $i$ (i.e., the number of closed triangles including node $i$)
+- $k_i$ is the degree of node $i$, representing the total number of connections of that node.
 
-==== Crash Failures
+$ C = 1/n sum_(i=1)^(n) C_i $
+]
 
-A node may experience a crash failure due to various causes, such as hardware faults, software errors, or permanent network disconnection. From the perspective of the system model, the specific cause of the failure is irrelevant, as the observable effect is always the same.
+The *average path length* of a network is an important metric that characterizes how efficiently information can be transmitted across the network. It corresponds to the mean of the shortest path lengths between all pairs of nodes. A small average path length indicates that any node can be reached from any other node in a relatively small number of steps, which is typical in small-world or scale-free networks. Conversely, in networks with long chains or sparse connectivity, the average path length tends to be larger.
 
-When a node crashes, it permanently stops executing the protocol. As a consequence, a crashed node no longer updates its local state, does not send messages, and cannot receive or process incoming messages. Any attempt by another node to contact a crashed node results in the absence of a response. We assume that crash failures are permanent: a crashed node never recovers and never rejoins the system. Peer-to-peer protocols must explicitly account for crash failures in order to avoid undesirable behaviors such as deadlocks, where a node waits indefinitely for a response from a failed node.
+#definition(title: "Average Path Length")[
+The average path length $a$ of a network is defined as the mean of the shortest path lengths $d(s,t)$ between all pairs of distinct nodes $s$ and $t$ in the network:
+// s,t in V, s eq.not t
 
-==== Byzantine Failures
+$ a = sum_(s,t in V, s eq.not t) d(s,t)/(n(n-1)) $
 
-In contrast to crash failures, a Byzantine node remains active but no longer follows the prescribed protocol. Instead, it behaves according to an arbitrary (Byzantine) strategy.
+Where:
+- $V$ is the set of nodes in the network, with $|V| = n$
+- $d(s,t)$ is the length of the shortest path between nodes $s$ and $t$.
+]
 
-Byzantine behaviors can take many forms, including sending incorrect, inconsistent, or misleading messages, selectively responding to certain nodes, or attempting to disrupt the protocol execution. The common characteristic of Byzantine nodes is that they act maliciously, with the goal of corrupting the protocol execution or degrading the overall behavior of the peer-to-peer network.
+The *diameter* of a graph is a measure of the longest distance between any two vertices (nodes) in the graph, measured in terms of the number of edges. In other words, the diameter of a graph is the maximum shortest path between any pair of nodes in the network.
 
-Unless stated otherwise, Byzantine nodes are assumed to have full control over their local state and outgoing messages, while still being subject to the constraints of the underlying communication network.
+While the average path length provides a basic measure of information dissemination efficiency in algorithms, it may overlook disparities in dissemination speed across different nodes within the network. An algorithm could potentially have a favorable average path length but still exhibit uneven dissemination speeds among nodes due to varying distances. Calculating the network's diameter, however, offers a more comprehensive assessment.
+
+#definition(title: "Diameter")[
+The diameter of a network $G$ is the length of the longest shortest path between any pair of nodes in the network:
+
+$
+"diam"(G) = max_(u,v in V) d(u, v)
+$
+
+Where:
+- $V$ is the set of nodes in the network
+- $d(u,v)$ is the length of the shortest path between nodes $u$ and $v$.
+]
 

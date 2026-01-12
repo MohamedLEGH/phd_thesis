@@ -199,61 +199,6 @@ Markov chains provide a convenient mathematical framework to model the evolution
   // caption: [An example of Markov chain.],
 ) <markov-chain-example>
 
-==== Metrics
-In a peer-to-peer network, the state of the network at a given instant can be represented as a graph, and we can compute various metrics on this graph to characterize its structure. Calculating these metrics is crucial to understand the network's properties, monitor its evolution over time, and compare different protocols. Metrics provide insights into connectivity, resilience, efficiency, and overall behavior of the network. Commonly used metrics include the indegree and outdegree distributions, the network diameter, the average path length, and the clustering coefficient, among others.
-
-The *indegree* and *outdegree* distributions are fundamental metrics that describe how connections are distributed among nodes. The outdegree distribution corresponds to the number of outgoing connections each node maintains, which in most peer-to-peer protocols reflects the size of each node's partial view. Consequently, the outdegree is often uniform across nodes and remains stable over time. In contrast, the indegree distribution represents the number of incoming connections a node receives and can vary significantly, especially in networks with dynamic topologies or evolving hubs. Monitoring the indegree distribution over time provides valuable insights into how the network adapts, which nodes are highly connected, and how load or influence is distributed.
-#definition(title: "Indegree and Outdegree Distributions")[
-  The *indegree (resp. outdegree) distribution* of a network represents the probability distribution of the number of incoming (resp. outgoing) connections of nodes over the entire network. In other words, it characterizes how the connections are spread among the nodes.
-  
-  - For a network following a random graph distribution (Erdős–Rényi model), the degree distribution follows
-    $P(k) = binom(n-1,k) p^k (1-p)^(n-1-k)$.
-  - For a network following a scale-free distribution (Barabási–Albert model), the degree distribution follows
-    $P(k) = C k^(-gamma)$, where $gamma$ is the power-law exponent and $C$ is a normalization constant.
-] <def:degree-distribution>
-
-The *clustering coefficient* is a fundamental metric in network analysis, as it measures the tendency of nodes to form tightly connected groups. Intuitively, it quantifies how likely it is that the neighbors of a node are also connected to each other. In random graphs, the clustering coefficient tends to be low because connections are made independently, whereas networks with hubs or communities usually exhibit a higher clustering coefficient. This metric provides insight into the local cohesiveness of the network and can reveal the presence of clusters or modular structures.
-
-#definition(title: "Clustering Coefficient")[
-The clustering coefficient 
-$C_i$ of a node $i$ is defined as the ratio between the number of edges connecting its neighbors and the total number of possible edges between them:
-$ C_i = (2e_i)/(k_(i)(k_i - 1)) $
-Where:
-- $e_i$ is the number of edges between the neighbors of node $i$ (i.e., the number of closed triangles including node $i$)
-- $k_i$ is the degree of node $i$, representing the total number of connections of that node.
-
-$ C = 1/n sum_(i=1)^(n) C_i $
-]
-
-The *average path length* of a network is an important metric that characterizes how efficiently information can be transmitted across the network. It corresponds to the mean of the shortest path lengths between all pairs of nodes. A small average path length indicates that any node can be reached from any other node in a relatively small number of steps, which is typical in small-world or scale-free networks. Conversely, in networks with long chains or sparse connectivity, the average path length tends to be larger.
-
-#definition(title: "Average Path Length")[
-The average path length $a$ of a network is defined as the mean of the shortest path lengths $d(s,t)$ between all pairs of distinct nodes $s$ and $t$ in the network:
-// s,t in V, s eq.not t
-
-$ a = sum_(s,t in V, s eq.not t) d(s,t)/(n(n-1)) $
-
-Where:
-- $V$ is the set of nodes in the network, with $|V| = n$
-- $d(s,t)$ is the length of the shortest path between nodes $s$ and $t$.
-]
-
-The *diameter* of a graph is a measure of the longest distance between any two vertices (nodes) in the graph, measured in terms of the number of edges. In other words, the diameter of a graph is the maximum shortest path between any pair of nodes in the network.
-
-While the average path length provides a basic measure of information dissemination efficiency in algorithms, it may overlook disparities in dissemination speed across different nodes within the network. An algorithm could potentially have a favorable average path length but still exhibit uneven dissemination speeds among nodes due to varying distances. Calculating the network's diameter, however, offers a more comprehensive assessment.
-
-#definition(title: "Diameter")[
-The diameter of a network $G$ is the length of the longest shortest path between any pair of nodes in the network:
-
-$
-"diam"(G) = max_(u,v in V) d(u, v)
-$
-
-Where:
-- $V$ is the set of nodes in the network
-- $d(u,v)$ is the length of the shortest path between nodes $u$ and $v$.
-]
-
 === Topology
 Network topology refers to the structural organization of a network, that is, the way nodes are interconnected and how links are arranged between them. In the context of overlay networks, topology is naturally described through the shape of the underlying graph, where nodes represent participants and edges represent logical connections. Different topologies lead to fundamentally different properties in terms of connectivity, robustness, routing efficiency, and scalability. Broadly, network topologies can be divided into two categories: deterministic and random. Deterministic topologies are defined by explicit construction rules that impose a fixed structure on the graph, such as stars, rings, trees, or meshes, where the presence of an edge is fully determined by the position or role of each node. In contrast, random topologies are generated according to probabilistic rules, where edges are created based on random processes or statistical constraints rather than fixed patterns. This category includes classical random graphs, as well as more advanced models from complex network theory such as small-world networks, power-law networks, and stochastic block models, which introduce community structure through probabilistic connection patterns. Random topologies are particularly relevant for modeling large-scale and dynamic peer-to-peer systems, where global coordination is impractical and network structure often emerges from local interactions.
 
