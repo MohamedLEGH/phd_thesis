@@ -1,3 +1,5 @@
+#import "@preview/cetz:0.4.2"
+
 #import "@preview/fletcher:0.5.8" as fletcher: diagram, node, edge
 
 #import "@preview/lovelace:0.3.0": *
@@ -9,6 +11,38 @@
 #show: show-theorion
 
 = Model <chap:model>
+
+#figure(
+cetz.canvas({
+  import cetz.draw: *
+  // Dimensions
+  let box-width = 4
+  let box-height = 2
+
+  // Couleurs
+  let colors = (
+    rgb(70%, 70%, 70%),    // light grey
+    rgb(75%, 90%, 75%),   // green
+    rgb(75%, 85%, 95%),   // blue
+    rgb(85%, 75%, 90%),   // violet
+  )
+
+ 
+  // Arrow labels
+  let labels = (
+    "Physical and Logical Network Layer",
+    "Overlay Layer",
+    "Aggregation Layer",
+    "Application Layer",
+  )
+  for i in range(4) {
+    rect((0, i*2), (box-width, box-height + (i*2)), name: "rect_"+str(i), fill: colors.at(i)) 
+  
+    content("rect_"+str(i), labels.at(i), anchor: "center", padding:2)
+  
+  }
+}), caption: [Architecture]
+) <fig:system-architecture>
 
 == Notations
 TODO
@@ -528,9 +562,13 @@ In real-world networks, randomness often coexists with community structures. Sto
   SBM generalizes the Erdős–Rényi random graph, which corresponds to the case $K=1$.
 ] <def:sbm>
 
-== Metrics
+== Machine Learning
 
-In a peer-to-peer network, the state of the system at a given instant can be represented as a graph snapshot of the underlying time-varying graph. Various metrics can then be computed on this graph in order to characterize the structure of the network, monitor its evolution over time, and compare different peer-to-peer protocols.
+== Aggregation
+
+== Metrics
+=== On the Overlay Level
+In an overlay network, the state of the system at a given instant can be represented as a graph snapshot of the underlying time-varying graph. Various metrics can then be computed on this graph in order to characterize the structure of the network, monitor its evolution over time, and compare different protocols.
 
 Metrics provide insights into connectivity, resilience, efficiency, and overall behavior of the network. In the context of time-varying graphs, these metrics can be computed either on a single snapshot $G(t)$ or observed as time-dependent quantities $m(t) = m(G(t))$ that evolve as the network topology changes.
 
@@ -614,3 +652,5 @@ In typical operating conditions, peer-to-peer protocols aim to maintain a connec
 Starting from a connected snapshot, nodes are removed uniformly at random, one by one, simulating failures or departures. After each removal, we recompute the number of weakly and strongly connected components. The evolution of these quantities provides a quantitative measure of the network’s resilience: a topology is considered robust if it remains weakly connected, or fragments slowly, despite node failures.
 
 This analysis allows us to compare protocols in terms of fault tolerance and structural stability, independently of their specific message-passing behavior.
+
+=== On the Machine-Learning Level
