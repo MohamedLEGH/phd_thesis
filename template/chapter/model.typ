@@ -16,8 +16,9 @@
 cetz.canvas({
   import cetz.draw: *
   // Dimensions
-  let box-width = 4
-  let box-height = 2
+  let w = 4
+  let h = 2  
+  let spacing = 2
 
   // Couleurs
   let colors = (
@@ -36,9 +37,9 @@ cetz.canvas({
     "Application Layer",
   )
   for i in range(4) {
-    rect((0, i*2), (box-width, box-height + (i*2)), name: "rect_"+str(i), fill: colors.at(i)) 
+    rect((0, i*spacing), (w, h + (i*spacing)), name: "rect_"+str(i), fill: colors.at(i)) 
   
-    content("rect_"+str(i), labels.at(i), anchor: "center", padding:2)
+    content((0.5, i * spacing), (w, h + (i*spacing) - 0.5), labels.at(i))
   
   }
 }), caption: [Architecture]
