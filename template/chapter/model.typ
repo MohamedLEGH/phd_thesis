@@ -205,12 +205,12 @@ The protocol is said to converge if, for any initial global state $S(0)$, the se
 of global states $S(t)_(t >= 0)$ produced by the protocol satisfies:
 $
 exists T >= 0 "such as" forall t >= T, S(t) in S^*
-$ <def:convergence>
+$ 
 
 Convergence may be exact or approximate, and may hold deterministically or with high 
 probability, depending on the assumptions made on the protocol execution and the 
 network dynamics.
-]
+] <def:convergence>
 
 === Churn
 The execution model described above directly induces a dynamic evolution of the peer-to-peer network. As nodes repeatedly execute the protocol, both the local views of nodes and the global network topology may change over time.
@@ -269,7 +269,7 @@ In the second model, nodes execute their actions according to a global notion of
 
 // - Nodes execute asynchronously and do not share a global clock.
 
-== Topology Models
+=== Topology Models
 Network topology refers to the structural organization of a network, that is, the way nodes are interconnected and how links are arranged between them. In the context of overlay networks, topology is naturally described through the shape of the underlying graph, where nodes represent participants and edges represent logical connections. Different topologies lead to fundamentally different properties in terms of connectivity, robustness, routing efficiency, and scalability. Broadly, network topologies can be divided into two categories: deterministic and random. Deterministic topologies are defined by explicit construction rules that impose a fixed structure on the graph, such as stars, rings, trees, or meshes, where the presence of an edge is fully determined by the position or role of each node. In contrast, random topologies are generated according to probabilistic rules, where edges are created based on random processes or statistical constraints rather than fixed patterns. This category includes classical random graphs, as well as more advanced models from complex network theory such as small-world networks, power-law networks, and stochastic block models, which introduce community structure through probabilistic connection patterns. Random topologies are particularly relevant for modeling large-scale and dynamic peer-to-peer systems, where global coordination is impractical and network structure often emerges from local interactions. In this chapter, network topologies are not viewed as static structures, but as reference models describing the possible shapes of snapshot graphs $G(t)$ induced by peer-to-peer protocols over time.
 
 ==== Mesh
@@ -566,6 +566,42 @@ In real-world networks, randomness often coexists with community structures. Sto
   
   SBM generalizes the Erdős–Rényi random graph, which corresponds to the case $K=1$.
 ] <def:sbm>
+
+After introducing various network topologies, whether deterministic or random, it is natural 
+to consider the ability of peer-to-peer protocols to *reach* or *maintain* these structures. 
+In a dynamic system where nodes may join, leave, or update their connections, the observed 
+topology at time $t$, represented by the graph $G(t)$, can deviate from the ideal configurations 
+presented above. The notion of *topology convergence* formalizes this idea: a protocol is said 
+to converge if, starting from any initial topology, it drives the network toward a set of 
+desired topologies. These target topologies may be strictly deterministic, such as a ring or 
+a fully connected graph, or probabilistic, such as a random graph or a small-world network. 
+This formalization provides a rigorous framework to analyze and compare the effectiveness of 
+protocols in creating, stabilizing, or preserving different network structures in dynamic, 
+distributed environments.
+
+#definition(title: "Topology Convergence in Peer-to-Peer Networks")[
+A peer-to-peer protocol is said to achieve *topology convergence* if there exists a set of 
+desired network topologies $G^*$ such that, starting from any initial topology 
+$G(0)$, the sequence of overlay graphs $G(t)_(t >= 0)$ produced by the protocol satisfies:
+
+$
+exists T >= 0 "such as" forall t >= T, G(t) in G^*.
+$
+
+The desired topology may be:
+
+- *Deterministic*, e.g., a ring, a fully connected graph, or a structured DHT, in which 
+  case convergence requires that the protocol reorganizes the overlay exactly into this structure.
+
+- *Random*, e.g., an Erdős–Rényi or other random graph model, in which case convergence 
+  is defined in a statistical sense: the degree distribution, clustering coefficient, or 
+  other network metrics of $G(t)$ should approximate those of a graph sampled from the target 
+  random model.
+
+Convergence may hold deterministically or with high probability depending on the assumptions 
+made on the protocol execution, and the rules for neighbor selection.
+] <def:topology-convergence>
+
 
 == Machine Learning
 Before discussing *federated learning* and *decentralized learning*, it is essential to first establish a clear understanding of classical *machine learning*. 
@@ -959,7 +995,7 @@ ensemble learning has been shown empirically to significantly improve predictive
 performance in a wide range of applications.
 ] <def:ensemble-learning>
 
-== Distributed Learning
+=== Distributed Learning
 While ensemble learning focuses on combining multiple models to improve predictive 
 performance, it typically assumes that models are trained independently and that 
 their aggregation is performed in a centralized manner. More generally, most 
@@ -1097,6 +1133,141 @@ it relates to ensemble learning, as multiple locally trained models are repeated
 combined or aggregated to form improved models. Through this iterative exchange and 
 fusion of models, decentralized learning enables a collection of autonomous nodes to 
 collectively optimize a learning objective.
+
+==== Horizontal vs Vertical Learning
+
+Decentralized learning approaches can be broadly categorized into two main settings, 
+commonly referred to as horizontal and vertical learning, depending on how data are 
+partitioned across nodes.
+
+In horizontal decentralized learning, all nodes share the same feature space but 
+operate on different subsets of data instances. Each node trains a local model on its 
+own dataset, and learning proceeds by combining these local models. Model aggregation 
+is typically performed parameter-wise, for example by averaging or weighted averaging 
+corresponding parameters across nodes. This setting is particularly well suited to 
+peer-to-peer and federated environments, where data are naturally distributed across 
+participants but follow a common schema.
+
+In contrast, vertical decentralized learning assumes that nodes observe the same set 
+of data instances but with different feature subsets. In this case, no single node has 
+access to the full feature vector of an instance. Learning therefore requires combining 
+partial models or representations, often through the concatenation of parameters or 
+intermediate feature embeddings. Vertical learning generally involves stronger 
+coordination constraints and more complex communication patterns.
+
+In this thesis, we focus on *horizontal decentralized learning*, which is by far the most common setting in the literature and aligns naturally with peer-to-peer systems where nodes independently collect data but operate under a shared model structure.
+
+=== Assumptions
+
+=== Model of the learning system
+
+To formally horizontal decentralized learning, we introduce the following notation. 
+Let there be $N$ nodes in the network, each holding a local dataset $D_i$, where all datasets 
+share the same feature space but contain different data instances. Each node trains a local 
+model parameterized by $theta_i$ on its dataset $D_i$. 
+
+The goal of horizontal decentralized learning is to obtain a global model that leverages 
+all the distributed datasets without centralizing the raw data. This is typically achieved 
+by aggregating the local models across nodes.
+
+#definition(title: "Decentralized Learning System (Global View)")[
+A horizontal decentralized learning system is modeled as a distributed dynamical system evolving 
+over a time-varying directed graph $G = (V, E, T)$, where each node $v in V(t)$ corresponds to a computational 
+agent holding a local dataset and a machine learning model.
+
+Each node $v$ is modeled as a state machine with the following components:
+
+- *Local state space* $S_v$ containing:
+  - Local machine learning parameters $theta_v$,
+  - Local machine learning dataset $D_v$, divided between a train set and a test set,
+  - Cache containing the list of neighbors in the network,
+  - Any local protocol state for P2P communication.
+
+- *Initial state* $s_v^0$ representing the node's state at joining the system.
+
+- *Transition function* mapping the current local state and incoming events 
+  (messages or internal updates) to a new local state and a set of outgoing messages. 
+  This function may involve:
+  - Local model training on the node's dataset,
+  - Aggregation of models received from neighbors,
+  - Updates to the node's local P2P protocol state.
+
+The *global state* of the system at time $t$ is:
+
+$
+S(t) = (s_v(t))_(v in V(t))
+$
+
+aggregating the local states of all nodes present in the network.
+
+The *global parameters* of the system include:
+- The machine learning algorithm and its hyperparameters,
+- The aggregation model (e.g., weighted averaging, local vs global aggregation),
+- P2P protocol parameters (e.g., neighbor selection, message scheduling),
+- Any global objective or convergence criteria.
+
+The *evolution* of the system results from the composition of all local state machines 
+and the temporal evolution of the underlying time-varying graph, which constrains the 
+possible communications between nodes. The P2P layer may operate independently of the ML layer, 
+or it may be coupled such that the network topology depends on local ML parameters (e.g., nodes with similar models 
+tend to communicate more frequently).
+
+From this perspective, the decentralized learning system can be viewed as a large, 
+distributed state machine whose global behavior emerges from the interaction of local 
+ML updates and P2P communication between nodes.
+] <def:decentralized-global>
+
+While the decentralized learning system described above specifies the structural and dynamical 
+organization of the network, it does not by itself characterize the quality of the learning 
+process it induces. In contrast to purely topological protocols, whose objective is to reach 
+a target overlay structure, decentralized learning protocols aim at collectively optimizing 
+a machine learning objective through local computations and peer-to-peer interactions.
+
+Since no central entity has access to all data or model parameters, the notion of convergence 
+must be defined at the level of the system as a whole, based on the aggregate performance of 
+the local models. This requires introducing a global performance criterion that reflects the 
+learning quality achieved by the network, such as the average loss or prediction accuracy 
+across nodes, and comparing it to a suitable reference, e.g., centralized training or an 
+idealized optimum.
+
+We therefore define machine learning convergence in decentralized networks as the ability of 
+the protocol to drive the collection of local models, starting from arbitrary initializations, 
+toward a regime where their collective performance satisfies a prescribed global criterion.
+
+
+#definition(title: "Machine Learning Convergence in Decentralized Networks")[
+A decentralized learning protocol is said to achieve *machine learning convergence* if, 
+starting from any initial set of local models ${M_v(0)}_(v in V)$ with randomly initialized parameters, 
+the sequence of local models ${M_v(t)}_(v in V, t >= 0)$ produced by the protocol satisfies a global performance criterion.
+
+Formally, let $L_v(t)$ denote the loss of node $v$ at time $t$ evaluated on its local dataset, 
+and define the average loss across all nodes as:
+$
+macron(L)(t) = 1/(|V|) sum_(v in V) L_v(t).
+$
+
+The protocol is said to converge if there exists a time $T >= 0$ such that:
+$
+forall t >= T, quad macron(L)(t) <= L^* + epsilon,
+$
+where $L^*$ is a reference loss, e.g., the loss obtained by centralized training on all data, 
+and $epsilon > 0$ is a small tolerance parameter.
+
+Alternatively, convergence can be defined in terms of other global performance metrics 
+(e.g., accuracy, F1-score, or AUC) by replacing the average loss with the corresponding metric 
+evaluated across all nodes.
+
+Convergence may hold deterministically or in expectation, depending on the assumptions 
+made on the protocol execution, the learning algorithm, and the statistical properties 
+of the local datasets.
+] <def:ml-convergence>
+
+=== Aggregation Models
+// explain each aggregation model and like them to the corresponding topology
+
+=== Failure Models
+// privacy attacks
+// byzantine attacks (backdoor and poisoning)
 
 == Metrics
 === On the Overlay Level
