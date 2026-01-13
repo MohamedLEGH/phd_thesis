@@ -174,10 +174,47 @@ The evolution of the system results from the  composition of the local state mac
 From this perspective, the peer-to-peer system can be viewed as a large, distributed state machine whose global behavior emerges from the interaction of local protocols executed by individual nodes.
 ] <def:p2p-global>
 
-The execution model described above directly induces a dynamic evolution of the peer-to-peer network. As nodes repeatedly execute the protocol, both the local views of nodes and the global network topology may change over time.
-Thus a first level of dynamicity arises from the protocol execution itself. After each execution of the protocol loop, a node may update its partial view of the network, for instance by adding, removing, or replacing neighbors. As a consequence, the set of outgoing edges of a node in the overlay graph may change from one protocol cycle to another. At this level of dynamicity, the set of nodes remains constant, and only the edge set of the graph evolves over time.
+=== Emergent Behaviour
+
+Beyond local execution semantics, many peer-to-peer protocols are designed to achieve 
+specific objectives at the level of the system as a whole. While each node executes the 
+protocol independently and relies solely on local information, the collective behavior 
+of the system may exhibit coordinated dynamics that serve a common goal.
+
+In some protocols, nodes pursue purely local objectives, and no explicit global 
+coordination is required. In others, however, the protocol is designed so that the 
+interaction of nodes leads to the emergence of a global property or the computation of 
+a system-wide function. Typical examples include decentralized aggregation protocols, 
+where nodes collaboratively compute global statistics such as the average, sum, or 
+maximum of locally held values, as well as classical coordination tasks such as leader 
+election or consensus.
+
+These protocols are often characterized by a notion of convergence: starting from an 
+arbitrary initial global state, the system is expected to evolve toward a stable or 
+desirable global configuration that satisfies the protocol’s objective. This convergence 
+is achieved without centralized control and emerges from repeated local interactions 
+between nodes constrained by the evolving network topology.
+
+
+#definition(title: "Global Objective and Convergence")[
+A peer-to-peer protocol is said to pursue a global objective if there exists a set 
+of desirable global states $S^*$ such that the protocol aims to drive the system toward 
+this set through local interactions.
+
+The protocol is said to converge if, for any initial global state $S(0)$, the sequence 
+of global states $S(t)_(t >= 0)$ produced by the protocol satisfies:
+$
+exists T >= 0 "such as" forall t >= T, S(t) in S^*
+$ <def:convergence>
+
+Convergence may be exact or approximate, and may hold deterministically or with high 
+probability, depending on the assumptions made on the protocol execution and the 
+network dynamics.
+]
 
 === Churn
+The execution model described above directly induces a dynamic evolution of the peer-to-peer network. As nodes repeatedly execute the protocol, both the local views of nodes and the global network topology may change over time.
+Thus a first level of dynamicity arises from the protocol execution itself. After each execution of the protocol loop, a node may update its partial view of the network, for instance by adding, removing, or replacing neighbors. As a consequence, the set of outgoing edges of a node in the overlay graph may change from one protocol cycle to another. At this level of dynamicity, the set of nodes remains constant, and only the edge set of the graph evolves over time.
 
 A second level of dynamicity is introduced by churn, that is, the dynamic arrival and departure of nodes in the system. We model churn as a temporally localized phenomenon rather than a permanent one. Specifically, churn occurs during a predefined period spanning several protocol cycles.
 
@@ -536,7 +573,7 @@ In this section, we provide the fundamental definitions and concepts of machine 
 // We introduce the notions of *machine learning models*, *parameters and weights*, *datasets*, *loss functions*, and *optimization procedures*, which will serve as a foundation for subsequent discussions on federated and decentralized learning frameworks.
 
 #definition(title: "Machine Learning (Tom Mitchell, 1997)" )[
-A *machine learning* system can be formally defined following Tom Mitchell @learning1997tom:
+Following Tom Mitchell @learning1997tom, a *machine learning* system can be formally defined as :
 
 "A computer program is said to *learn* from experience $E$ with respect
 to some class of tasks $T$ and performance measure $P$, if its performance at tasks in
@@ -551,11 +588,10 @@ This definition highlights that learning is the process by which a system improv
 ] <def:ml-mitchell>
 
 Machine learning algorithms are typically categorized into three main types: 
-*supervised learning*, *unsupervised learning*, and *transfer learning*. 
+*supervised learning*, *unsupervised learning*, and *reinforcement learning*. 
 Supervised learning involves learning a mapping from input data to known outputs, 
 unsupervised learning aims to discover patterns or structure in data without labeled outputs, 
-and transfer learning focuses on leveraging knowledge from one domain or task to improve 
-performance on another. 
+and reinforcement learning focuses on learning optimal decision-making policies through repeated interaction with an environment, guided by a reward signal that evaluates the agent’s actions.
 
 In the context of this thesis, our primary focus is on *supervised learning*, 
 as it provides the foundation for the federated and decentralized learning approaches 
@@ -662,8 +698,9 @@ The test set is used only to evaluate the model's performance on unseen data, wh
 During training, the loss on the training set should decrease. However, if the loss on the test set starts to increase while the training loss continues to decrease, it indicates that the model is overfitting: it has learned to memorize the training data rather than capturing general patterns. 
 This methodology ensures that the model achieves good predictive performance not only on the data it has seen but also on new, unseen data.
 
-==== Linear Regression
+=== Machine Learning Models
 
+==== Linear Regression
 
 Linear regression is one of the simplest and most widely used models in machine learning. 
 It is a type of supervised learning model used to predict a continuous output variable $y$ 
@@ -675,22 +712,28 @@ and it also serves as a foundation for understanding more advanced models such a
 linear models and neural networks.
 
 #definition(title: "Linear Regression")[
-A linear regression model predicts the output $y$ from input features $x = (x_1, x_2, ..., x_d)$ using a linear function:
+A linear regression model predicts a continuous output $y in RR$ from an input 
+feature vector $x in RR^d$ using an affine function:
 
 $
-hat(y) = f_theta(x) = theta_0 + theta_1 x_1 + theta_2 x_2 + ... + theta_d x_d = theta_0 + sum_{i=1}^d theta_i x_i
+hat(y) = f_theta(x) = w^T x + b,
 $
 
 where:
-- $theta = (theta_0, theta_1, ..., theta_d)$ are the model parameters (intercept and weights),
-- $hat(y)$ is the predicted value for the input $x$.
+- $w in RR^d$ is the weight vector,
+- $b in RR$ is the bias term,
+- $theta = (w, b)$ denotes the set of model parameters.
 
-The parameters $theta$ are estimated by minimizing the mean squared error (MSE) over the training dataset $D$:
+Given a training dataset 
+$
+D = {(x_1, y_1), ..., (x_N, y_N)},
+$
+the parameters $theta$ are learned by minimizing the mean squared error (MSE):
 
 $
-L(theta) = 1/N sum_(n=1)^N (y_n - f_theta(x_n))^2
+L(theta) = 1/N sum_(n=1)^N (y_n - f_theta(x_n))^2.
 $
-]
+] <def:linear-regression>
 
 ==== Logistic Regression
 
@@ -704,25 +747,23 @@ The model is based on a linear combination of input features, transformed by
 the logistic (sigmoid) function, allowing it to model the probability of class membership.
 
 #definition(title: "Logistic Regression")[
-A logistic regression model predicts the probability that an input $x = (x_1, x_2, ..., x_d)$ 
-belongs to the positive class as:
+Logistic regression is a supervised learning model for binary classification. 
+It estimates the probability that an input $x in RR^d$ belongs to the positive class:
 
 $
-p(y = 1 | x; theta) = sigma(f_theta(x)) = sigma(theta_0 + sum_(i=1)^d theta_i x_i)
+p(y = 1 | x; theta) = sigma(w^T x + b),
 $
 
 where:
-- $theta = (theta_0, theta_1, ..., theta_d)$ are the model parameters,
-- $sigma(z) = 1 / (1 + exp(-z))$ is the sigmoid (logistic) function,
-- $hat(y) = p(y=1 | x; theta)$ is the predicted probability of the positive class.
+- $sigma(z) = 1 / (1 + exp(-z))$ is the sigmoid function,
+- $theta = (w, b)$ are the model parameters.
 
-The parameters $theta$ are typically estimated by maximizing the likelihood of the training data, 
-equivalently by minimizing the logistic loss (or cross-entropy loss):
+The parameters are learned by minimizing the binary cross-entropy loss:
 
 $
-L(theta) = - 1/N sum_(n=1)^N [y_n log(hat(y_n)) + (1 - y_n) log(1 - hat(y_n))]
+L(theta) = - 1/N sum_(n=1)^N [y_n log(hat(y_n)) + (1 - y_n) log(1 - hat(y_n))].
 $
-]
+] <def:logistic-regression>
 
 ==== Multinomial Logistic Regression
 
@@ -737,31 +778,325 @@ Multinomial logistic regression is widely used for multi-class classification
 tasks such as handwritten digit recognition, text categorization, or image labeling.
 
 #definition(title: "Multinomial Logistic Regression")[
-Given an input vector $x = (x_1, x_2, ..., x_d)$ and $K$ possible classes, 
-the probability that $x$ belongs to class $k$ is:
+For a classification problem with $K$ classes, multinomial logistic regression 
+models the conditional class probabilities using the softmax function.
+
+Let:
+- $x in RR^d$ be an input vector,
+- $W in RR^(K times d)$ be the weight matrix,
+- $b in RR^K$ be the bias vector.
+
+The probability of class $k$ is given by:
 
 $
-p(y = k | x; theta) = "softmax"_k(f_theta(x)) = (exp(f_(theta_k)(x)))/(sum_(j=1)^K exp(f_(theta_j)(x)))
+p(y = k | x; theta) =
+(exp((W x + b)_k))/(
+sum_(j=1)^K exp((W x + b)_j)
+),
 $
 
 where:
-- $f_(theta_k)(x) = theta_("k0") + sum_(i=1)^d theta_("ki") x_i$ is the linear score for class $k$,
-- $theta_k = (theta_("k0"), theta_("k1"), ..., theta_("kd"))$ are the parameters for class $k$,
-- $"softmax"_k$ denotes the $k$-th component of the softmax output vector.
+- $(W x + b)_k$ denotes the $k$-th component of the score vector,
+- $theta = (W, b)$ are the model parameters.
 
-The parameters $theta = (theta_1, ..., theta_K)$ are typically learned by minimizing 
-the cross-entropy loss over the training set:
+The model is trained by minimizing the categorical cross-entropy loss:
 
 $
-L(theta) = - 1/N sum_(n=1)^N sum_(k=1)^K y_("nk") log(p(y_n = k | x_n; theta))
+L(theta) =
+- 1/N sum_(n=1)^N sum_(k=1)^K y_("nk") log(p(y_n = k | x_n; theta)).
+$
+] <def:multinomial-logistic>
+
+==== Neural Networks and Multi-Layer Perceptrons
+
+The models introduced so far, such as linear and logistic regression, rely on a linear decision function of the form $f_theta(x) = theta^T x + b$. 
+While these models are simple, efficient, and well understood, their expressive power is fundamentally limited: they can only represent linear decision boundaries in the input space.
+
+Artificial neural networks extend these models by composing multiple linear transformations with nonlinear activation functions. 
+The simplest neural network, known as the *single-layer perceptron*, consists of a single linear unit followed by a nonlinear activation function. 
+Although this model already allows for binary classification, it remains limited to linearly separable problems.
+
+To overcome this limitation, neural networks introduce *hidden layers*, leading to the so-called *Multi-Layer Perceptrons (MLPs)*. 
+An MLP is a feedforward neural network composed of several layers of perceptrons, where each layer applies an affine transformation followed by a nonlinear activation. 
+By stacking multiple such layers, MLPs are able to learn complex, nonlinear mappings between inputs and outputs.
+
+This layered structure allows neural networks to progressively transform the input representation into higher-level features, making them powerful models for a wide range of tasks, including classification, regression, and function approximation.
+
+#definition(title: "Multi-Layer Perceptron (MLP)")[
+A Multi-Layer Perceptron (MLP) is a feedforward neural network composed of a finite sequence of layers, where each layer applies an affine transformation followed by a nonlinear activation function.
+
+Let $x in R^{d_0}$ be an input vector. An MLP with $L$ layers defines a sequence of hidden representations $(h^(1), h^(2), ..., h^(L))$ as follows:
+
+$
+h^(0) = x,
 $
 
-where $y_("nk") = 1$ if example $n$ belongs to class $k$, and $0$ otherwise.
-]
+$
+h^(l) = phi^(l)(W^(l) h^(l-1) + b^(l)), quad l = 1, dots, L,
+$
 
+where:
+- $W^(l) in R^{d_l times d_(l-1)}$ is the weight matrix of layer $l$,
+- $b^(l) in R^{d_l}$ is the bias vector of layer $l$,
+- $phi^(l): R^{d_l} -> R^{d_l}$ is a (possibly nonlinear) activation function applied element-wise,
+- $h^(l) in R^{d_l}$ is the output of layer $l$.
 
+The final output of the network is given by:
 
-== Aggregation
+$
+f_theta(x) = h^(L),
+$
+
+where $theta = {W^(1), b^(1), dots, W^(L), b^(L)}$ denotes the set of all trainable parameters of the network.
+
+Depending on the learning task, the output layer may use a specific activation function, such as the identity function for regression or the softmax function for multi-class classification.
+] <def:mlp>
+
+=== Online Learning
+In the previous sections, we described supervised learning models under the 
+classical assumption that the entire training dataset is available in advance 
+and that model parameters are optimized offline, what is commonly referred to as centralised learning, see @def:centralizedl-learning. However, in many real-world 
+settings, data is generated sequentially over time, possibly in large volumes 
+or under resource constraints, making repeated retraining impractical.
+
+#definition(title: "Centralized Learning")[
+Centralized learning refers to a learning paradigm in which all training data are 
+collected and stored at a single location, and the learning process is performed 
+using the complete dataset.
+
+Formally, given a dataset $D = {(x_1, y_1), dots, (x_N, y_N)}$, a centralized learning 
+algorithm assumes full access to all samples in $D$ during training and optimizes 
+a model $f_theta$ by minimizing a loss function over the entire dataset.
+
+In practice, training is often carried out using mini-batches for computational 
+efficiency, particularly to leverage GPU or accelerator architectures. However, 
+this does not alter the fundamental assumption of centralized learning, which 
+requires that all data be available to the learner, either in advance or on demand.
+
+As a consequence, centralized learning typically relies on a single machine or a 
+tightly coupled computing cluster with sufficient computational and memory 
+resources to process the full dataset. This paradigm therefore imposes strong 
+constraints on data availability, scalability, and data locality.
+] <def:centralizedl-learning>
+
+Online learning addresses this limitation by allowing a model to be updated 
+incrementally as new data becomes available. Instead of learning from a fixed 
+dataset, the model continuously adapts to a stream of observations, enabling 
+learning in dynamic, non-stationary, or distributed environments. This paradigm 
+is particularly relevant in decentralized systems, streaming applications, 
+and large-scale learning scenarios, which are central to the context of this 
+thesis.
+
+#definition(title: "Online Learning")[
+Online learning is a learning paradigm in which model parameters are updated 
+sequentially as data arrives, rather than being trained once on a fixed dataset.
+
+At each time step $t$, the learning algorithm receives an input $x_t$, produces 
+a prediction $hat(y)_t$, and then observes the true label $y_t$. Based on this 
+feedback, the model parameters $theta_t$ are updated using an online optimization 
+rule, typically of the form:
+
+$
+theta_(t+1) = theta_t - eta_t * nabla_theta L(f_(theta_t)(x_t), y_t)
+$
+
+where:
+- $theta_t$ denotes the model parameters at time $t$,
+- $eta_t > 0$ is a possibly time-dependent learning rate,
+- $L$ is a loss function measuring the prediction error.
+
+The objective of online learning is to minimize the cumulative loss over time, 
+often expressed as:
+
+$
+sum_(t=1)^T L(f_(theta_t)(x_t), y_t)
+$
+
+while adapting efficiently to new data and potential changes in the data 
+distribution.
+] <def:online-learning>
+
+=== Ensemble Learning
+Beyond individual learning models, an important paradigm in machine learning 
+consists in combining multiple models in order to improve predictive performance. 
+This approach, known as ensemble learning, is based on the observation that 
+multiple imperfect or weak models can collectively yield a more accurate and 
+robust predictor than any single model alone.
+
+Ensemble methods are particularly effective at reducing variance, improving 
+generalization, and increasing robustness to noise or model misspecification. 
+They play a central role in modern machine learning and are especially relevant 
+in distributed and decentralized settings, where multiple models may be trained 
+independently and later combined.
+#definition(title: "Ensemble Learning")[
+Ensemble learning is a learning paradigm in which a set of models 
+${f_1, f_2, dots, f_M}$, often referred to as weak learners, are combined to form 
+a single predictor $f_"ens"$ with improved performance.
+
+A common form of ensemble model is a weighted aggregation of individual predictors:
+
+$
+f_"ens"(x) = sum_(m=1)^M alpha_m f_m(x),
+$
+
+where:
+- $f_m$ denotes the prediction of model $m$,
+- $alpha_m in R$ is a weight associated with model $m$.
+
+For linear models, such as linear or logistic regression, this aggregation is 
+equivalent to a single model of the same class, with parameters equal to the 
+weighted sum of the individual parameters. In this case, the aggregation is 
+order-independent and preserves linearity.
+
+For nonlinear models, such as neural networks, the aggregation generally does not 
+admit an equivalent representation within the same hypothesis class. The 
+interaction between nonlinear decision functions may lead to more complex 
+behaviors, and the resulting ensemble cannot, in general, be reduced to a single 
+model.
+
+Despite the lack of general theoretical guarantees for nonlinear ensembles, 
+ensemble learning has been shown empirically to significantly improve predictive 
+performance in a wide range of applications.
+] <def:ensemble-learning>
+
+== Distributed Learning
+While ensemble learning focuses on combining multiple models to improve predictive 
+performance, it typically assumes that models are trained independently and that 
+their aggregation is performed in a centralized manner. More generally, most 
+classical machine learning algorithms rely on a centralized learning paradigm, in 
+which all data and computation are collected and processed at a single location.
+
+However, the increasing scale of data, computational requirements, and the 
+emergence of decentralized systems have motivated the development of distributed 
+learning approaches. In distributed learning, data, computation, or decision-making 
+are spread across multiple nodes, which collaboratively contribute to the training 
+process while operating under communication, synchronization, and resource 
+constraints.
+
+==== Data parallelism
+
+Data parallelism is one of the most common forms of distributed learning and aims 
+at accelerating training by distributing the data across multiple computing nodes. 
+In this paradigm, the training dataset is partitioned into disjoint subsets, each 
+assigned to a different worker, while all workers maintain a replica of the same 
+model.
+
+During training, each worker performs local updates of the model parameters using 
+its own data partition, typically by computing gradients on mini-batches. These 
+local updates are then aggregated, for instance by averaging the gradients or the 
+model parameters, to produce a global model that is shared among all workers. This 
+process is repeated iteratively until convergence.
+
+Data parallelism preserves the centralized learning objective, as the model is 
+effectively trained on the entire dataset, but distributes the computational load 
+across multiple nodes. While this approach improves scalability and training speed, 
+it still relies on frequent synchronization and communication between workers, and 
+assumes a coordinated training process under a common optimization objective.
+
+==== Model parallelism
+
+Model parallelism is a form of distributed learning in which the model itself, rather 
+than the data, is partitioned across multiple computing nodes. This approach is 
+particularly useful when the model is too large to fit into the memory of a single 
+device, as is often the case for deep neural networks with a large number of 
+parameters.
+
+In a model-parallel setting, each worker is responsible for computing and storing 
+only a subset of the model parameters. During training, forward and backward passes 
+are executed collaboratively: intermediate activations and gradients must be 
+communicated between workers to propagate information through the model. As a 
+result, model parallelism introduces fine-grained dependencies and requires careful 
+coordination and synchronization among nodes.
+
+While model parallelism enables the training of very large models that would be 
+infeasible on a single machine, it typically incurs higher communication overhead 
+than data parallelism and is more sensitive to latency. In practice, large-scale 
+systems often combine model parallelism and data parallelism to balance memory 
+constraints, computational efficiency, and communication costs.
+
+==== Multi-agent reinforcement learning
+
+Multi-Agent Reinforcement Learning (MARL) extends the reinforcement learning framework 
+to settings involving multiple agents that learn and act simultaneously within a 
+shared environment. In this paradigm, each agent aims to learn a policy that maximizes 
+its expected cumulative reward, while the dynamics of the environment are influenced 
+by the actions of all agents.
+
+Unlike supervised learning, where learning is driven by labeled datasets, MARL relies 
+on interaction, exploration, and reward signals. As a result, it falls outside the 
+scope of this thesis, which primarily focuses on supervised learning and its 
+distributed variants. Nevertheless, MARL is closely related to distributed learning 
+in that it involves multiple autonomous learners whose behaviors jointly shape the 
+learning process.
+
+In most MARL formulations, agents are assumed to operate within a common environment 
+and to observe either the same global state or partial views of that state. The 
+presence of multiple learning agents introduces additional challenges, such as 
+non-stationarity of the environment from the perspective of each agent, coordination 
+and competition among agents, and the need for scalable learning algorithms.
+
+Despite these challenges, MARL has proven effective in a variety of domains, including 
+robotics, game theory, and distributed control, and remains an active area of research 
+in distributed and decentralized learning systems.
+
+==== Transfer Learning & Fine-Tuning
+
+Transfer learning refers to a learning paradigm in which knowledge acquired from one 
+task or domain is reused to improve learning performance on a different, but related, 
+task or domain. Unlike distributed learning, transfer learning does not primarily aim 
+at scaling computation or data across multiple machines. Instead, it focuses on 
+reusing previously learned representations to reduce training cost, improve 
+generalization, or enable learning when labeled data is scarce.
+
+In a typical transfer learning setup, a model is first trained on a source dataset, 
+often large and generic, to solve a source task. This pretraining phase allows the 
+model to learn general-purpose representations. The pretrained model is then reused 
+for a target task, which may involve a dataset that is smaller, noisier, or drawn from 
+a different distribution. The source and target tasks may differ in terms of data 
+modalities, label spaces, or objectives, but are assumed to share some underlying 
+structure.
+
+Fine-tuning is a specific instantiation of transfer learning. In fine-tuning, the 
+pretrained model is further trained on the target dataset by continuing the 
+optimization process, typically with a smaller learning rate. Depending on the 
+application, fine-tuning may involve updating all model parameters or only a subset 
+of them, such as the final layers of a neural network.
+
+The key difference between transfer learning and fine-tuning lies in their scope. 
+Transfer learning is a broad concept that encompasses any strategy that leverages 
+knowledge from a source task, including feature extraction, representation reuse, and 
+model initialization. Fine-tuning, by contrast, refers specifically to the adaptation 
+of model parameters through additional training on the target task.
+
+While transfer learning and fine-tuning are not distributed learning techniques per 
+se, they are often complementary to distributed and federated learning systems. For 
+instance, a global model may be pretrained in a centralized manner and later adapted 
+locally on different nodes using fine-tuning, thereby combining representation reuse 
+with decentralized data.
+
+== Decentralized Learning
+
+Decentralized learning naturally emerges at the intersection of peer-to-peer systems 
+and machine learning. From a distributed systems perspective, it can be seen as a 
+direct extension of decentralized computation: instead of collaboratively computing 
+a single numerical value or global statistic, each node maintains a local machine 
+learning model and a local dataset, and participates in the learning process through 
+peer-to-peer interactions.
+
+From a machine learning perspective, decentralized learning can be viewed as a 
+generalization of distributed learning. Unlike classical distributed learning settings, 
+where data are moved or aggregated to enable centralized computation, decentralized 
+learning operates under the constraint that data remain local to each node. Learning 
+is therefore achieved by moving models—or model updates—across nodes, rather than 
+moving the data themselves.
+
+Decentralized learning also shares strong conceptual links with online learning and 
+ensemble learning. It resembles online learning in the sense that model updates are 
+often performed sequentially, based on data from one node at a time. At the same time, 
+it relates to ensemble learning, as multiple locally trained models are repeatedly 
+combined or aggregated to form improved models. Through this iterative exchange and 
+fusion of models, decentralized learning enables a collection of autonomous nodes to 
+collectively optimize a learning objective.
 
 == Metrics
 === On the Overlay Level

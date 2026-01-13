@@ -35,25 +35,7 @@ Machine learning can be formalized as the problem of inferring a predictive mode
 //   Let $X$ denote an input space and ${Y}$ an output space. In supervised learning, data are assumed to be drawn from an unknown joint probability distribution $\mathcal{D}$ over $\mathcal{X} \times \mathcal{Y}$.
 // ]
 
-=== Unsupervised Learning 
-
-=== Supervised Learning 
-
-=== Reinforcement Learning
-
-=== Ensemble Learning
-
-=== Online Learning
-
 === Personalized Learning
-
-== Distributed Learning
-
-=== Data parallelism
-
-=== Model parallelism
-
-=== Multi-agent reinforcement learning
 
 == Federated Learning
 
