@@ -1159,6 +1159,32 @@ In this thesis, we focus on *horizontal decentralized learning*, which is by far
 
 === Assumptions
 
+In order to focus on the algorithmic and theoretical aspects of decentralized learning, 
+we make the following simplifying assumptions throughout this work.
+
+- *Computational capabilities*:  
+  Each node has sufficient computational resources to train its local machine learning model.  
+  Moreover, all nodes are assumed to have identical computing power.
+
+- *Storage capacity*:  
+  Each node has enough local storage to hold its entire local dataset as well as any auxiliary 
+  information required by the learning and communication protocols.
+
+- *Computation time*:  
+  The time required to perform local model updates (e.g., training or aggregation) is assumed 
+  to be negligible. Local computations are therefore considered instantaneous.
+
+- *Communication latency*:  
+  The time required to transmit a model or model parameters between nodes is assumed to be 
+  instantaneous.
+
+- *Network bandwidth*:  
+  Network bandwidth limitations are not considered. We assume an infinite bandwidth, such that 
+  model transmissions do not incur congestion or queuing delays.
+
+These assumptions allow us to abstract away system-level constraints and isolate the behavior 
+of decentralized learning protocols from hardware and network effects.
+
 === Model of the learning system
 
 To formally horizontal decentralized learning, we introduce the following notation. 
@@ -1261,6 +1287,14 @@ Convergence may hold deterministically or in expectation, depending on the assum
 made on the protocol execution, the learning algorithm, and the statistical properties 
 of the local datasets.
 ] <def:ml-convergence>
+
+=== Aggregation
+
+// local is not enough
+// average sgd
+// train then average or the opposite
+// train at each cycle or not
+// iid vs non iid
 
 === Aggregation Models
 // explain each aggregation model and like them to the corresponding topology
