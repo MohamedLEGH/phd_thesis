@@ -1289,15 +1289,391 @@ of the local datasets.
 ] <def:ml-convergence>
 
 === Aggregation
+// Formally, given a set of models 
+// $\{theta_v\}_(v in V)$, aggregation produces an updated model:
+// $
+// theta = 1/(|V|) sum_(v in V) theta_v
+// $
+As introduced in the previous section, decentralized learning protocols aim to achieve 
+machine learning convergence through purely local computations and peer-to-peer interactions. 
+However, in most practical settings, the amount of data available at a single node is not 
+sufficient to train a model that achieves a low loss or high predictive performance. 
+Consequently, collaboration between nodes is required in order to leverage the information 
+contained in the distributed datasets.
 
-// local is not enough
-// average sgd
-// train then average or the opposite
-// train at each cycle or not
-// iid vs non iid
+Aggregation plays a central role in horizontal decentralized learning by enabling nodes to 
+combine information learned locally into a shared representation. Rather than exchanging raw 
+data, nodes periodically exchange model-related information and aggregate it to improve their 
+local models.
 
-=== Aggregation Models
+Several aggregation strategies have been proposed in the literature. In this work, we focus on 
+the simplest and most widely used approach: *Average SGD*, which consists in computing the 
+arithmetic mean of the model parameters across multiple nodes.
+
+#definition(title: "Average Stochastic Gradient Descent (Average SGD)")[
+Let $N$ nodes participate in a decentralized learning process. Each node $i in {1, dots, N}$ 
+holds a local dataset $D_i$ and maintains a local model parameterized by 
+$theta_i(t) in RR^d$ at iteration $t$.
+
+At each local iteration, node $i$ performs a stochastic gradient descent update on its 
+local objective function $L_i(theta)$:
+
+$
+theta_i(t+1) = theta_i(t) - eta_t nabla L_i(theta_i(t); xi_i(t)),
+$
+
+where $eta_t > 0$ is the learning rate and $xi_i(t)$ is a mini-batch sampled from $D_i$.
+
+After a synchronization step, the local models are aggregated by computing their arithmetic mean:
+$
+theta^(t+1) = 1/N sum_(i=1)^N theta_i(t+1).
+$
+
+The aggregated model $theta^(t+1)$ is then broadcast back to all nodes, which reset their local 
+models accordingly:
+$
+forall i, quad theta_i(t+1) := theta^(t+1).
+$
+
+This procedure is repeated iteratively. Under standard assumptions such as convexity or smoothness 
+of the loss function and IID data distribution across nodes, Average SGD converges to the same 
+optimum as centralized SGD.
+] <def:average-sgd>
+
+
+An alternative approach consists in aggregating gradients rather than model parameters. In this 
+case, nodes exchange local gradient updates, which are averaged and applied to a shared model. 
+While gradient-based aggregation can offer finer control over the optimization process, we 
+restrict our study to parameter-based aggregation for simplicity and clarity.
+
+Aggregation can be interleaved with local training in different ways. One option is to first 
+perform local training and then aggregate the resulting models. Another option is to aggregate 
+models before performing further local training. In practice, both strategies are commonly used 
+and often lead to similar convergence behavior under standard assumptions.
+
+Another important design choice concerns the aggregation frequency. Nodes may aggregate their 
+models at every learning cycle, or perform several local training steps before participating in 
+an aggregation round. This trade-off impacts communication cost, convergence speed, and model 
+stability.
+
+Finally, the statistical properties of the local datasets play a crucial role. When local data 
+are independently and identically distributed (IID), average SGD is known to perform well and 
+often achieves convergence comparable to centralized training. Since this thesis primarily 
+focuses on understanding the interaction between aggregation and decentralized network dynamics, 
+we restrict our analysis to the IID data setting.
+
+=== Aggregation Strategies
+
+Decentralized and federated learning systems rely critically on aggregation mechanisms to combine information learned locally at different nodes into a coherent global outcome. While local training enables scalability and data locality, individual nodes typically possess only a limited and potentially biased view of the overall data distribution. As a consequence, aggregation plays a central role in enabling convergence toward a model that reflects the collective knowledge of the network.
+
+Aggregation strategies differ not only in the mathematical operators they employ, but also—more fundamentally—in the network structures and communication patterns they assume. The choice of topology, ranging from centralized star-shaped architectures to fully decentralized peer-to-peer overlays, directly impacts convergence speed, robustness to failures, scalability, and resilience to churn. Understanding these trade-offs is therefore essential for the design and analysis of decentralized learning protocols.
+
+Here, we look at the main aggregation strategies encountered in the literature, organized according to their underlying network topologies and coordination mechanisms. We progressively move from centralized and hierarchical approaches, such as Federated Learning and its multi-server extensions, to fully decentralized schemes based on gossip and local interactions.
+
+We focus on aggregation strategies defined by network topology and communication patterns. Orthogonal aspects such as robust aggregation rules, privacy mechanisms, or incentive schemes are not discussed.
+
+==== Federated Learning
+Federated Learning (FL) is a decentralized learning paradigm in which multiple clients collaboratively train a shared machine learning model. Each client performs local training and only communicates model updates (e.g., parameters or gradients) to a coordinating entity, commonly referred to as the server.
+
+The concept was introduced to address privacy, bandwidth, and data ownership constraints, particularly in large-scale systems such as mobile devices and edge computing environments. The seminal work by McMahan et al. @mcmahan2017communication formalized this setting and introduced the Federated Averaging (FedAvg) algorithm, which generalizes average SGD by allowing multiple local optimization steps between communication rounds.
+
+From a network perspective, Federated Learning relies on a star-shaped topology: a single central server communicates with a set of clients, collects their local model updates, aggregates them, and broadcasts the resulting global model back to all participants. While this architecture enables efficient coordination and simplifies convergence analysis, it also introduces a strong centralization point.
+
+As a result, although Federated Learning avoids centralizing data, it does not fully eliminate central control. The server is assumed to be reliable and trusted. If the server fails, becomes unavailable, or behaves in a Byzantine manner, the entire learning process may be compromised.
+
+#figure(
+pseudocode-list(booktabs: true)[
+  - number of clients: *N*
+  - local datasets: ${D_1, dots, D_N}$
+  - learning rate: *eta*
+  - number of communication rounds: *T*
+  - local training steps per round: *E*
+  - aggregation weights: ${w_1, dots, w_N}$
+
+  - initial global model: $theta^(0)$
+
+  + *for* $t = 0$ *to* $T - 1$
+    + server broadcasts $theta^(t)$ to selected clients
+    + *for each* client $i$ *in parallel*
+      + $theta_i^(t,0) arrow.l theta^(t)$
+      + *for* $e = 1$ *to* $E$
+        + sample minibatch $B_i subset D_i$
+        + $theta_i^(t,e) arrow.l theta_i^(t,e-1) - eta * nabla_theta L(theta_i^(t,e-1); B_i)$
+      + $theta_i^(t+1) arrow.l theta_i^(t,E)$
+      + send $(theta_i^(t+1))$ to server
+    + server aggregates models:
+      + $theta^(t+1) arrow.l sum_(i=1)^N w_i * theta_i^(t+1)$
+  ],
+  caption: [Federated Learning with Federated Averaging (FedAvg).],
+) <algo:federated-learning>
+
+==== Multi-Star Federated Learning
+
+Multi-Star Federated Learning extends the classical federated learning paradigm by 
+replacing the single central server with multiple coordinating servers. Each server 
+acts as a local aggregation point for a subset of clients, forming multiple star-shaped 
+subnetworks that may operate in parallel. This architecture is motivated by scalability, 
+fault tolerance, and geographical distribution, and is commonly encountered in large-scale 
+industrial deployments where a single server would become a performance bottleneck.
+
+In a multi-star setting, clients are typically assigned to one or more servers, and 
+perform local training in the same way as in standard federated learning. Each server 
+collects the updated models from its associated clients and performs a local aggregation, 
+for instance using Federated Averaging. Compared to the single-star topology, this reduces 
+communication load and latency, and allows the system to scale to a much larger number of 
+clients.
+
+However, the presence of multiple servers raises fundamental design questions regarding 
+global consistency and convergence. In particular, servers must be synchronized in order to prevent model drift between different regions of the network. Several synchronization 
+strategies can be considered:
+
+- *Server-level aggregation*: servers periodically exchange their aggregated models and perform a second-level aggregation.
+
+- *Client-to-multiple-servers*: clients may send their local models to multiple servers, 
+  increasing redundancy and robustness at the cost of higher communication overhead.
+
+From a topological perspective, Multi-Star Federated Learning corresponds to a multi-star architecture. While it removes the single point of failure of classical federated learning, each server still represents a critical coordination node for its associated clients. If a server fails or behaves in a Byzantine manner, the learning process of its local star can be compromised, and inconsistencies may propagate to other servers during synchronization.
+
+==== Hierarchical Federated Learning
+
+Hierarchical Federated Learning generalizes the multi-star architecture by organizing 
+servers into a tree-shaped topology, forming a hierarchy of aggregation levels. At the 
+lowest level, clients perform local training and send their model updates to intermediate 
+servers, which act as local aggregators. These intermediate servers then forward partially 
+aggregated models upward in the hierarchy, until a final aggregation is performed at a 
+root server.
+
+From a graph-theoretic perspective, this architecture corresponds to a hierarchical or 
+tree topology, where each internal node performs aggregation over the models received from 
+its children. This hierarchical structure enables scalable learning over very large 
+populations of clients by distributing the aggregation workload across multiple levels, 
+thereby significantly reducing communication and computational pressure on the root server.
+
+Hierarchical aggregation also reduces communication costs by limiting the number of model 
+updates transmitted over long-distance or high-latency links. Instead of all clients 
+communicating directly with a central server, only aggregated representations propagate 
+upward in the tree. This makes hierarchical federated learning particularly attractive for 
+geographically distributed systems and edge–cloud architectures.
+
+Despite these scalability benefits, hierarchical federated learning remains fundamentally 
+centralized and inherits several limitations from tree-based topologies. In particular, 
+the structure is typically rigid, with predefined parent–child relationships. Failures of 
+intermediate aggregation nodes can disconnect entire subtrees, temporarily preventing a 
+large number of clients from contributing to the global model. Similarly, failures or 
+Byzantine behavior at higher levels of the hierarchy may corrupt or block the learning 
+process for all downstream nodes.
+
+==== Blockchain-Based Federated Learning
+
+Blockchain-based Federated Learning aims at combining federated learning with distributed 
+ledger technologies in order to remove the reliance on a single trusted coordinator. A large 
+body of recent literature explores this direction, motivated by the promise of decentralization, 
+auditability, and trust minimization.
+
+Several architectural strategies have been proposed. In a first approach, each participant 
+submits its local model update to a smart contract deployed on the blockchain. Once a sufficient 
+number of updates has been received, the smart contract performs the aggregation and publishes 
+the resulting global model. In this setting, the blockchain acts as a decentralized coordinator 
+that enforces participation rules and aggregation logic.
+
+An alternative approach relies on the block validation process. Instead of performing aggregation 
+on-chain, the block validator designates a node, or a small group of nodes, as aggregators for a 
+given round. Participants then send their local models to the selected aggregator, which computes 
+the aggregated model and disseminates it to the network. The blockchain is used only to record 
+the selection process and ensure accountability.
+
+While these approaches introduce a degree of decentralization, they also inherit significant 
+limitations from blockchain technology. First, blockchain systems require consensus on an exact 
+global state, whereas machine learning optimization only aims at converging toward a sufficiently 
+low loss. Enforcing strict consensus at every learning round introduces substantial overhead 
+without providing proportional benefits to the learning process.
+
+Second, storing model parameters directly on-chain is often impractical due to storage constraints 
+and associated costs, especially for large models. As a result, most practical implementations 
+resort to off-chain storage or aggregation, which reintroduces trust assumptions and partially 
+undermines the decentralization objective.
+
+Moreover, when aggregation is performed by a single node or a small committee selected by the 
+block validator, the system becomes vulnerable to centralization risks. The correctness of the 
+learning process then depends on the honesty and availability of the designated aggregators, 
+which contradicts the original motivation for using a blockchain.
+
+From a topological perspective, blockchain-based federated learning typically corresponds to a 
+fully connected interaction model when smart contracts are used, as all participants are assumed 
+to be globally identifiable. When off-chain aggregators are employed, the resulting structure 
+resembles a star topology, with the aggregator acting as a temporary central node.
+
+Although the idea of combining blockchain and federated learning is conceptually appealing, it 
+remains challenging to deploy in practice. The high communication latency, storage overhead, 
+and consensus costs of blockchain systems are poorly aligned with the iterative and approximate 
+nature of distributed machine learning. As a result, blockchain-based federated learning often 
+introduces more complexity than it removes, especially when scalability and efficiency are 
+primary concerns.
+
+==== Gossip Learning
+
+Gossip Learning is a fully decentralized learning paradigm in which nodes exchange models 
+through randomized peer-to-peer interactions. At each communication round, a node selects 
+one of its neighbors uniformly at random and sends its current local model to that neighbor. 
+There is no central coordinator and no notion of a global aggregation phase.
+
+Upon receiving a model from a neighbor, a node performs a local aggregation between the 
+received model and its own local model, typically by computing a weighted or uniform average 
+of their parameters. The resulting aggregated model is then refined by performing one or 
+several local learning steps using the node’s private dataset. This interaction pattern is 
+repeated asynchronously across the network, leading to a gradual diffusion of information.
+
+Several variants of gossip learning exist. In the most common formulation, aggregation is 
+performed before the local learning step. An alternative variant applies a local learning 
+update independently to both models before merging them, which can improve robustness in 
+non-IID data settings. Another extreme variant removes aggregation altogether: the local 
+model is simply replaced by the received model. In this case, models effectively perform 
+random walks over the network, and learning corresponds to successive local updates applied 
+along these trajectories.
+
+Gossip learning is typically deployed over random graph topologies, where the randomized 
+communication pattern ensures sufficient mixing properties. Aggregation remains strictly 
+local, and no global model is ever explicitly computed. Nevertheless, under suitable 
+assumptions on the learning rate, loss function, and network connectivity, the local models 
+are known to converge toward a common global solution. This convergence, however, is 
+significantly slower than in Federated Learning due to the absence of coordinated global 
+synchronization and the limited bandwidth of local interactions.
+
+Despite its slower convergence, gossip learning offers strong advantages in terms of system 
+robustness. The absence of any central entity makes the scheme inherently resilient to node 
+failures, network partitions, and churn. Nodes can join or leave the system dynamically 
+without disrupting the learning process, provided the underlying communication graph remains 
+connected on average. These properties make gossip learning particularly attractive for 
+large-scale, dynamic, and failure-prone environments where centralized or hierarchical 
+approaches are impractical.
+#align(center,
+grid(columns: 2,
+[#figure(
+pseudocode-list(
+  booktabs: true,
+  title: [Gossip Learning (main thread)],
+)[
+  - ML model: *model*
+  - List of neighbors : *cache*
+  // + model $arrow.l$ initModel()
+  + *loop*
+    + Wait for *Δ* time units
+    + peer $arrow.l$ selectRandom(cache)
+    + send(peer, model)
+], caption: [Gossip Learning]
+) <algo:gossip-learning>
+],
+[#figure(
+pseudocode-list(
+  booktabs: true,
+  title: [Gossip Learning (background thread)],
+)[
+  - ML model: *model*
+  - local dataset: *data*
+  + *loop*
+    + peer_model $arrow.l$ receive()
+    + model $arrow.l$ merge(model, peer_model)
+    + model.update(data)
+], caption: [Gossip Learning (background thread)]
+) <algo:gossip-learning-background>
+])
+)
+
+==== Gossip Broadcast Learning
+
+Gossip Broadcast Learning is a decentralized learning scheme in which each node exchanges 
+its local model with all of its neighbors at every communication round. Contrary to classical 
+gossip learning, where interactions are pairwise and asynchronous, this approach requires 
+each node to wait for the models of all its neighbors before performing aggregation. As a 
+result, the learning process is inherently synchronous.
+
+At each round, a node broadcasts its current model to all adjacent nodes and collects the 
+models received from its neighborhood. Once all expected models have been received, the node 
+computes an aggregation, typically by averaging the parameters of its own model with those of 
+its neighbors. The aggregated model is then updated using a local learning step on the node’s 
+private dataset. This process is repeated synchronously across the network.
+
+Gossip Broadcast Learning can be deployed over various network topologies. On random graphs, 
+it preserves some of the decentralization benefits of gossip learning while accelerating 
+convergence thanks to richer local aggregation. On a fully connected topology, where every 
+node is connected to all others, the scheme becomes equivalent to a global aggregation 
+performed in a fully decentralized manner.
+
+However, the increased degree of connectivity comes at a significant cost. The communication 
+and aggregation overhead grows linearly with the number of neighbors, making the approach 
+poorly scalable for high-degree nodes. In fully connected networks, the communication cost 
+per round becomes prohibitive as the number of nodes increases. Furthermore, the synchronous 
+nature of the protocol makes it sensitive to stragglers and node failures, as a single slow 
+or unavailable neighbor can delay the entire aggregation step.
+
+While Gossip Broadcast Learning offers faster convergence than pairwise gossip schemes, it 
+sacrifices robustness and scalability. This trade-off highlights the inherent tension between 
+rich aggregation, decentralization, and fault tolerance, and motivates the exploration of 
+adaptive or hierarchical aggregation strategies that balance these competing objectives.
+
+==== Decentralized Learning on Ring Topology
+
+Decentralized learning can also be implemented over a ring topology, although this approach 
+is relatively uncommon in the machine learning literature. In a ring-based system, each node 
+maintains connections with exactly two neighbors, typically referred to as its left and right neighbors, forming a closed cycle. This topology is simple, deterministic, and requires each node to store only a constant number of connections, which makes it attractive from a 
+maintenance and routing perspective.
+
+Several aggregation strategies can be employed in a ring topology. A first approach consists 
+in *local neighborhood aggregation*, where each node periodically exchanges model parameters 
+or updates with its immediate neighbors and aggregates them, for instance by averaging its 
+own model with those received from the left and right neighbors.
+
+A second strategy relies on *model circulation*. In this approach, a single model is passed sequentially from node to node along the ring. Each node locally updates the received model using its own dataset before forwarding it to the next neighbor. 
+After a full traversal of the ring, the model has effectively been trained on the data of all 
+nodes, in a manner reminiscent of incremental or online learning. 
+Despite its conceptual simplicity, decentralized learning on a ring topology suffers from 
+significant limitations. Information propagation is inherently slow, as updates must traverse 
+the ring sequentially, leading to convergence times that grow linearly with the number of 
+nodes. Moreover, the rigid structure of the ring makes the system particularly vulnerable to 
+failures and churn. The failure of a single node or link may break the ring and disconnect the 
+network unless additional repair mechanisms are employed. Frequent joins and leaves further 
+complicate the maintenance of the ring structure and may disrupt the learning process.
+
 // explain each aggregation model and like them to the corresponding topology
+// Federated Learning
+// Hierarchical Federated Learning
+// Blockchain based Federated Learning
+// Gossip Learning
+// Gossip Learning All to All
+
+#figure(
+table(
+  columns: (1fr, 1fr),
+  inset: 10pt,
+  align: horizon,
+
+  table.header(
+    [*Aggregation strategy*], [*Associated topology*],
+  ),
+
+  [Federated Learning],
+  [Star (single central server)],
+
+  [Multi-Star Federated Learning],
+  [Multiple stars],
+
+  [Hierarchical Federated Learning],
+  [Tree / hierarchical topology],
+
+  [Blockchain-Based Federated Learning],
+  [Complete graph or star],
+
+  [Gossip Learning],
+  [Random graph],
+
+  [Gossip Broadcast Learning],
+  [Random graph or complete graph],
+
+  [Ring-Based Decentralized Learning],
+  [Ring],
+),  caption: [Aggregation strategies and their associated network topologies.],
+) <tab:aggregation-strategies-topology>
+
 
 === Failure Models
 // privacy attacks
