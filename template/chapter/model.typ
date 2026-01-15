@@ -1675,9 +1675,32 @@ table(
 ) <tab:aggregation-strategies-topology>
 
 
-=== Failure Models
-// privacy attacks
-// byzantine attacks (backdoor and poisoning)
+=== Adversarial Models
+
+In decentralized learning systems, the correct functioning of the aggregation 
+process can potentially be compromised by adversarial behaviors of participating nodes. 
+Here, we focus on *adversarial behaviors affecting model aggregation*, 
+rather than network-level failures such as crashes or message losses.
+
+Several types of adversarial actions are commonly considered in the literature:
+
+- *Privacy attacks*: a node attempts to infer or reconstruct data from other nodes 
+  by analyzing model updates.
+  
+- *Poisoning attacks*: a node intentionally manipulates its local model updates 
+  to degrade the performance of the global model.
+  
+  - *Backdoor attacks*: a malicious node or group of nodes injects hidden triggers 
+    or patterns into the model during training, aiming to influence the model's behavior 
+    on specific inputs.
+  
+- *Free-riding*: a node benefits from the learning process without contributing 
+  meaningful updates, for example by sending stale or null model parameters.
+
+In this work, we *do not study these adversarial behaviors*. We assume that all 
+nodes are honest and behave correctly with respect to the learning process. 
+This allows us to focus on the dynamics and convergence properties of decentralized 
+learning under the assumption of cooperative participants.
 
 == Metrics
 === On the Overlay Level
@@ -1768,7 +1791,71 @@ This analysis allows us to compare protocols in terms of fault tolerance and str
 
 === On the Machine-Learning Level
 
+At the machine-learning level, we assess the performance of decentralized 
+learning protocols by evaluating how well the global model generalizes 
+on unseen data. In this work, we focus primarily on *accuracy*, 
+while noting that other metrics could also provide insights into 
+model quality, robustness, and fairness.
+
+#definition(title: "Accuracy")[
+Let $D_v^("test")$ denote the local test dataset of node $v$, and let 
+$hat(y)_i$ be the predicted label for input $x_i$ with true label $y_i$. 
+The *accuracy* of a model $M_v$ at node $v$ is defined as:
+
+$
+"Accuracy"_v = 1/(|D_v^("test")|) sum_((x_i, y_i) in D_v^"test") bb(1) {hat(y)_i = y_i} 
+$
+
+Where $bb(1) {dot.c}$ is the indicator function, equal to 1 if the prediction is correct ($hat(y)_i = y_i$), and 0 otherwise.
+
+The *global accuracy* of the system at time $t$ is computed as the average accuracy across all nodes:
+
+$
+"Accuracy"(t) = 1/(|V|) sum_(v in V) "Accuracy"_v (t)
+$
+
+We evaluate accuracy in two complementary ways:
+
+1. *Final Accuracy*: the accuracy measured at the end of the learning process, 
+   either after a sufficiently long time $T$ in the mathematical model, or 
+   after a fixed number of cycles in the simulations.
+
+2. *Time-to-Accuracy*: the time or number of cycles required for the system 
+   to reach a predetermined accuracy threshold, e.g., 90%.
+]
+
+
 == Conclusion
+
+In this chapter, we have presented a comprehensive model of a decentralized learning system, 
+structured in multiple layers, as illustrated in Figure <fig:system-architecture>. 
+
+The system is organized into four main layers:
+
+- *Network Layer*: represents the underlying physical or logical network. In our study, 
+  we do not model the network in detail; we only make high-level assumptions regarding 
+  connectivity, latency, and node availability.
+
+- *Overlay Layer*: implements the peer-to-peer system on top of the network. This layer 
+  defines the topology and dynamics of the overlay, such as neighbor selection, churn, 
+  and connectivity maintenance.
+
+- *Aggregation Layer*: defines the logic of model aggregation. It abstracts the communication 
+  and combination of local model updates according to various aggregation strategies, 
+  including centralized, hierarchical, gossip-based, or blockchain-mediated approaches.
+
+- *Application Layer*: hosts the machine learning models themselves, such as logistic 
+  regression, and orchestrates local training, evaluation, and metrics computation.
+
+By separating the system into these layers, we ensure that the model is adaptable both 
+to different underlying network conditions and to various machine learning models. 
+This modular design allows us to study the impact of aggregation strategies and overlay 
+topologies on learning performance independently from the specific ML algorithms or 
+network technologies.
+
+Overall, this layered architecture provides a clear framework for analyzing decentralized 
+learning systems, highlighting the interactions between network assumptions, overlay design, 
+aggregation logic, and machine learning objectives.
 
 #figure(
 cetz.canvas({
