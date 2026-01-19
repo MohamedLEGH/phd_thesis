@@ -9,7 +9,7 @@
 #show: show-theorion
 
 // = Decentralized Peer Sampling in Overlay Peer-to-Peer Networks <chap:p2p>
-= Peer-to-Peer Networks <chap:p2p>
+= Decentrized Peer Sampling <chap:peer-sampling>
 
 // Core concepts
 // Examples of p2p protocols

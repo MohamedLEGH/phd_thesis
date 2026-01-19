@@ -1,4 +1,4 @@
-= Second contribution: HEAL <chap:heal>
+= Hub-Based Decentralized Learning <chap:heal>
 
 == Description
 

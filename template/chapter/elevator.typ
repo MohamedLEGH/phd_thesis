@@ -9,7 +9,9 @@
 #show: show-theorion
 
 
-= First contribution: Elevator <chap:elevator>
+// = Hub Sampling <chap:elevator>
+= Emergent Peer-to-Peer Multi-Hub Topology <chap:elevator>
+
 In this paper we propose and evaluate an innovative algorithm that enables the creation of Peer-to-Peer network overlays characterized by emergent multi-hubs. This approach generates overlays that balance between the randomness of a graph and the structure of a star network, resulting in networks that not only feature prominent hubs but also exhibit strong resilience to failures. By leveraging principles of preferential attachment and random attachment, our method allows hubs to form spontaneously, offering a decentralized and fault-tolerant solution ideal for applications requiring both low network diameter and high robustness. The protocol is entirely decentralized, operates asynchronously, and depends exclusively on local information. Nodes organically evolve into hubs and remain indistinguishable from other nodes (except in terms of the number of incoming links). The quantity of hubs that emerge can be predetermined by the application as a network parameter.
 
 Peer-to-peer networks, Peer sampling service, Hub sampling, Resilient networks, System design, Algorithms, Simulations.
@@ -652,6 +654,9 @@ For Elevator, the in-degree distribution remains similar, with 10 high-in-degree
 We are thus confident in the capacity of our algorithm to promote new nodes to the position of hubs if the previous hubs were disconnected.
 In @fig:ClustCoefCrashHub we can see that we have almost the same results as the results obtained without crashes for the clustering coefficient.
 Its the same for the average path length and the diameter, there is no impact, as we can see in @fig:AveragePathLengthCrashHub and @fig:DiameterCrashHub.
+
+=== Resilience to byzantine attacks
+
 
 === Summary
 
