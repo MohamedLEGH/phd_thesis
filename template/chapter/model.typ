@@ -12,9 +12,6 @@
 
 = Model <chap:model>
 
-== Notations
-TODO
-
 == Peer-to-Peer System Model
 A peer-to-peer system is composed of a set $N$ of peers, also referred to as nodes, that communicate by exchanging messages over a network without relying on any central authority. Messages may represent control information, data items, or application-level payloads, and are assumed to have finite length and arbitrary content.
 
