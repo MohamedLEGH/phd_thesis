@@ -12,25 +12,104 @@
 
 = Model <chap:model>
 
-// == Peer-to-Peer System Model
-A peer-to-peer system is composed of a set $N$ of peers, also referred to as nodes, that communicate by exchanging messages over a network without relying on any central authority. Messages may represent control information, data items, or application-level payloads, and are assumed to have finite length and arbitrary content.
+The peer-to-peer literature encompasses a wide variety of systems, protocols, and
+architectures, ranging from structured overlays and to highly dynamic gossip-based protocols. These systems differ in their objectives,
+their communication patterns, and their assumptions.
+Despite this diversity, most peer-to-peer systems rely on a common set of fundamental
+principles.
 
-#definition(title: "Peer to Peer system")[
-We use the definition from the book *Peer-to-Peer systems and applications* @wehrle2005peer. A Peer-to-Peer system consists of computing elements that are:
-  1. connected by a network,
-  2. addressable in a unique way, and
-  3. share a common communication protocol.
-All computing elements, synonymously called nodes or peers, have comparable
-roles and share responsibility and costs for resources.] <def:p2p-system>
+In order to reason about such systems in a systematic way, it is necessary to go beyond
+individual protocol descriptions and introduce a unified formal model. The purpose of
+this chapter is to define such a model, capturing the essential components and dynamics
+shared by a broad class of peer-to-peer systems, while abstracting away implementation-specific details.
 
-#example[The BitTorrent network.]
+This formalization serves two main objectives. First, it provides a common framework for
+comparing different peer-to-peer protocols on a principled basis, independently of their
+concrete realization. Second, it enables the rigorous analysis of system properties such
+as performance, efficiency, robustness, and convergence.
 
-A peer-to-peer network is typically implemented as a virtual network, also called an overlay network, on top of a physical network. A clear distinction must therefore be made between the physical network, such as the Internet, and the overlay network. Each node in the overlay network is hosted on a node of the physical network, but the reverse is not necessarily true. Moreover, two neighbouring nodes in the overlay network are not necessarily neighbours in the physical network. An overlay network can itself be implemented on top of another overlay network. For example, the Lightning Network @poon2016bitcoin operates as an overlay on top of the Bitcoin network, which itself relies on the Internet protocol stack.
+The model introduced in this chapter forms the foundation for the rest of the manuscript.
+It will be used to describe execution assumptions, network dynamics, evaluation metrics, and to support both analytical arguments and experimental results presented in the following chapters.
 
-// === Graph Theory
-In order to study overlay networks, it is useful to adopt a mathematical representation that allows formalizing and comparing their properties. Graph theory provides a natural framework for this purpose. A network can be represented as a graph, where nodes correspond to servers or users, and edges represent connections between them. Depending on the nature of the connections, a network can be modeled as either undirected or directed: bidirectional connections (e.g., TCP connections) are naturally represented by undirected edges, while unidirectional connections (e.g., UDP connections) are better captured by directed edges. In overlay networks, edges do not correspond to direct physical connections, but rather to a node's virtual view of the network—that is, the subset of nodes that each node is aware of.
+We adopt a bottom-up approach, starting from the node as the fundamental building block of the system, then modeling the peer-to-peer network formed by their interactions, and finally analyzing the emergent phenomena that arise at the network level.
+
+== Node
+Nodes constitute the fundamental components of the system. Each node acts as an autonomous entity that executes local computations, maintains an internal state, and interacts with other nodes through the peer-to-peer network. In the literature on distributed systems and peer-to-peer networks, nodes are commonly referred to using different terms such as _processors_, _peers_, or _agents_, depending on the modeling perspective and application domain. In this work, we use the term node to emphasize its generality and to remain independent of any specific implementation or execution environment.
+
+#definition(title: "Node")[
+A node (also referred to as a participant, agent, or peer) is an abstract computational entity.
+
+A node is characterized by:
+1. a memory, representing its local state, assumed to be arbitrarily large for modeling purposes;
+2. computational capabilities, abstracted from physical limitations and assumed to be unbounded.
+]
+#example[
+A machine running a BitTorrent client constitutes a node in the BitTorrent system.]
+
+// #definition(title: "Node")[A node (also called a participant, agent, or peer) is a process that runs on a computing device.
+// A node has:
+// 1. a memory (a local state)
+// 2. a unique address (network or logical identifier)
+// 3. some computing power
+// 4. the ability to communicate with other nodes by sending messages.
+// ]
+// #example[
+// In the BitTorrent protocol, a machine running a BitTorrent client constitutes a node in the peer-to-peer network. The node is identified by its IP address and a PeerID, and communication relies on the underlying TCP/IP network.]
+We deliberately abstract away any form of node heterogeneity, as our primary focus is on the interactions induced by the protocol rather than on resource disparities between nodes.
+
+#assumption()[
+All nodes are identical in terms of memory or computational capabilities]
+
+A node is executed according to an abstract execution model that captures its behavior independently of any implementation details.
+In this model, a node is viewed as a state machine that evolves over time by executing local computations.
+
+Starting from an initial state, the node repeatedly executes a local computation based solely on its current state (i.e., its local memory), and transitions to a new state.
+This execution model abstracts away timing, concurrency, and hardware constraints, and focuses exclusively on how local states evolve as a result of computation.
+
+#definition(title: "Node Execution Model")[
+A node is modeled as a state machine defined by the tuple  
+$(S, s_0, delta)$, where:
+
+- $S$ is the set of all possible local states of the node;
+- $s_0 in S$ is the initial state;
+- $delta : S arrow.r S$ is a state transition function.
+
+At each execution step, the node applies the transition function $delta$ to its current state $s in S$, producing a new state $s' = delta(s)$.
+]
+
+== Network
+In a distributed system, nodes do not operate in isolation but interact with each other through a network.
+The network provides the structural substrate that enables communication, coordination, and information exchange between nodes.
+
+In our model, the network captures how nodes are interconnected and how interactions between them are made possible, independently of the specific communication mechanisms or protocols.
+By introducing the network abstraction, we move from the behavior of an individual node to the collective behavior of a set of interacting nodes, which is a fundamental step toward understanding the dynamics of peer-to-peer systems.
+
+=== Network Assumptions
+
+We abstract the underlying physical network, as peer-to-peer algorithms do not directly operate on physical networking mechanisms. We assume that the underlying network provides basic communication primitives required by the overlay network.
+
+In particular, we assume that:
+1. the underlying network is connected, i.e., any node can eventually reach any other node,
+2. nodes can send messages to other nodes, and messages are routed to their intended destination.
+
+We abstract away message transmission by assuming that the underlying network is *reliable*. In particular, message delivery is assumed to be instantaneous, and messages are neither lost nor corrupted. Under this abstraction, peer-to-peer algorithms do not need to explicitly account for network-level delays or failures.
+
+These assumptions allow us to focus on the design and analysis of the overlay network and the associated peer-to-peer protocols, independently of the underlying physical infrastructure.
+
+=== Graph Terminology
+
+To model the overlay network, we rely on graph theory, which provides a natural and well-established framework for representing interactions between nodes in a peer-to-peer system. Graph-based models allow us to reason about network structure, connectivity, and information propagation without explicitly accounting for low-level networking or hardware-specific characteristics.
+
+By abstracting the overlay as a graph, nodes are represented as vertices and communication relationships as edges. This abstraction enables a clear and generic analysis of network properties and dynamics, independently of the underlying physical infrastructure.
+
+// Depending on the nature of the connections, a network can be modeled as either undirected or directed: bidirectional connections (e.g., TCP connections) are naturally represented by undirected edges, while unidirectional connections (e.g., UDP connections) are better captured by directed edges. In overlay networks, edges do not correspond to direct physical connections, but rather to a node's virtual view of the network—that is, the subset of nodes that each node is aware of.
+
+In the following, we introduce the standard definitions and notations from graph
+theory that will be used throughout this manuscript. These definitions are classical and widely used in the literature on distributed
+systems @diestel2016graph @peleg2000distributed.
+
 #definition(title: "Undirected Graph")[
-  We take the definition from the book Graph Theory by Reinhard Diestel @diestel2016graph. An undirected graph is an ordered pair $G = (V, E)$:
+An undirected graph is an ordered pair $G = (V, E)$:
   - $V$, a set of vertices (also called nodes or points);
   - $E subset.eq {{x, y} bar.v x, y in V, x eq.not y}$, a set of edges (also called links or lines), which are unordered pairs of vertices (that is, an edge is associated with two distinct vertices).
 ] <def:graph>
@@ -48,7 +127,7 @@ node((1,1),"", name: "3", radius: 1em)
 })
 
 #definition(title: "Directed Graph")[
-  Again we take the definition from @diestel2016graph. A directed graph or digraph is a graph in which edges have orientations. A directed graph is an ordered pair $G = (V, E)$:
+ A directed graph or digraph is a graph in which edges have orientations. A directed graph is an ordered pair $G = (V, E)$:
   - $V$, a set of vertices (also called nodes or points);
   - $E subset.eq {(x, y) bar.v (x, y) in V², x eq.not y}$, a set of edges (also called directed edges, directed links, directed lines, arrows or arcs) which are ordered pairs of vertices (that is, an edge is associated with two distinct vertices).
   
@@ -65,6 +144,307 @@ node((1,0),"", name: "2", radius: 1em)
 edge("->")
 node((1,1),"", name: "3", radius: 1em)
 })
+
+#definition(title: "Path")[
+Let $G = (V, E)$ be a graph.
+A *path* from a vertex $u in V$ to a vertex $v in V$ is a finite sequence of
+vertices $(v_0, v_1, ..., v_k)$ such that:
+- $v_0 = u$ and $v_k = v$,
+- for all $i in {0, ..., k-1}$, $(v_i, v_(i+1)) in E$.
+
+The *length* of a path is defined as the number of edges it contains, i.e., $k$.
+]
+
+#definition(title: "Connected Components")[
+Let $G = (V, E)$ be an undirected graph.
+
+- A *connected component* is a maximal subset of nodes $C subset.eq V$ such that for every pair of nodes $u, v in C$, there exists a path connecting $u$ and $v$.
+
+The set of connected components induces a partition of the vertex set $V$. The number of connected components characterizes the fragmentation of the graph.
+]
+
+#definition(title: "Strongly and Weakly Connected Components")[
+Let $G = (V, E)$ be a directed graph.
+
+- A *strongly connected component (SCC)* is a maximal subset of nodes $C subset.eq V$ such that for every pair of nodes $u, v in C$, there exists a directed path from $u$ to $v$ and from $v$ to $u$.
+
+- A *weakly connected component (WCC)* is a maximal subset of nodes $C subset.eq V$ such that the underlying undirected graph obtained by ignoring edge directions is connected.
+]
+
+
+#definition(title: "Distance")[
+Let $G = (V, E)$ be a graph.  
+For any two vertices $u, v in V$, the distance between $u$ and $v$, denoted by
+$"dist"_G (u, v)$, is defined as the length of a shortest path between $u$
+and $v$ in $G$.
+
+If no path exists between $u$ and $v$, the distance is defined as
+$"dist"_G (u, v) = +infinity$.
+
+This definition naturally extends to sets of vertices.  
+For two subsets $U, W subset.eq V$, the distance between $U$ and $W$ is defined as
+$
+"dist"_G (U, W) = min { "dist"_G (u, w) | u in U, w in W }
+$
+]
+
+#definition(title: "Distance (in a directed graph)")[
+  Let $G = (V, E)$ be a directed graph.
+  A *directed path* from a vertex $u in V$ to a vertex $v in V$
+  is a sequence of vertices $(u = v_0, v_1, dots, v_k = v)$
+  such that $(v_i, v_(i+1)) in E$ for all $0 <= i < k$.
+
+  The distance from $u$ to $v$, denoted by $"dist"_G (u, v)$,
+  is defined as the minimum length (number of edges) of any directed path
+  from $u$ to $v$ that *respects the orientation of the edges*.
+  If no such directed path exists, we set $"dist"_G (u, v) = +infinity$.
+
+  In general, the distance in a directed graph is *not symmetric*:
+  $"dist"_G (u, v)$ may differ from $"dist"_G (v, u)$,
+  and one of them may be finite while the other is infinite.
+]
+
+#definition(title: "Average Path Length")[
+Let $G = (V, E)$ be a graph.
+
+The *average path length* of the network, denoted by $a(G)$, is defined as:
+$
+a(G) =
+sum_(u, v in V, u eq.not v)
+("dist"_G (u, v))
+/
+(|V| (|V| - 1))
+$
+]
+
+#definition(title: "Diameter")[
+  Let $G = (V, E)$ be a graph.
+  The *diameter* of $G$, denoted by $"diam"(G)$, is defined as the maximum
+  distance between any pair of vertices in $V$:
+
+  $
+  "diam"(G) = max_(u, v in V) "dist"_G (u, v)
+  $
+]
+
+#definition(title: "Neighborhood")[
+Let $G = (V, E)$ be an undirected graph and let $v in V$ be a vertex.
+
+The *neighborhood* of $v$, denoted $"neigh"_G (v)$, is the set of vertices that are
+adjacent to $v$, that is, vertices connected to $v$ by an edge.
+
+Equivalently, the neighborhood of $v$ can be defined as the set of vertices at
+distance exactly one from $v$:
+$
+"neigh"_G (v) = { u in V | (u, v) in E } = { u in V | "dist"_G(u, v) = 1 }.
+$
+]
+
+#definition(title: "Successors and Predecessors (Directed Graphs)")[
+Let $G = (V, E)$ be a directed graph and let $v in V$ be a vertex.
+
+- The *successors* of $v$, denoted $"succ"_G (v)$, is the set of vertices that
+can be reached from $v$ by a single directed edge:
+$
+"succ"_G (v) = { u in V | (v, u) in E }.
+$
+
+- The *predecessors* of $v$, denoted $"pred"_G (v)$, is the set of vertices that
+have a directed edge toward $v$:
+$
+"pred"_G (v) = { u in V | (u, v) in E }.
+$
+
+Equivalently, these sets correspond to vertices at directed distance one from
+or to $v$, respectively.
+]
+
+#definition(title: "Degree")[
+Let $G = (V, E)$ be an undirected graph and let $v in V$ be a vertex.
+
+The *degree* of vertex $v$ in graph $G$, denoted by $"degree"_G (v)$, is defined as
+the number of vertices adjacent to $v$, or equivalently, the size of its neighborhood:
+$
+"degree"_G (v) = |"neigh"_G (v)|
+$
+]
+
+#definition(title: "In-degree and Out-degree")[
+Let $G = (V, E)$ be a directed graph and let $v in V$ be a vertex.
+
+The *out-degree* of $v$ in $G$, denoted by $"outdegree"_G (v)$, is the number of successors of $v$:
+$
+"outdegree"_G (v) = |"succ"_G (v)|
+$
+
+The *in-degree* of $v$ in $G$, denoted by $"indegree"_G (v)$, is the number of predecessors of $v$:
+$
+"indegree"_G (v) = |"pred"_G (v)|
+$
+]
+
+#definition(title: "k-Neighborhood")[
+Let $G = (V, E)$ be an undirected graph and let $v in V$ be a vertex.  
+
+The *k-neighborhood* of $v$ in $G$, denoted $"neigh"_G^k (v)$, is the set of vertices at distance exactly $k$ from $v$:
+$
+"neigh"_G^k (v) = { u in V | "dist"_G (v, u) = k }
+$
+]
+
+#definition(title: "k-Successors and k-Predecessors (Directed Graphs)")[
+Let $G = (V, E)$ be a directed graph and let $v in V$ be a vertex.
+
+- The *k-successors* of $v$, denoted $"succ"_G^k (v)$, is the set of vertices reachable from $v$ by a directed path of length exactly $k$:
+$
+"succ"_G^k (v) = { u in V | "dist"_G (v, u) = k }
+$
+
+- The *k-predecessors* of $v$, denoted $"pred"_G^k (v)$, is the set of vertices from which $v$ can be reached by a directed path of length exactly $k$:
+$
+"pred"_G^k (v) = { u in V | "dist"_G (u, v) = k }
+$
+]
+
+
+
+// other metrics
+
+// // === Graph Theory
+// In order to study overlay networks, it is useful to adopt a mathematical representation that allows formalizing and comparing their properties. Graph theory provides a natural framework for this purpose. A network can be represented as a graph, where nodes correspond to servers or users, and edges represent connections between them. 
+
+==== Standard Graph Structures
+In network analysis, certain graph topologies frequently appear due to their structural properties. These standard structures serve as fundamental models for understanding connectivity, routing, and aggregation behavior in distributed systems.  
+Each topology has distinct characteristics that can influence how information propagates, how resilient the network is to failures, and how algorithms perform. Below, we summarize some of the most commonly studied graph structures along with their defining properties.
+
+
+#figure(
+table(
+  columns: (1fr, 2fr),
+  inset: 10pt,
+  align: horizon,
+
+  table.header(
+    [*Graph Structure*], [*Description*],
+  ),
+
+  [Complete Graph],
+  [Every node is connected to every other node, representing maximal connectivity.],
+
+  [Star Graph],
+  [A central node is connected to all the other nodes.],
+
+  [Ring Graph],
+  [Nodes form a closed loop, each connected to two neighbors.],
+
+  [Grid / Lattice Graph],
+  [Nodes arranged in a 2D or multi-dimensional grid, each node connected to its immediate neighbors.],
+
+  [Tree Graph],
+  [Hierarchical structure with parent-child relationships, no cycles.],
+
+  [Random Graph],
+  [Edges between nodes are placed randomly according to some probability distribution.],
+
+  [Bipartite Graph],
+  [Nodes are divided into two disjoint sets, with edges only between sets.],
+
+), caption: [Standard graph structures and their main characteristics.],
+) <tab:standard-graph-structures>
+
+
+// === Network components
+=== Overlay Network Modeling
+
+Having introduced the fundamental mathematical concepts from graph theory, we can now formalize the representation of an overlay network. In our model, the network is abstracted as a graph $G = (V, E)$, where nodes correspond to the participants of the system and edges capture the communication links between them. 
+// This formalization allows us to rigorously describe the structure of the network, analyze connectivity and neighborhood relationships, and apply the previously defined metrics such as distance, degree, and connected components. By doing so, we provide a unified framework to reason about overlay networks independently of the underlying physical infrastructure.
+
+We now relate the nodes of the system to the graph representation of the network. Each system node corresponds to a vertex in the graph $G = (V, E)$. The unique address of a node serves as the identifier of the corresponding graph vertex.
+
+#definition(title: "Node Address")[
+Each node in the system is assigned a unique address, also referred to as its identifier.  
+Node addresses are drawn from the finite set  
+$S = {0, dots, N-1}$,  
+where $N$ denotes the total number of nodes in the network.  
+This assignment ensures that every node can be uniquely identified within the system.
+]
+
+#assumption[The address of a node carries no semantic information about its capabilities, role, or properties, and has no influence on the behavior of the node.]
+
+==== Communication Channels
+
+In a peer-to-peer system, nodes interact by sending messages to one another.  
+We abstract away the technical details of message transmission, such as bandwidth limits, latency, or packet loss. Instead, we introduce the notion of a *communication channel* as a conceptual link that allows a node to deliver messages to another node.
+
+Channels can be *bidirectional*, similar to a TCP connection, where messages can flow in both directions, or *unidirectional*, similar to a UDP link, where messages flow in a single direction. In our model, a channel exists simply if a node can send a message to another node.  
+
+#definition(title: "Bidirectional Communication Channel")[
+A bidirectional communication channel between two nodes $u$ and $v$ allows both nodes to send messages to each other.  
+In the graph representation of the network, a bidirectional channel corresponds to an undirected edge $\{u, v\} in E$ connecting the two vertices associated with the nodes.
+]
+
+#definition(title: "Unidirectional Communication Channel")[
+A unidirectional communication channel from node $u$ to node $v$ allows $u$ to send messages to $v$, but not necessarily the other way around.  
+In the graph representation, a unidirectional channel corresponds to a directed edge $(u, v) in E$ from the vertex representing $u$ to the vertex representing $v$.
+]
+
+==== Partial View
+
+In large-scale peer-to-peer networks, it is unrealistic for a node to maintain knowledge of all other nodes in the system.  
+Instead, each node maintains a *partial view*, which is a subset of nodes it is aware of and can communicate with.  
+This partial view is stored in the node's local state as a list of node addresses.  
+
+Although we consider that nodes have unbounded memory for abstraction purposes, the size of the partial view is bounded by a constant $c$, with $c << N$, where $N$ is the total number of nodes in the network.  
+In the graph representation of the network, the partial view of a node corresponds to its *neighborhood*, i.e., the set of nodes connected to it by edges.
+
+#definition(title: "Partial View")[
+The *partial view* of a node $v$, denoted $P(v)$, is the set of nodes that $v$ maintains in its local state and can send messages to, where $P(v) subset.eq V$ is a subset of all nodes in the network.
+
+- The size of the partial view is bounded: $|P(v)| <= c$, where $c$ is a constant much smaller than $N$, the total number of nodes.  
+- In the network graph $G = (V, E)$ with undirected channels:  
+  $
+  P(v) = "neigh"_G(v)
+  $
+]
+
+#remark[
+For directed channels, the partial view corresponds to the set of successors of $v$:  
+$
+P(v) = "succ"_G(v)
+$  
+i.e., nodes to which $v$ can send messages. A node does not necessarily maintain a list of its predecessors, only its successors.
+]
+
+// - Each node _n_ has a list of addresses of other nodes in the network in its local state. This list is called the *partial view*  or the *neighbours* of _n_. We consider that participants have an unbounded memory, although the size of their partial view is bounded by the constant $c$, with $c << N$, and $N$ the size of the network.
+
+#assumption()[
+It is assumed that a node must know the address of another node in order to send it a message.  
+Consequently, each node communicates only with its neighbours at distance 1 in the overlay network.
+]
+
+#assumption(title: "Directed Channel Reply")[
+In the case of a directed communication channel, a node can respond to a received message
+even if the sender is not in its partial view (successors).  
+This is because each message carries the address of the sender.
+]
+
+
+
+// == Peer-to-Peer System Model
+A peer-to-peer system is composed of a set $N$ of peers, also referred to as nodes, that communicate by exchanging messages over a network without relying on any central authority. Messages may represent control information, data items, or application-level payloads, and are assumed to have finite length and arbitrary content.
+
+#definition(title: "Peer to Peer system")[
+We use the definition from the book *Peer-to-Peer systems and applications* @wehrle2005peer. A Peer-to-Peer system consists of computing elements that are:
+  1. connected by a network,
+  2. addressable in a unique way, and
+  3. share a common communication protocol.
+All computing elements, synonymously called nodes or peers, have comparable
+roles and share responsibility and costs for resources.] <def:p2p-system>
+
+#example[The BitTorrent network.]
+
+A peer-to-peer network is typically implemented as a virtual network, also called an overlay network, on top of a physical network. A clear distinction must therefore be made between the physical network, such as the Internet, and the overlay network. Each node in the overlay network is hosted on a node of the physical network, but the reverse is not necessarily true. Moreover, two neighbouring nodes in the overlay network are not necessarily neighbours in the physical network. An overlay network can itself be implemented on top of another overlay network. For example, the Lightning Network @poon2016bitcoin operates as an overlay on top of the Bitcoin network, which itself relies on the Internet protocol stack.
+
 
 // === Dynamicity
 // churn
@@ -106,28 +486,6 @@ A directed edge $(x, y) in E(t)$ indicates that peer $x$ can send messages direc
 // A node models an autonomous computational entity, such as a software process running on a physical or virtual machine, that participates in the peer-to-peer system. Each node may simultaneously act as a client, a server, or both, and is responsible for maintaining a local state, executing protocol logic, and interacting with other nodes according to the communication rules of the system. In this manuscript, the term _node_ is used consistently to refer to such entities, regardless of their physical implementation or functional role within the system.
 // Formally, we define a node as follows.
 Having defined the notion of a peer-to-peer network, we now formalize the notion of a node, which constitutes the basic computational entity of the system.
-#definition(title: "Node")[A node (also called a participant, agent, or peer) is a process that runs on a computing device.
-A node has:
-1. a memory (a local state)
-2. a unique address (network or logical identifier)
-3. some computing power
-4. the ability to communicate with other nodes by sending messages.
-// 4. the ability to communicate with other nodes by sending messages using the underlying communication network.
-]
-#example[
-In the BitTorrent protocol, a machine running a BitTorrent client constitutes a node in the peer-to-peer network. The node is identified by its IP address and a PeerID, and communication relies on the underlying TCP/IP network.]
-
-We assume that:
-- All nodes are assumed to be identical in terms of capabilities, in particular regarding computing power and access to the underlying communication network. We deliberately abstract away any form of node heterogeneity, as our primary focus is on the interactions induced by the protocol rather than on resource disparities between nodes.
-
-- The address of a node carries no semantic information about its capabilities, role, or properties, and has no influence on the behavior of the protocol. It is solely used as a unique identifier to enable message routing. Consequently, we abstract node addresses as random but unique values in the range $[0, N-1]$, where $N$ denotes the size of the network.
-
-- Each node _n_ has a list of addresses of other nodes in the network in its local state. This list is called the *partial view*  or the *neighbours* of _n_. We consider that participants have an unbounded memory, although the size of their partial view is bounded by the constant $c$, with $c << N$, and $N$ the size of the network.
-
-- It is necessary to know the address of a node in order to send it a message. Thus, each node communicates only with its direct *neighbours* in the peer-to-peer network.
-
-- When a node receives a message, it can respond to that message even if that node is not in the list of its *neighbours*. This is because we assume that it receives the address of the sender (along with the message).
-
 - Each node executes the same *protocol*.
 
 #definition(title: "Peer-to-Peer Protocol")[Following the definition of distributed protocols from "Introduction to reliable and secure distributed programming" @cachin2011introduction, we define a peer-to-peer protocol as follows:
@@ -243,17 +601,6 @@ Byzantine behaviors can take many forms, including sending incorrect, inconsiste
 
 Unless stated otherwise, Byzantine nodes are assumed to have full control over their local state and outgoing messages, while still being subject to the constraints of the underlying communication network.
 
-== Network Primitives
-
-We abstract the underlying physical network, as peer-to-peer algorithms do not directly operate on physical networking mechanisms. We assume that the underlying network provides basic communication primitives required by the overlay network.
-
-In particular, we assume that:
-1. the underlying network is connected, i.e., any node can eventually reach any other node,
-2. nodes can send messages to other nodes, and messages are routed to their intended destination.
-
-// We assume a reliable communication network: messages are neither lost nor corrupted. 
-// Message delivery is asynchronous, with arbitrary but finite delays. 
-We abstract away message transmission by assuming that the underlying network is *reliable*. In particular, message delivery is assumed to be instantaneous, and messages are neither lost nor corrupted. Under this abstraction, peer-to-peer algorithms do not need to explicitly account for network-level delays or failures.
 
 == Time Assumptions
 
@@ -651,34 +998,34 @@ Where:
 - $d(s, t')$ is the length of the shortest path between nodes $s$ and $t'$ in $G(t)$.
 ]
 
-The *diameter* of a graph is a measure of the longest distance between any two vertices (nodes) in the graph, measured in terms of the number of edges. In other words, the diameter of a graph is the maximum shortest path between any pair of nodes in the network.
+// The *diameter* of a graph is a measure of the longest distance between any two vertices (nodes) in the graph, measured in terms of the number of edges. In other words, the diameter of a graph is the maximum shortest path between any pair of nodes in the network.
 
-While the average path length provides a basic measure of information dissemination efficiency in algorithms, it may overlook disparities in dissemination speed across different nodes within the network. An algorithm could potentially have a favorable average path length but still exhibit uneven dissemination speeds among nodes due to varying distances. Calculating the network's diameter, however, offers a more comprehensive assessment.
+// While the average path length provides a basic measure of information dissemination efficiency in algorithms, it may overlook disparities in dissemination speed across different nodes within the network. An algorithm could potentially have a favorable average path length but still exhibit uneven dissemination speeds among nodes due to varying distances. Calculating the network's diameter, however, offers a more comprehensive assessment.
 
-#definition(title: "Diameter")[
-The diameter of a network at time $t$ is defined as the length of the longest shortest path between any pair of nodes in the snapshot $G(t)$:
+// #definition(title: "Diameter")[
+// The diameter of a network at time $t$ is defined as the length of the longest shortest path between any pair of nodes in the snapshot $G(t)$:
 
-$
-"diam"(G(t)) = max_(u, v in V(t)) d(u, v)
-$
+// $
+// "diam"(G(t)) = max_(u, v in V(t)) d(u, v)
+// $
 
-Where:
-- $V(t)$ is the set of nodes in the network at time $t$.
-- $d(u,v)$ is the length of the shortest path between nodes $u$ and $v$.
-]
+// Where:
+// - $V(t)$ is the set of nodes in the network at time $t$.
+// - $d(u,v)$ is the length of the shortest path between nodes $u$ and $v$.
+// ]
 
 Beyond local and global structural metrics, connectivity properties play a central role in the analysis of peer-to-peer networks.  Connectivity metrics computed on $G(t)$ allow us to characterize whether the network remains operational, how information can propagate, and how resilient the topology is to node failures or churn.
 
 
-#definition(title: "Weakly and Strongly Connected Components")[
-Let $G(t) = (V(t), E(t))$ be a directed graph representing a snapshot of a peer-to-peer network at time $t$.
+// #definition(title: "Weakly and Strongly Connected Components")[
+// Let $G(t) = (V(t), E(t))$ be a directed graph representing a snapshot of a peer-to-peer network at time $t$.
 
-- A *strongly connected component (SCC)* is a maximal subset of nodes $C subset.eq V(t)$ such that for every pair of nodes $u, v \in C$, there exists a directed path from $u$ to $v$ and from $v$ to $u$.
+// - A *strongly connected component (SCC)* is a maximal subset of nodes $C subset.eq V(t)$ such that for every pair of nodes $u, v in C$, there exists a directed path from $u$ to $v$ and from $v$ to $u$.
 
-- A *weakly connected component (WCC)* is a maximal subset of nodes $C subset.eq V(t)$ such that the underlying undirected graph obtained by ignoring edge directions is connected.
+// - A *weakly connected component (WCC)* is a maximal subset of nodes $C subset.eq V(t)$ such that the underlying undirected graph obtained by ignoring edge directions is connected.
 
-The set of weakly or strongly connected components induces a partition of the vertex set $V(t)$. The number of such components characterizes the fragmentation level of the network at time $t$.
-] <def:connectivity>
+// The set of weakly or strongly connected components induces a partition of the vertex set $V(t)$. The number of such components characterizes the fragmentation level of the network at time $t$.
+// ] <def:connectivity>
 
 In typical operating conditions, peer-to-peer protocols aim to maintain a connected topology, and the snapshot graph $G(t)$ usually consists of a single weakly connected component. To assess the robustness of the network, we study how connectivity degrades under node removals.
 

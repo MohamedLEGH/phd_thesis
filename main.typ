@@ -4,6 +4,11 @@
 //local
 #import "template/customization/colors.typ": *
 
+#set par(justify: true)
+#set text(
+  hyphenate: true,
+  lang: "en",
+)
 
 #show: template.with(
   language: "en",

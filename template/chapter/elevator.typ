@@ -17,7 +17,7 @@ In this paper we propose and evaluate an innovative algorithm that enables the c
 Peer-to-peer networks, Peer sampling service, Hub sampling, Resilient networks, System design, Algorithms, Simulations.
 
 == Introduction
-    The growing usage of decentralized systems such as blockchain @nakamoto2008bitcoin and federated learning @mcmahan2017communication in recent years has sparked considerable interest in peer-to-peer (P2P) communication protocols. While existing P2P protocols have demonstrated significant utility across various applications, emerging demands for enhanced performance, scalability, and robustness necessitate the development of innovative solutions.
+The growing usage of decentralized systems such as blockchain @nakamoto2008bitcoin and federated learning @mcmahan2017communication in recent years has sparked considerable interest in peer-to-peer (P2P) communication protocols. While existing P2P protocols have demonstrated significant utility across various applications, emerging demands for enhanced performance, scalability, and robustness necessitate the development of innovative solutions.
 
 Peer-to-peer (P2P) protocols have undergone extensive research and development to facilitate efficient decentralized communication among networked devices. Foundational P2P protocols like Napster, Gnutella @frankel2003gnutella, and BitTorrent paved the way for distributed file sharing and content distribution across the Internet. Typically, P2P overlay networks are categorized as either structured (e.g. CAN @ratnasamy2001scalable, Chord @stoica2001chord, or Kademlia @maymounkov2002kademlia) or unstructured (e.g. Gnutella @frankel2003gnutella). More comprehensive details about peer-to-peer overlays can be found in recent surveys @malatras2015state, @naik2020next. 
 
@@ -40,6 +40,8 @@ This approach not only fosters robustness against failures and disruptions but a
 The rationale behind this initiative is rooted in the benefits of having hub nodes, particularly in applications such as federated learning, where efficient information dissemination is crucial. The existence of hubs facilitates faster network-wide communication compared to overlay networks structured in a random graph topology.
 
 // The structure of this article is organized as follows: Section~\ref{sec:2} presents the hub sampling service altogether with its properties, its programming interface (API), and its implementation, the \emph{Elevator algorithm}. Section~\ref{sec:3} presents a theoretical analysis of the properties of the algorithm. Section~\ref{sec:4} presents extensive simulations of Elevator, compared against three classical algorithms from the literature~\cite{jelasity2007gossip,stavrou2004lightweight,wouhaybi2004phenix}.
+
+== Related works
 
 == Description & Properties
 The key desired properties we expect from our protocol are _connectivity_ (the overlay remains connected), _low-diameter_ (for efficient communication), _convergence_ (properties are obtained in an autonomous manner), _stability_ (structural overlay properties are maintained throughout execution), and _robustness_ (resilience to churn and targeted attacks). They will serve as metrics during simulation experiments to ascertain the efficacy of our algorithm.
