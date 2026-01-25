@@ -14,8 +14,7 @@
 
 The peer-to-peer literature encompasses a wide variety of systems, protocols, and
 architectures, ranging from structured overlays and to highly dynamic gossip-based protocols. These systems differ in their objectives,
-their communication patterns, and their assumptions.
-Despite this diversity, most peer-to-peer systems rely on a common set of fundamental
+their communication patterns, and their assumptions, but despite this diversity, most peer-to-peer systems rely on a common set of fundamental
 principles.
 
 In order to reason about such systems in a systematic way, it is necessary to go beyond
@@ -32,6 +31,7 @@ The model introduced in this chapter forms the foundation for the rest of the ma
 It will be used to describe execution assumptions, network dynamics, evaluation metrics, and to support both analytical arguments and experimental results presented in the following chapters.
 
 We adopt a bottom-up approach, starting from the node as the fundamental building block of the system, then modeling the peer-to-peer network formed by their interactions, and finally analyzing the emergent phenomena that arise at the network level.
+The definitions and abstractions introduced in this chapter follow the general principles of distributed system modeling as presented in _Introduction to Reliable and Secure Distributed Programming_ @cachin2011introduction.
 
 == Node
 Nodes constitute the fundamental components of the system. Each node acts as an autonomous entity that executes local computations, maintains an internal state, and interacts with other nodes through the peer-to-peer network. In the literature on distributed systems and peer-to-peer networks, nodes are commonly referred to using different terms such as _processors_, _peers_, or _agents_, depending on the modeling perspective and application domain. In this work, we use the term node to emphasize its generality and to remain independent of any specific implementation or execution environment.
@@ -42,7 +42,8 @@ A node (also referred to as a participant, agent, or peer) is an abstract comput
 A node is characterized by:
 1. a memory, representing its local state, assumed to be arbitrarily large for modeling purposes;
 2. computational capabilities, abstracted from physical limitations and assumed to be unbounded.
-]
+] <def:node-entity>
+
 #example[
 A machine running a BitTorrent client constitutes a node in the BitTorrent system.]
 
@@ -75,7 +76,7 @@ $(S, s_0, delta)$, where:
 - $delta : S arrow.r S$ is a state transition function.
 
 At each execution step, the node applies the transition function $delta$ to its current state $s in S$, producing a new state $s' = delta(s)$.
-]
+] <def:node-system>
 
 == Network
 In a distributed system, nodes do not operate in isolation but interact with each other through a network.
@@ -85,6 +86,7 @@ In our model, the network captures how nodes are interconnected and how interact
 By introducing the network abstraction, we move from the behavior of an individual node to the collective behavior of a set of interacting nodes, which is a fundamental step toward understanding the dynamics of peer-to-peer systems.
 
 === Network Assumptions
+A peer-to-peer network is typically implemented as a virtual network, also called an overlay network, on top of a physical network. A clear distinction must therefore be made between the physical network, such as the Internet, and the overlay network. Each node in the overlay network is hosted on a node of the physical network, but the reverse is not necessarily true. Moreover, two neighbouring nodes in the overlay network are not necessarily neighbours in the physical network. An overlay network can itself be implemented on top of another overlay network. For example, the Lightning Network @poon2016bitcoin operates as an overlay on top of the Bitcoin network, which itself relies on the Internet protocol stack.
 
 We abstract the underlying physical network, as peer-to-peer algorithms do not directly operate on physical networking mechanisms. We assume that the underlying network provides basic communication primitives required by the overlay network.
 
@@ -356,10 +358,10 @@ table(
 // === Network components
 === Overlay Network Modeling
 
-Having introduced the fundamental mathematical concepts from graph theory, we can now formalize the representation of an overlay network. In our model, the network is abstracted as a graph $G = (V, E)$, where nodes correspond to the participants of the system and edges capture the communication links between them. 
-// This formalization allows us to rigorously describe the structure of the network, analyze connectivity and neighborhood relationships, and apply the previously defined metrics such as distance, degree, and connected components. By doing so, we provide a unified framework to reason about overlay networks independently of the underlying physical infrastructure.
+With the basic concepts of graph theory in place, we can now formalize the representation of an overlay network.  
+In our model, the overlay network is abstracted as a graph $G = (V, E)$, where each vertex represents a participant (node) in the system, and edges represent the communication links between nodes.
 
-We now relate the nodes of the system to the graph representation of the network. Each system node corresponds to a vertex in the graph $G = (V, E)$. The unique address of a node serves as the identifier of the corresponding graph vertex.
+Each system node is thus associated with a vertex in the graph, and its unique address serves as the identifier of that vertex. This correspondence allows us to leverage graph-theoretic notions to describe and analyze the network's structure and connectivity.
 
 #definition(title: "Node Address")[
 Each node in the system is assigned a unique address, also referred to as its identifier.  
@@ -431,28 +433,144 @@ This is because each message carries the address of the sender.
 
 
 // == Peer-to-Peer System Model
-A peer-to-peer system is composed of a set $N$ of peers, also referred to as nodes, that communicate by exchanging messages over a network without relying on any central authority. Messages may represent control information, data items, or application-level payloads, and are assumed to have finite length and arbitrary content.
+// A peer-to-peer system is composed of a set $N$ of peers, also referred to as nodes, that communicate by exchanging messages over a network without relying on any central authority. Messages may represent control information, data items, or application-level payloads, and are assumed to have finite length and arbitrary content.
 
-#definition(title: "Peer to Peer system")[
-We use the definition from the book *Peer-to-Peer systems and applications* @wehrle2005peer. A Peer-to-Peer system consists of computing elements that are:
-  1. connected by a network,
-  2. addressable in a unique way, and
-  3. share a common communication protocol.
-All computing elements, synonymously called nodes or peers, have comparable
-roles and share responsibility and costs for resources.] <def:p2p-system>
+// #definition(title: "Peer to Peer system")[
+// We use the definition from the book *Peer-to-Peer systems and applications* @wehrle2005peer. A Peer-to-Peer system consists of computing elements that are:
+//   1. connected by a network,
+//   2. addressable in a unique way, and
+//   3. share a common communication protocol.
+// All computing elements, synonymously called nodes or peers, have comparable
+// roles and share responsibility and costs for resources.] <def:p2p-system>
 
-#example[The BitTorrent network.]
+// #example[The BitTorrent network.]
 
-A peer-to-peer network is typically implemented as a virtual network, also called an overlay network, on top of a physical network. A clear distinction must therefore be made between the physical network, such as the Internet, and the overlay network. Each node in the overlay network is hosted on a node of the physical network, but the reverse is not necessarily true. Moreover, two neighbouring nodes in the overlay network are not necessarily neighbours in the physical network. An overlay network can itself be implemented on top of another overlay network. For example, the Lightning Network @poon2016bitcoin operates as an overlay on top of the Bitcoin network, which itself relies on the Internet protocol stack.
+==== Protocol
 
+In a distributed system, each node executes a *protocol* that governs its behavior and interactions with other nodes.  
+In this work, we do not consider protocols at the underlying physical or network layers (e.g., routing, congestion control, or transport mechanisms). Instead, we assume that nodes can exchange messages through abstract communication channels, as introduced earlier.
 
-// === Dynamicity
-// churn
-// === Time-Varying Graphs
+At the overlay level, all nodes execute the same protocol. This protocol defines how nodes process incoming messages, update their local state, and decide when and to whom messages are sent. It therefore captures the collective logic of the peer-to-peer system and determines how global network properties emerge from local interactions.
 
-Many real-world distributed systems are inherently dynamic: communication links may appear or disappear over time, and participating entities may join or leave the system. To capture such dynamics, static graph models are insufficient. Time-varying graphs (TVGs) extend classical graph theory by explicitly modeling the temporal evolution of vertices and edges.
+#definition(title: "Peer-to-Peer Protocol")[
+A peer-to-peer protocol is a distributed algorithm executed by each node in the network that specifies:
+1. the local state maintained by a node,
+2. the set of messages that can be exchanged between nodes,
+3. the rules governing message generation, transmission, and handling
+4. the local state transitions performed by a node upon internal events or message reception.
+]
 
-Time-varying graphs are particularly well suited for modeling peer-to-peer systems, where the network topology is not fixed. In such systems, the set of nodes and the set of communication links evolve over time due to two main factors. First, the peer-to-peer protocol itself may actively modify the overlay topology, for instance by adding, removing, or replacing neighbors as part of its maintenance or optimization mechanisms. Second, the system is subject to churn, where nodes may join or leave the network dynamically, which directly affects both the vertex set and the edge set.
+The protocol is executed independently by all nodes. Each node follows the same protocol specification, but may exhibit different behaviors depending on its local state, its partial view of the network, and the messages it receives. In our abstract model, we do not consider how the protocol is concretely implemented (e.g., programming language, runtime environment, or communication framework).  
+We focus solely on the *pseudocode* of the protocol, which specifies the rules governing state transitions and message exchanges.
+
+This definition is consistent with the execution model introduced earlier, where a node is modeled as a state machine.  
+In this framework, the peer-to-peer protocol corresponds to the state transition function executed by each node.  
+Given the current local state of a node and the occurrence of an event (e.g., message reception or internal trigger), the protocol determines the next local state and the set of messages to be emitted. Thus, we assume that for a given local state and a given event, all nodes react deterministically and in exactly the same way.
+
+In addition to their local state, nodes share a common knowledge of a set of *global parameters* defined by the protocol.  
+These parameters are identical for all nodes and remain constant throughout the execution of the system.  
+They capture configuration choices of the protocol, such as bounds on local resources or structural constraints, and ensure that all nodes operate under the same assumptions.  
+For instance, the maximum size of a node’s partial view is a global parameter known to all nodes.
+
+#definition(title: "Global Protocol Parameter")[
+A *global protocol parameter* is a constant value that is known to all nodes in the system and shared across the entire network.
+
+Formally, let $P$ denote the set of global parameters of a protocol.  
+Each parameter $p in P$ has a fixed value that is identical for all nodes and does not depend on the local state of any node.
+]
+
+#remark[The pseudocode of the protocol itself can be viewed as a global parameter of the system.]
+
+We assume that each peer-to-peer protocol executed by a node is composed of two main components: an initialization function and a main protocol function.
+
+The initialization function is executed once when a node joins the system. During this phase, the node initializes its local state, including in particular its partial view of the network, i.e., its list of neighbors.
+
+After initialization, the node executes the main protocol logic in the form of an infinite loop. This reflects the fact that peer-to-peer protocols are typically designed to run continuously and do not have a predefined termination condition.
+
+We assume that each iteration of the protocol loop is executed atomically: a node cannot be interrupted in the middle of a protocol cycle, and no two executions of the protocol logic overlap on the same node.
+
+If, during its execution, a node contacts another node, the contacted node processes the incoming request using a background execution thread. The internal scheduling of protocol execution and background message handling is abstracted away. The handling of incoming requests is also assumed to be atomic, and responses are generated and returned instantaneously.
+
+== System
+
+Having defined the behavior of individual nodes and the structure of the overlay network, we can now formalize the system as a whole.
+
+At any given time, the state of the peer-to-peer system is entirely determined by the collection of local states of all nodes.
+In other words, the *global state* of the system corresponds to the concatenation of the local states maintained by each node.
+
+#definition(title: "Global State")[
+Let $V$ be the set of nodes in the system.
+
+The *global state* of the system is defined as the tuple:
+$
+S_"global" = (s_v)_(v in V)
+$
+where $s_v in S_v$ is the current local state of node $v$, as defined in @def:node-system.
+] <def:global-system>
+
+=== Synchronization
+
+When modeling the evolution of a distributed system, it is necessary to specify how nodes progress from one state to another.  
+Since the system consists of multiple autonomous agents, this raises the question of synchronization between nodes.
+
+In our model, we abstract away from synchronization issues at the physical or network layers.  
+We assume that message transmission is instantaneous and reliable, i.e., messages are neither delayed nor lost.  
+As a consequence, we do not consider timing, buffering, or failures at the communication level.
+
+At the overlay level, however, synchronization still plays a conceptual role.  
+In real-world peer-to-peer systems, nodes operate fully asynchronously: there is no global clock, and each node evolves at its own pace based on local events and message arrivals.  
+While this behavior accurately reflects practical systems, it makes mathematical analysis and simulation significantly more complex.
+
+To enable a tractable and precise formalization, we introduce an abstract notion of time based on *protocol steps* and *protocol cycles*.  
+These notions do not represent real time, but rather logical execution units that allow us to reason about the global evolution of the system in a structured manner.
+
+#definition(title: "Protocol Step")[
+A *protocol step* is defined as a single execution of the protocol pseudocode by one node.
+
+During a protocol step, a node:
+1. processes an internal event or a received message,
+2. applies the protocol's state transition rules,
+3. updates its local state, and
+4. possibly emits messages to other nodes.
+]
+
+#assumption[
+We assume that each protocol step takes the same amount of time, regardless of the node executing it or the updates performed during the step.
+
+In this model, we abstract away from execution time and computational cost.
+]
+
+#definition(title: "Protocol Cycle")[
+A *protocol cycle* is defined as a logical execution round in which every node in the network executes exactly one protocol step.
+
+Formally, a protocol cycle consists of a sequence of protocol steps such that each node in $V$ executes the protocol once.
+]
+
+Regarding the execution of a protocol cycle, we distinguish between two possible execution models.
+
+In the *synchronous cycle model*, all nodes execute their protocol step simultaneously.  
+Each node computes its state transition using its local state and the messages produced during the previous cycle.  
+All state updates and message emissions take effect only at the end of the cycle.  
+This model corresponds to a fully synchronous execution, where cycles act as global logical barriers.
+
+In the *sequential cycle model*, nodes execute their protocol steps one after another within a cycle, following a random order.  
+Each node updates its local state immediately upon execution and may emit messages that can be observed by nodes executing later in the same cycle.  
+As a result, the state of the system may evolve during the cycle itself.
+
+=== Dynamic Network
+
+So far, we have considered the overlay network as a static structure on which nodes execute a protocol over time.  
+However, in many peer-to-peer systems, the network topology itself evolves as the system runs.
+
+A *dynamic network* is characterized by a time-varying set of communication links between nodes.  
+That is, while the set of nodes $V$ may remain fixed, the edge set $E$ can change from one protocol cycle to another.
+
+Topology changes may arise from two main sources.  
+First, they may be caused by the environment, for instance when nodes join or leave the system, or when communication links become temporarily unavailable.  
+Second, the topology may evolve as a direct consequence of the protocol itself, when nodes actively modify their partial views by creating or removing connections over time.
+
+In our model, such dynamics are captured by allowing the network graph $G = (V, E)$ to vary across protocol cycles, and thus the representation of our overlay is a time-varying graph (or temporal graph), as defined in the literature @holme2012temporal.
+As a result, the structure of the overlay network becomes part of the system state and participates in the global evolution of the system.
 
 #definition(title: "Time-Varying Graph")[
 A time-varying graph is a tuple $G = (V, E, T)$ where:
@@ -462,6 +580,52 @@ A time-varying graph is a tuple $G = (V, E, T)$ where:
 
 The graph $G(t) = (V(t), E(t))$ represents the network topology at time $t$. The evolution of the graph over time captures the appearance and disappearance of vertices and edges.
 ] <def:tvg>
+
+=== Emergent Behaviour
+// In some protocols, nodes pursue purely local objectives, and no explicit global 
+// coordination is required. In others, however, the protocol is designed so that the 
+// interaction of nodes leads to the emergence of a global property or the computation of 
+// a system-wide function.
+Beyond local execution semantics, many peer-to-peer protocols are designed to achieve 
+specific objectives at the level of the system as a whole. While each node executes the 
+protocol independently and relies solely on local information, the collective behavior 
+of the system may exhibit coordinated dynamics that serve a common goal. Typical examples include decentralized aggregation protocols, 
+where nodes collaboratively compute global statistics such as the average, sum, or 
+maximum of locally held values, as well as classical coordination tasks such as leader 
+election or consensus.
+
+These protocols are often characterized by a notion of convergence: starting from an 
+arbitrary initial global state, the system is expected to evolve toward a stable or 
+desirable global configuration that satisfies the protocol’s objective. This convergence 
+is achieved without centralized control and emerges from repeated local interactions 
+between nodes constrained by the evolving network topology.
+
+#definition(title: "Global Objective")[
+A peer-to-peer protocol is said to pursue a global objective if there exists a set 
+of desirable global states $S^*$ such that the protocol aims to drive the system toward 
+this set through local interactions.
+] <def:global-objective>
+
+#definition(title: "Convergence")[
+The protocol is said to converge if, for any initial global state $S(0)$, the sequence 
+of global states $S(t)_(t >= 0)$ produced by the protocol satisfies:
+$
+exists T >= 0 "such as" forall t >= T, S(t) in S^*
+$ 
+
+Convergence may be exact or approximate, and may hold deterministically or with high 
+probability, depending on the assumptions made on the protocol execution and the 
+network dynamics.
+] <def:convergence>
+
+== Dynamicity
+// churn
+// === Time-Varying Graphs
+
+Many real-world distributed systems are inherently dynamic: communication links may appear or disappear over time, and participating entities may join or leave the system. To capture such dynamics, static graph models are insufficient. Time-varying graphs (TVGs) extend classical graph theory by explicitly modeling the temporal evolution of vertices and edges.
+
+Time-varying graphs are particularly well suited for modeling peer-to-peer systems, where the network topology is not fixed. In such systems, the set of nodes and the set of communication links evolve over time due to two main factors. First, the peer-to-peer protocol itself may actively modify the overlay topology, for instance by adding, removing, or replacing neighbors as part of its maintenance or optimization mechanisms. Second, the system is subject to churn, where nodes may join or leave the network dynamically, which directly affects both the vertex set and the edge set.
+
 
 We model peer-to-peer networks as time-varying graphs, where the evolution of the graph reflects both protocol-driven topology changes and node churn.
 
@@ -485,87 +649,31 @@ A directed edge $(x, y) in E(t)$ indicates that peer $x$ can send messages direc
 
 // A node models an autonomous computational entity, such as a software process running on a physical or virtual machine, that participates in the peer-to-peer system. Each node may simultaneously act as a client, a server, or both, and is responsible for maintaining a local state, executing protocol logic, and interacting with other nodes according to the communication rules of the system. In this manuscript, the term _node_ is used consistently to refer to such entities, regardless of their physical implementation or functional role within the system.
 // Formally, we define a node as follows.
-Having defined the notion of a peer-to-peer network, we now formalize the notion of a node, which constitutes the basic computational entity of the system.
-- Each node executes the same *protocol*.
+// Having defined the notion of a peer-to-peer network, we now formalize the notion of a node, which constitutes the basic computational entity of the system.
+// - Each node executes the same *protocol*.
 
-#definition(title: "Peer-to-Peer Protocol")[Following the definition of distributed protocols from "Introduction to reliable and secure distributed programming" @cachin2011introduction, we define a peer-to-peer protocol as follows:
-A peer-to-peer protocol is a distributed algorithm executed by each node in the network that specifies:
-1. the local state maintained by a node,
-2. the set of messages that can be exchanged between nodes,
-3. the rules governing message generation, transmission, and handling
-4. the local state transitions performed by a node upon internal events or message reception.
-
-The protocol is executed independently by all nodes. Each node follows the same protocol specification, but may exhibit different behaviors depending on its local state, its partial view of the network, and the messages it receives.
-]
-
-== Execution Model
-
-We assume that each peer-to-peer protocol executed by a node is composed of two main components: an initialization function and a main protocol function.
-
-The initialization function is executed once when a node joins the system. During this phase, the node initializes its local state, including in particular its partial view of the network, i.e., its list of neighbors.
-
-After initialization, the node executes the main protocol logic in the form of an infinite loop. This reflects the fact that peer-to-peer protocols are typically designed to run continuously and do not have a predefined termination condition.
-
-We assume that each iteration of the protocol loop is executed atomically: a node cannot be interrupted in the middle of a protocol cycle, and no two executions of the protocol logic overlap on the same node.
-
-If, during its execution, a node contacts another node, the contacted node processes the incoming request using a background execution thread. The internal scheduling of protocol execution and background message handling is abstracted away. The handling of incoming requests is also assumed to be atomic, and responses are generated and returned instantaneously.
-
-Having defined the local behavior of nodes and the structure of the underlying peer-to-peer network, we now introduce a global view of the system. This perspective allows us to reason about the collective dynamics induced by the interaction of individual nodes over a time-varying communication topology.
-
-#definition(title: "Peer-to-Peer System (Global View)")[
-A peer-to-peer system is modeled as a distributed dynamical system evolving over a time-varying directed graph $G = (V, E, T)$.
-
-Each node $v in V(t)$ is modeled as a state machine, characterized by:
-- a local state space $S_v$,
-- an initial state $s_v^0$,
-- a transition function that maps the current local state and incoming events (messages or internal actions) to a new local state and a set of outgoing messages.
-
-The global state of the peer-to-peer system at time $t$ is given by the tuple
-$S(t) = (s_v(t))_{v in V(t)}$,
-which aggregates the local states of all nodes currently present in the system.
-
-The evolution of the system results from the  composition of the local state machines, combined with the temporal evolution of the underlying time-varying graph, which constrains possible communications between nodes.
-
-From this perspective, the peer-to-peer system can be viewed as a large, distributed state machine whose global behavior emerges from the interaction of local protocols executed by individual nodes.
-] <def:p2p-global>
-
-== Emergent Behaviour
-
-Beyond local execution semantics, many peer-to-peer protocols are designed to achieve 
-specific objectives at the level of the system as a whole. While each node executes the 
-protocol independently and relies solely on local information, the collective behavior 
-of the system may exhibit coordinated dynamics that serve a common goal.
-
-In some protocols, nodes pursue purely local objectives, and no explicit global 
-coordination is required. In others, however, the protocol is designed so that the 
-interaction of nodes leads to the emergence of a global property or the computation of 
-a system-wide function. Typical examples include decentralized aggregation protocols, 
-where nodes collaboratively compute global statistics such as the average, sum, or 
-maximum of locally held values, as well as classical coordination tasks such as leader 
-election or consensus.
-
-These protocols are often characterized by a notion of convergence: starting from an 
-arbitrary initial global state, the system is expected to evolve toward a stable or 
-desirable global configuration that satisfies the protocol’s objective. This convergence 
-is achieved without centralized control and emerges from repeated local interactions 
-between nodes constrained by the evolving network topology.
+// == Execution Model
 
 
-#definition(title: "Global Objective and Convergence")[
-A peer-to-peer protocol is said to pursue a global objective if there exists a set 
-of desirable global states $S^*$ such that the protocol aims to drive the system toward 
-this set through local interactions.
+// Having defined the local behavior of nodes and the structure of the underlying peer-to-peer network, we now introduce a global view of the system. This perspective allows us to reason about the collective dynamics induced by the interaction of individual nodes over a time-varying communication topology.
 
-The protocol is said to converge if, for any initial global state $S(0)$, the sequence 
-of global states $S(t)_(t >= 0)$ produced by the protocol satisfies:
-$
-exists T >= 0 "such as" forall t >= T, S(t) in S^*
-$ 
+// #definition(title: "Peer-to-Peer System (Global View)")[
+// A peer-to-peer system is modeled as a distributed dynamical system evolving over a time-varying directed graph $G = (V, E, T)$.
 
-Convergence may be exact or approximate, and may hold deterministically or with high 
-probability, depending on the assumptions made on the protocol execution and the 
-network dynamics.
-] <def:convergence>
+// Each node $v in V(t)$ is modeled as a state machine, characterized by:
+// - a local state space $S_v$,
+// - an initial state $s_v^0$,
+// - a transition function that maps the current local state and incoming events (messages or internal actions) to a new local state and a set of outgoing messages.
+
+// The global state of the peer-to-peer system at time $t$ is given by the tuple
+// $S(t) = (s_v(t))_{v in V(t)}$,
+// which aggregates the local states of all nodes currently present in the system.
+
+// The evolution of the system results from the  composition of the local state machines, combined with the temporal evolution of the underlying time-varying graph, which constrains possible communications between nodes.
+
+// From this perspective, the peer-to-peer system can be viewed as a large, distributed state machine whose global behavior emerges from the interaction of local protocols executed by individual nodes.
+// ] <def:p2p-global>
+
 
 == Churn
 The execution model described above directly induces a dynamic evolution of the peer-to-peer network. As nodes repeatedly execute the protocol, both the local views of nodes and the global network topology may change over time.
@@ -602,349 +710,17 @@ Byzantine behaviors can take many forms, including sending incorrect, inconsiste
 Unless stated otherwise, Byzantine nodes are assumed to have full control over their local state and outgoing messages, while still being subject to the constraints of the underlying communication network.
 
 
-== Time Assumptions
+// == Time Assumptions
 
 
-Regarding time and node synchronization, we distinguish two execution models.
+// Regarding time and node synchronization, we distinguish two execution models.
 
-In the first model, nodes are fully asynchronous. Each node executes independently and may send messages at arbitrary times, without any form of global synchronization. There is no notion of a shared clock or execution step, and nodes progress according to their own local pace.
+// In the first model, nodes are fully asynchronous. Each node executes independently and may send messages at arbitrary times, without any form of global synchronization. There is no notion of a shared clock or execution step, and nodes progress according to their own local pace.
 
-In the second model, nodes execute their actions according to a global notion of time, structured into discrete steps called cycles. In this setting, all nodes conceptually perform their actions once per cycle. Two variants of this model can be considered. In the first variant, nodes execute sequentially within a cycle: each node performs its actions one after another, and a cycle is completed once all nodes have finished their execution. While this assumption is not realistic in practical systems, it greatly simplifies modeling and simulation. In the second variant, all nodes execute simultaneously and instantaneously within each cycle. This assumption is also unrealistic in practice, but is commonly adopted to facilitate theoretical analysis and simulation.
+// In the second model, nodes execute their actions according to a global notion of time, structured into discrete steps called cycles. In this setting, all nodes conceptually perform their actions once per cycle. Two variants of this model can be considered. In the first variant, nodes execute sequentially within a cycle: each node performs its actions one after another, and a cycle is completed once all nodes have finished their execution. While this assumption is not realistic in practical systems, it greatly simplifies modeling and simulation. In the second variant, all nodes execute simultaneously and instantaneously within each cycle. This assumption is also unrealistic in practice, but is commonly adopted to facilitate theoretical analysis and simulation.
 
 // - Nodes execute asynchronously and do not share a global clock.
 
-== Topology Models
-Network topology refers to the structural organization of a network, that is, the way nodes are interconnected and how links are arranged between them. In the context of overlay networks, topology is naturally described through the shape of the underlying graph, where nodes represent participants and edges represent logical connections. Different topologies lead to fundamentally different properties in terms of connectivity, robustness, routing efficiency, and scalability. Broadly, network topologies can be divided into two categories: deterministic and random. Deterministic topologies are defined by explicit construction rules that impose a fixed structure on the graph, such as stars, rings, trees, or meshes, where the presence of an edge is fully determined by the position or role of each node. In contrast, random topologies are generated according to probabilistic rules, where edges are created based on random processes or statistical constraints rather than fixed patterns. This category includes classical random graphs, as well as more advanced models from complex network theory such as small-world networks, power-law networks, and stochastic block models, which introduce community structure through probabilistic connection patterns. Random topologies are particularly relevant for modeling large-scale and dynamic peer-to-peer systems, where global coordination is impractical and network structure often emerges from local interactions. In this chapter, network topologies are not viewed as static structures, but as reference models describing the possible shapes of snapshot graphs $G(t)$ induced by peer-to-peer protocols over time.
-
-==== Mesh
-A mesh network topology corresponds to a complete graph, in which every node is directly connected to every other node in the network. This topology offers optimal communication properties, as any node can reach any other node in a single hop, resulting in a graph diameter equal to one and minimal latency for message dissemination. Such full connectivity also provides high redundancy, making the network inherently robust to individual link failures. However, these advantages come at a prohibitive cost in large-scale systems. Each node must maintain a connection with all other nodes, leading to a quadratic growth in the number of links and significant overhead in terms of bandwidth, memory, and connection management. Moreover, a mesh topology requires each node to know the complete list of participants in the network, which is impractical or impossible in dynamic environments where nodes frequently join and leave. As a result, mesh networks are inherently static and do not scale well, limiting their applicability to small, tightly controlled systems rather than large peer-to-peer or highly dynamic overlay networks.
-
-#figure(diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
-node((0,0), name: "1", radius: 2em)
-edge(label("2"), "-", stroke: 1pt)
-edge(label("3"), "-", stroke: 1pt)
-edge(label("4"), "-", stroke: 1pt)
-node((1,1), name: "2", radius: 2em)
-edge(label("3"), "-", stroke: 1pt)
-edge(label("4"), "-", stroke: 1pt)
-node((0, 1), name: "3", radius: 2em)
-edge(label("4"), "-", stroke: 1pt)
-node((1,0), name: "4", radius: 2em)
-}),
-  caption: [A mesh network with 4 nodes.],
-) <mesh-network>
-
-==== Star
-A star network topology corresponds, from a graph-theoretic perspective, to a graph in which all nodes are connected to a single central node, often referred to as the hub. This topology naturally maps to a client–server architecture, where the central node acts as a server and all other nodes act as clients. Communication between any two clients must pass through the central node, which results in a graph diameter equal to two and enables fast message exchanges with low hop count. The simplicity of this topology makes it easy to deploy, manage, and control, and clients only need to maintain a single connection to participate in the network. However, the central node constitutes a critical bottleneck, as it must handle all communications and can become overloaded as the network grows. More importantly, it represents a single point of failure: if the server crashes, is disconnected, or is compromised, the entire network becomes unavailable.
-#figure(
-diagram({
-  node((1,0), name: "Server", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
-  edge(label("Client1"), "-", stroke: 1pt)
-  edge(label("Client2"), "-", stroke: 1pt)
-  edge(label("Client3"), "-", stroke: 1pt)
-
-  node((0,1.5), name: "Client1", radius: 2em, stroke: 1pt, fill: blue.lighten(60%))
-
-  node((1,1.5), name: "Client2", radius: 2em, stroke: 1pt, fill: blue.lighten(60%))
-
-  node((2,1.5), name: "Client3", radius: 2em, stroke: 1pt, fill: blue.lighten(60%))  
-}),
-  caption: [A star topology.],
-) <star-topology>
-==== Multi stars
-A multi-star topology can be seen as an extension of the star topology in which several central nodes coexist, each forming a local star with a subset of clients. From a graph-theoretic point of view, this corresponds to a collection of star subgraphs that may or may not be interconnected. This topology is widely used in cloud systems, for instance in distributed databases where a primary server is supported by one or more replica servers that can take over in case of failure or overload. Multi-star architectures are also common in geographically distributed systems, where services are replicated across multiple regions to reduce latency and provide better quality of service to users worldwide. Several variants of multi-star topologies exist: in some designs, clients are connected to all available servers, while in others each client is connected to a single server at a time; similarly, servers may be fully interconnected, partially connected, or completely isolated from each other. Compared to a single-star topology, multi-star networks improve scalability, fault tolerance, and availability, but they still rely on centralized components at the level of each star. As a result, they remain more structured and less decentralized than peer-to-peer topologies, and require coordination mechanisms for load balancing, leader election, or consistency among servers.
-#figure(
-diagram({
-  node((0,0), name: "Server 1", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
-  edge(label("Client1"), "-", stroke: 1pt)
-  edge(label("Client2"), "-", stroke: 1pt)
-  edge(label("Client3"), "-", stroke: 1pt)
-  node((2,0), name: "Server 2", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
-  edge(label("Client1"), "-", stroke: 1pt)
-  edge(label("Client2"), "-", stroke: 1pt)
-  edge(label("Client3"), "-", stroke: 1pt)
-
-  node((0,1.5), name: "Client1", radius: 2em, stroke: 1pt, fill: blue.lighten(60%))
-
-  node((1,1.5), name: "Client2", radius: 2em, stroke: 1pt, fill: blue.lighten(60%))
-
-  node((2,1.5), name: "Client3", radius: 2em, stroke: 1pt, fill: blue.lighten(60%))  
-}),
-  caption: [A mult-stars topology, with 2 servers and 3 clients. Each client is connected to each server.],
-) <star-topology>
-
-==== Ring
-A ring topology corresponds to a graph in which each node maintains exactly two connections, typically referred to as its left and right neighbors, forming a closed cycle. From a graph-theoretic perspective, this structure is a simple cycle graph. Ring topologies require coordination mechanisms between nodes, as well-defined rules are needed to handle the addition or removal of one or more nodes without breaking the ring and disconnecting the network. In particular, join and leave operations must ensure that neighbor relationships are consistently updated to preserve connectivity. The diameter of a ring network grows linearly with the number of nodes, i.e., it is proportional to $N$, which leads to potentially high communication latency as information may need to traverse many intermediate nodes. To mitigate this limitation, many ring-based systems introduce additional long-range links, often inspired by skip lists, allowing nodes to bypass large portions of the ring and significantly reduce routing and propagation times. Such enhancements improve efficiency while preserving the simplicity and locality properties of the underlying ring structure.
-#figure(
-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
-node((0,0), name: "1", radius: 2em)
-edge( "-", stroke: 1pt)
-node((0.8,0.3), name: "2", radius: 2em)
-edge( "-", stroke: 1pt)
-node((0.8,1.2), name: "3", radius: 2em)
-edge( "-", stroke: 1pt)
-node((0,1.5), name: "4", radius: 2em)
-edge( "-", stroke: 1pt)
-node((-0.8,1.2), name: "6", radius: 2em)
-edge( "-", stroke: 1pt)
-node((-0.8,0.3), name: "6", radius: 2em)
-edge(label("1"),"-", stroke: 1pt)
-
-}),
-  caption: [A ring topology, with 6 nodes.],
-) <ring>
-
-==== Hierarchical
-A hierarchical network topology corresponds to a graph structured as a tree, where nodes are organized into different levels with parent–child relationships. This topology is commonly used in large-scale systems such as the Domain Name System (DNS), which relies on a hierarchical structure of authorities, ranging from root servers at the top level to top-level domain servers and authoritative name servers below. Compared to a star topology, hierarchical networks scale more effectively, as intermediate nodes distribute and absorb part of the workload, reducing the burden on any single central node. However, this topology remains largely static and is inherently fragile to failures. If an intermediate node fails, all its descendants become disconnected from the rest of the network, and a failure at the root level can impact the entire system. As a result, hierarchical topologies often require additional mechanisms such as redundancy, replication, or failover strategies to improve fault tolerance and availability.
-#figure(
-diagram({
-  node((1,0), name: "ServerRoot", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
-  edge(label("Server1"), "-", stroke: 1pt)
-  edge(label("Server2"), "-", stroke: 1pt)
-  edge(label("Server3"), "-", stroke: 1pt)
-
-  node((0,1.5), name: "Server1", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
-  edge(label("Client1"), "-", stroke: 1pt)
-  edge(label("Client2"), "-", stroke: 1pt)
-
-  node((1,1.5), name: "Server2", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
-  edge(label("Client3"), "-", stroke: 1pt)
-
-  node((2,1.5), name: "Server3", radius: 2em, stroke: 1pt, fill: green.lighten(60%))  
-  edge(label("Client4"), "-", stroke: 1pt)
-
-  node((-1,2.8), name: "Client1", radius: 2em, stroke: 1pt, fill: blue.lighten(60%))
-
-  node((0,2.8), name: "Client2", radius: 2em, stroke: 1pt, fill: blue.lighten(60%))
-
-  node((1,2.8), name: "Client3", radius: 2em, stroke: 1pt, fill: blue.lighten(60%))
-
-  node((2,2.8), name: "Client4", radius: 2em, stroke: 1pt, fill: blue.lighten(60%))
-
-}),
-  caption: [A hierarchical (or tree) topology, with 2 levels, the root server and the intermediate servers.],
-) <tree-topology>
-
-==== Random network
-In contrast to the deterministic topologies presented above, real-world networks are often not explicitly organized but instead emerge in a largely random manner. Social networks, for instance, are formed through independent and uncoordinated interactions between individuals, leading to structures that are difficult to predict or control globally. To model such systems, random network models have been widely studied, among which the Erdős–Rényi random graph @erdHos1959evolution is the most classical and intuitive. In this model, edges are created at random, either by fixing the probability of connection between any pair of nodes or by fixing the expected number of connections per node. Despite the apparent lack of structure, random graphs exhibit several desirable properties. When the average degree k is greater than a small constant (typically slightly above 2), the probability that the graph is connected rapidly approaches one as the network size grows. Moreover, the diameter of the graph remains relatively small, scaling logarithmically with the number of nodes, which ensures efficient information propagation. In the directed case, k usually denotes the out-degree of each node, while the in-degree follows a binomial distribution centered around k. These properties make random graphs attractive as baseline models for large-scale decentralized systems, even though they do not capture heterogeneity or hub formation observed in many real networks.
-
-#figure(
-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
-node((0,0), name: "1", radius: 2em)
-edge(label("5"), "->", stroke: 1pt)
-edge(label("2"), "->", stroke: 1pt)
-node((0.3,1), name: "2", radius: 2em)
-edge(label("5"), "->", stroke: 1pt)
-edge(label("3"), "->", stroke: 1pt)
-node((1,1.5), name: "3", radius: 2em)
-edge(label("5"), "->", stroke: 1pt)
-edge(label("2"), "->", stroke: 1pt)
-node((1.8,1), name: "4", radius: 2em)
-edge(label("1"), "->", stroke: 1pt)
-edge(label("5"), "->", stroke: 1pt)
-node((1.8,0), name: "5", radius: 2em)
-edge(label("1"), "->", stroke: 1pt)
-edge(label("4"), "->", stroke: 1pt)
-}),
-  caption: [A random directed graph, $k=2$, with $k$ the outdegree of each node.],
-) <random-graph>
-
-#definition(title: "Erdős–Rényi Random Graph G(n, p)")[
-  Let $n in NN$ be the number of vertices and $p in [0, 1]$.
-  An Erdős–Rényi random graph $G(n, p)$ is defined as a random graph
-  $G = (V, E)$ where:
-  - $V = {1, 2, ..., n}$ is the set of vertices;
-  - for every unordered pair ${i, j} subset V$ with $i != j$,
-    the edge ${i, j}$ is included in $E$ independently with probability $p$:
-    $
-    forall i != j, quad Pr({i, j} in E) = p.
-    $
-] <def:Erdos-Renyi-Gnp>
-
-#definition(title: "Erdős–Rényi Random Graph G(n, m)")[
-  Let $n in NN$ be the number of vertices and $m in NN$ the number of edges.
-  An Erdős–Rényi random graph $G(n, m)$ is a random graph
-  $G = (V, E)$ where:
-  - $V = {1, 2, ..., n}$;
-  - $E$ is chosen uniformly at random among all subsets of
-    ${ {i, j} | i, j in V, i != j }$
-    such that $|E| = m$.
-] <def:Erdos-Renyi-Gnm>
-
-#definition(title: "Directed Random Graph with Fixed Outdegree")[
-  Let $n in NN$ be the number of nodes and $k in NN$ such that $k < n$.
-  A directed random graph $G = (V, E)$ with fixed outdegree $k$ is defined as follows:
-  - $V = {1, 2, ..., n}$;
-  - for each node $i in V$, exactly $k$ outgoing edges are created;
-  - the $k$ distinct destination nodes are selected uniformly at random
-    from $V$, without replacement.
-  
-  Formally, for each node $i$, the set of outgoing neighbors
-  $N_"out"(i)$ satisfies:
-  $
-  |N_"out"(i)| = k,
-  $
-  and each subset of size $k$ of $V$ is equally likely.
-] <def:Directed-Random-Graph>
-
-==== Small world
-
-Small-world networks provide a more realistic representation of many real-world networks compared to classical random graphs. In such networks, the neighbors of a node are often also neighbors of each other, reflecting the common social phenomenon that “friends of my friends are also friends.” This property results in a high clustering coefficient, which contrasts with the Erdős–Rényi random graph, where clustering is typically very low. The Watts–Strogatz model @watts1998strogatz formalizes this concept by starting from a regular lattice and randomly rewiring a fraction of edges. These random long-range connections create shortcuts between distant parts of the network, significantly reducing the graph diameter while preserving local clusters. This combination of high clustering and small diameter makes small-world networks highly relevant for modeling social networks, communication systems, and peer-to-peer overlays, where local connectivity and fast information propagation are both crucial.
-
-#definition(title: "Watts-Strogatz Small-World Network")[
-  A Watts-Strogatz small-world network is generated by the following procedure:
-  1. Start with a regular ring lattice with $N$ nodes, each connected to $K$ nearest neighbors ($K/2$ on each side).
-  2. For each edge $(i,j)$, rewire it with probability $p$:
-     - Remove the edge $(i,j)$.
-     - Connect node $i$ to a randomly chosen node $k$ (excluding $i$ and avoiding duplicate edges).
-  3. Repeat for all edges.
-  
-  Parameters:
-  - $N$: number of nodes in the network.
-  - $K$: initial number of neighbors per node (must be even).
-  - $p$: rewiring probability, controlling the randomness of the network.
-  
-  Properties:
-  - High clustering coefficient compared to random graphs.
-  - Small average shortest-path length due to long-range shortcuts.
-] <def:watts-strogatz>
-
-#figure(
-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
-node((0,0), name: "1", radius: 2em)
-edge(label("2"), "->", stroke: 1pt)
-edge(label("3"), "->", stroke: 1pt)
-edge(label("5"), "->", stroke: 1pt)
-node((0.3,1), name: "2", radius: 2em)
-edge(label("1"), "->", stroke: 1pt)
-edge(label("3"), "->", stroke: 1pt)
-node((1,1.5), name: "3", radius: 2em)
-edge(label("1"), "->", stroke: 1pt)
-node((1.8,1), name: "4", radius: 2em)
-edge(label("5"), "->", stroke: 1pt)
-node((1.8,0), name: "5", radius: 2em)
-edge(label("1"), "->", stroke: 1pt)
-edge(label("6"), "->", stroke: 1pt)
-node((3,0.4), name: "6", radius: 2em)
-edge(label("4"), "->", stroke: 1pt)
-}),
-  caption: [A directed small world network, with 2 clusters (left and right).],
-) <watts-strogatz-example>
-
-==== Power-law
-The Erdős–Rényi and Watts–Strogatz models are interesting and can be used to model certain networks, but many real networks are more complex than simple random networks. In fact, real networks are heterogeneous, with hubs, i.e., nodes with many connections. Scale-free networks are a class of networks in which the degree distribution follows a power-law, meaning that most nodes have few connections while a small number of nodes, called hubs, have a very large number of connections. This property is observed in many real-world networks, such as the Internet, social networks, and citation networks. Scale-free networks also exhibit a self-similar or fractal topology: as the number of nodes increases, the overall structure of the network remains similar, and its statistical properties are preserved. This scalability is one reason why many real networks naturally adopt a scale-free topology. The Barabási–Albert (BA) model @barabasi1999emergence introduced a generative mechanism for scale-free networks based on growth and preferential attachment: starting from a small initial network, new nodes are added one by one and each new node connects to existing nodes with a probability proportional to their degree. This process leads to the emergence of hubs and a degree distribution with a typical power-law exponent around γ ≈ 3. Scale-free networks generally have a small diameter, which allows for efficient communication between nodes. However, the presence of hubs also introduces a vulnerability: the failure of one or more hubs can significantly degrade the connectivity of the network. Unlike classical random graphs, scale-free networks are highly heterogeneous, with a few highly connected nodes dominating the network structure, while most nodes have relatively few connections. Variants of the BA model have been proposed to limit the maximum degree of nodes, add constraints on connectivity, or increase resilience to failures.
-
-#definition(title: "Scale-Free Network")[
-  A scale-free network is a network whose degree distribution follows a power law: $P(k) tilde.basic k^{-gamma}$, where $P(k)$ is the probability that a node has degree $k$ and $gamma$ is a positive constant typically between 2 and 3. Most nodes have few connections, while a few nodes, called hubs, have many connections.
-
-  One classical generative model is the Barabási–Albert (BA) model:
-  1. Start with a small initial network of $m_0$ nodes.
-  2. At each time step, add a new node with $m <= m_0$ edges.
-  3. Each new edge connects to an existing node \(i\) with probability proportional to its degree:
-  
-    $Pi(i) = k_i/(sum_j k_j)$,
-  
-  where $k_i$ is the degree of node $i$. This preferential attachment process leads to the emergence of hubs and a power-law degree distribution.
-] <def:scale-free-network>
-
-#figure(
-diagram({
-  node((1,0), name: "ServerRoot", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
-  edge(label("Server1"), "-", stroke: 1pt)
-  edge(label("Server2"), "-", stroke: 1pt)
-  edge(label("Server3"), "-", stroke: 1pt)
-  edge(label("Client6"), "-", stroke: 1pt)
-
-  node((-1,1.5), name: "Server1", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
-  edge(label("Client1"), "-", stroke: 1pt)
-  edge(label("Client2"), "-", stroke: 1pt)
-  edge(label("Client3"), "-", stroke: 1pt)
-
-  node((0.5,1.5), name: "Server2", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
-  edge(label("Client4"), "-", stroke: 1pt)
-  edge(label("Client5"), "-", stroke: 1pt)
-
-  node((2,1.5), name: "Server3", radius: 2em, stroke: 1pt, fill: green.lighten(60%))  
-  edge(label("Client7"), "-", stroke: 1pt)
-  edge(label("Client8"), "-", stroke: 1pt)
-  edge(label("Client9"), "-", stroke: 1pt)
-
-  node((-3,2.8), name: "Client1", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
-
-  node((-2,2.8), name: "Client2", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
-
-  node((-1.2,2.8), name: "Client3", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
-
-  node((-0.5,2.8), name: "Client4", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
-
-  node((0.2,2.8), name: "Client5", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
-  
-  node((1,2.8), name: "Client6", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
-
-  node((1.8,2.8), name: "Client7", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
-  
-  node((2.5,2.8), name: "Client8", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
-
-  node((3.5,2.8), name: "Client9", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
-
-}),
-  caption: [A scale free network.],
-) <scale-free-schema>
-
-==== Stochastic block model
-In real-world networks, randomness often coexists with community structures. Stochastic Block Models (SBM) @holland1983stochastic are a generalization of the classical Erdős–Rényi random graph and provide a flexible framework to model such networks. In an SBM, nodes are partitioned into communities (or blocks), and the probability of a link between two nodes depends on the communities to which they belong. This allows the generation of networks that appear random globally but exhibit strong local structures, highlighting the presence of communities. The model allows explicit control over the number and size of communities, as well as the intra- and inter-community connection probabilities, enabling the study of networks with varying modularity. Moreover, because SBM is probabilistic, multiple network instances can be generated from the same parameters, making it a powerful tool for benchmarking community detection algorithms and exploring structural properties of complex networks.
-
-#definition(title: "Stochastic Block Model")[
-  A Stochastic Block Model (SBM) is a generative model for random graphs with community structure. 
-  Consider a graph $G = (V, E)$ with $N$ nodes, and let the nodes be partitioned into $K$ disjoint blocks (or communities) $C_1, C_2, dots, C_K$.
-  The probability of an edge between two nodes depends only on the blocks to which they belong.
-  
-  Formally, let $B in [0,1]^{K times K}$ be a matrix of connection probabilities between blocks, where $B_{"ab"}$ is the probability that a node in block $C_a$ connects to a node in block $C_b$. Then, for each pair of nodes $(i,j)$:
-  
-  - If node $i in C_a$ and node $j in C_b$, the edge $(i,j)$ exists independently with probability $B_{"ab"}$:
-      $P((i,j) in E) = B_{"ab"}$.
-  
-  Special cases include:
-  - *Intra-block probabilities*: $B_{"aa"}$, the probability of connection between nodes within the same community.
-  - *Inter-block probabilities*: $B_{"ab"}$, $a eq.not b$, the probability of connection between nodes of different communities.
-  
-  SBM generalizes the Erdős–Rényi random graph, which corresponds to the case $K=1$.
-] <def:sbm>
-
-After introducing various network topologies, whether deterministic or random, it is natural 
-to consider the ability of peer-to-peer protocols to *reach* or *maintain* these structures. 
-In a dynamic system where nodes may join, leave, or update their connections, the observed 
-topology at time $t$, represented by the graph $G(t)$, can deviate from the ideal configurations 
-presented above. The notion of *topology convergence* formalizes this idea: a protocol is said 
-to converge if, starting from any initial topology, it drives the network toward a set of 
-desired topologies. These target topologies may be strictly deterministic, such as a ring or 
-a fully connected graph, or probabilistic, such as a random graph or a small-world network. 
-This formalization provides a rigorous framework to analyze and compare the effectiveness of 
-protocols in creating, stabilizing, or preserving different network structures in dynamic, 
-distributed environments.
-
-#definition(title: "Topology Convergence in Peer-to-Peer Networks")[
-A peer-to-peer protocol is said to achieve *topology convergence* if there exists a set of 
-desired network topologies $G^*$ such that, starting from any initial topology 
-$G(0)$, the sequence of overlay graphs $G(t)_(t >= 0)$ produced by the protocol satisfies:
-
-$
-exists T >= 0 "such as" forall t >= T, G(t) in G^*.
-$
-
-The desired topology may be:
-
-- *Deterministic*, e.g., a ring, a fully connected graph, or a structured DHT, in which 
-  case convergence requires that the protocol reorganizes the overlay exactly into this structure.
-
-- *Random*, e.g., an Erdős–Rényi or other random graph model, in which case convergence 
-  is defined in a statistical sense: the degree distribution, clustering coefficient, or 
-  other network metrics of $G(t)$ should approximate those of a graph sampled from the target 
-  random model.
-
-Convergence may hold deterministically or with high probability depending on the assumptions 
-made on the protocol execution, and the rules for neighbor selection.
-] <def:topology-convergence>
 
 
 == Metrics
