@@ -557,35 +557,9 @@ In the *sequential cycle model*, nodes execute their protocol steps one after an
 Each node updates its local state immediately upon execution and may emit messages that can be observed by nodes executing later in the same cycle.  
 As a result, the state of the system may evolve during the cycle itself.
 
-=== Dynamic Network
+// === Emergent Behaviour
+=== Self Organization
 
-So far, we have considered the overlay network as a static structure on which nodes execute a protocol over time.  
-However, in many peer-to-peer systems, the network topology itself evolves as the system runs.
-
-A *dynamic network* is characterized by a time-varying set of communication links between nodes.  
-That is, while the set of nodes $V$ may remain fixed, the edge set $E$ can change from one protocol cycle to another.
-
-Topology changes may arise from two main sources.  
-First, they may be caused by the environment, for instance when nodes join or leave the system, or when communication links become temporarily unavailable.  
-Second, the topology may evolve as a direct consequence of the protocol itself, when nodes actively modify their partial views by creating or removing connections over time.
-
-In our model, such dynamics are captured by allowing the network graph $G = (V, E)$ to vary across protocol cycles, and thus the representation of our overlay is a time-varying graph (or temporal graph), as defined in the literature @holme2012temporal.
-As a result, the structure of the overlay network becomes part of the system state and participates in the global evolution of the system.
-
-#definition(title: "Time-Varying Graph")[
-A time-varying graph is a tuple $G = (V, E, T)$ where:
-- $T$ is a time domain, which may be discrete or continuous;
-- $V(t)$ is the set of vertices present at time $t in T$;
-- $E(t) subset.eq {{x, y} | x, y in V(t), x eq.not y}$ is the set of edges present at time $t$.
-
-The graph $G(t) = (V(t), E(t))$ represents the network topology at time $t$. The evolution of the graph over time captures the appearance and disappearance of vertices and edges.
-] <def:tvg>
-
-=== Emergent Behaviour
-// In some protocols, nodes pursue purely local objectives, and no explicit global 
-// coordination is required. In others, however, the protocol is designed so that the 
-// interaction of nodes leads to the emergence of a global property or the computation of 
-// a system-wide function.
 Beyond local execution semantics, many peer-to-peer protocols are designed to achieve 
 specific objectives at the level of the system as a whole. While each node executes the 
 protocol independently and relies solely on local information, the collective behavior 
@@ -618,66 +592,14 @@ probability, depending on the assumptions made on the protocol execution and the
 network dynamics.
 ] <def:convergence>
 
-== Dynamicity
-// churn
-// === Time-Varying Graphs
+=== Dynamic Network
+// The execution model described above directly induces a dynamic evolution of the peer-to-peer network. 
 
-Many real-world distributed systems are inherently dynamic: communication links may appear or disappear over time, and participating entities may join or leave the system. To capture such dynamics, static graph models are insufficient. Time-varying graphs (TVGs) extend classical graph theory by explicitly modeling the temporal evolution of vertices and edges.
-
-Time-varying graphs are particularly well suited for modeling peer-to-peer systems, where the network topology is not fixed. In such systems, the set of nodes and the set of communication links evolve over time due to two main factors. First, the peer-to-peer protocol itself may actively modify the overlay topology, for instance by adding, removing, or replacing neighbors as part of its maintenance or optimization mechanisms. Second, the system is subject to churn, where nodes may join or leave the network dynamically, which directly affects both the vertex set and the edge set.
-
-
-We model peer-to-peer networks as time-varying graphs, where the evolution of the graph reflects both protocol-driven topology changes and node churn.
-
-#definition(title: "Peer-to-Peer Network")[
-A peer-to-peer (P2P) network is modeled as a time-varying directed graph $G = (V, E, T)$, where the dynamics of the graph capture both node churn and protocol-driven topology evolution.
-
-At any time $t in T$:
-- the vertex set $V(t)$ represents the nodes (or peers) currently participating in the network;
-- the edge set $E(t) subset.eq V(t) times V(t)$ represents the directed communication links between nodes at time $t$.
-
-The graph allows self-loops, i.e., edges of the form $(x, x)$. However, multiple edges between the same ordered pair of vertices are not allowed.
-
-The cardinality of $V(t)$ may vary over time due to peer arrivals and departures, a phenomenon commonly referred to as _churn_. Similarly, the edge set $E(t)$ evolves as peers establish or terminate connections according to the peer-to-peer protocol.
-
-A directed edge $(x, y) in E(t)$ indicates that peer $x$ can send messages directly to peer $y$ at time $t$. The resulting graph $G(t) = (V(t), E(t))$ represents the instantaneous overlay topology of the peer-to-peer network.
-] <def:p2p>
-
-// === Peer to Peer Network
-
-
-
-// A node models an autonomous computational entity, such as a software process running on a physical or virtual machine, that participates in the peer-to-peer system. Each node may simultaneously act as a client, a server, or both, and is responsible for maintaining a local state, executing protocol logic, and interacting with other nodes according to the communication rules of the system. In this manuscript, the term _node_ is used consistently to refer to such entities, regardless of their physical implementation or functional role within the system.
-// Formally, we define a node as follows.
-// Having defined the notion of a peer-to-peer network, we now formalize the notion of a node, which constitutes the basic computational entity of the system.
-// - Each node executes the same *protocol*.
-
-// == Execution Model
-
-
-// Having defined the local behavior of nodes and the structure of the underlying peer-to-peer network, we now introduce a global view of the system. This perspective allows us to reason about the collective dynamics induced by the interaction of individual nodes over a time-varying communication topology.
-
-// #definition(title: "Peer-to-Peer System (Global View)")[
-// A peer-to-peer system is modeled as a distributed dynamical system evolving over a time-varying directed graph $G = (V, E, T)$.
-
-// Each node $v in V(t)$ is modeled as a state machine, characterized by:
-// - a local state space $S_v$,
-// - an initial state $s_v^0$,
-// - a transition function that maps the current local state and incoming events (messages or internal actions) to a new local state and a set of outgoing messages.
-
-// The global state of the peer-to-peer system at time $t$ is given by the tuple
-// $S(t) = (s_v(t))_{v in V(t)}$,
-// which aggregates the local states of all nodes currently present in the system.
-
-// The evolution of the system results from the  composition of the local state machines, combined with the temporal evolution of the underlying time-varying graph, which constrains possible communications between nodes.
-
-// From this perspective, the peer-to-peer system can be viewed as a large, distributed state machine whose global behavior emerges from the interaction of local protocols executed by individual nodes.
-// ] <def:p2p-global>
-
-
-== Churn
-The execution model described above directly induces a dynamic evolution of the peer-to-peer network. As nodes repeatedly execute the protocol, both the local views of nodes and the global network topology may change over time.
+So far, we have considered the overlay network as a static structure on which nodes execute a protocol over time.  
+However, in many peer-to-peer systems, the network topology itself evolves as the system runs. As nodes repeatedly execute the protocol, both the local views of nodes and the global network topology may change over time.
 Thus a first level of dynamicity arises from the protocol execution itself. After each execution of the protocol loop, a node may update its partial view of the network, for instance by adding, removing, or replacing neighbors. As a consequence, the set of outgoing edges of a node in the overlay graph may change from one protocol cycle to another. At this level of dynamicity, the set of nodes remains constant, and only the edge set of the graph evolves over time.
+
+==== Churn
 
 A second level of dynamicity is introduced by churn, that is, the dynamic arrival and departure of nodes in the system. We model churn as a temporally localized phenomenon rather than a permanent one. Specifically, churn occurs during a predefined period spanning several protocol cycles.
 
@@ -687,19 +609,46 @@ After the churn period ends, no further nodes join or leave the system. The prot
 
 This modeling choice reflects the fact that continuous churn keeps the system in a permanently unstable state. By separating churn phases from stabilization phases, we can explicitly study the resilience and self-healing properties of the peer-to-peer protocol.
 
-// === Failure Models
+In our model, such dynamics are captured by allowing the network graph $G = (V, E)$ to vary across protocol cycles.  
+Both sources of dynamicity—updates of local views driven by protocol execution, and the addition/removal of nodes due to churn—contribute to changes in the network topology over time.  
+Consequently, the overlay network can be naturally represented as a *time-varying graph* (or temporal graph), which formalizes the evolving set of nodes and edges as a function of time, as discussed in the literature @holme2012temporal.  
+This representation allows us to treat the structure of the overlay network as part of the system state, fully integrating network dynamics into the global evolution of the system.
 
-// - Nodes may fail by crashing. A node may crash due to hardware failure, software failure, or network disconnection. Regardless of the cause, the effect is the same: a crashed node cannot send or receive messages, nor can it perform any local computation.
+// In our model, such dynamics are captured by allowing the network graph $G = (V, E)$ to vary across protocol cycles, and thus the representation of our overlay is a time-varying graph (or temporal graph), as defined in the literature @holme2012temporal.
+// As a result, the structure of the overlay network becomes part of the system state and participates in the global evolution of the system.
 
-== Failure Models
+#definition(title: "Time-Varying Graph")[
+A time-varying graph is a tuple $G = (V, E, T)$ where:
+- $T$ is a time domain, which may be discrete or continuous;
+- $V(t)$ is the set of vertices present at time $t in T$;
+- $E(t) subset.eq {{x, y} | x, y in V(t), x eq.not y}$ is the set of edges present at time $t$.
 
-We distinguish two main classes of failures in peer-to-peer systems: crash failures and Byzantine failures.
+The graph $G(t) = (V(t), E(t))$ represents the network topology at time $t$. The evolution of the graph over time captures the appearance and disappearance of vertices and edges.
+] <def:tvg>
+
+== Failure Models 
+
+In the previous sections, we have formalized the behavior of nodes, the evolution of the overlay network, and the dynamics of protocol execution in terms of steps and cycles.  
+Having established this abstract execution framework, we now consider the possibility that nodes may fail during the system evolution.  
+Node failures are an important source of perturbation in peer-to-peer systems and can affect both local computations and global network dynamics. We distinguish two main classes of failures in peer-to-peer systems: crash failures and Byzantine failures.
 
 ==== Crash Failures
 
-A node may experience a crash failure due to various causes, such as hardware faults, software errors, or permanent network disconnection. From the perspective of the system model, the specific cause of the failure is irrelevant, as the observable effect is always the same.
+A *crash failure* occurs when a node permanently stops executing the protocol. This may result from hardware faults, software errors, or permanent network disconnection. From the perspective of our abstract model, the specific cause is irrelevant; what matters is the observable effect: a crashed node ceases all activity.
 
-When a node crashes, it permanently stops executing the protocol. As a consequence, a crashed node no longer updates its local state, does not send messages, and cannot receive or process incoming messages. Any attempt by another node to contact a crashed node results in the absence of a response. We assume that crash failures are permanent: a crashed node never recovers and never rejoins the system. Peer-to-peer protocols must explicitly account for crash failures in order to avoid undesirable behaviors such as deadlocks, where a node waits indefinitely for a response from a failed node.
+When a node crashes:
+1. it no longer updates its local state,
+2. it cannot send messages,
+3. it cannot receive or process incoming messages.
+
+Any attempt by another node to contact a crashed node results in the absence of a response.  
+We assume that crash failures are permanent: once a node crashes, it never recovers and never rejoins the system.  
+In our model, a node can only crash at the beginning of a protocol cycle, never in the middle of a cycle. This assumption simplifies the analysis by ensuring that protocol steps and cycles remain atomic.  
+
+#assumption[
+A node can detect that one of its neighbors has crashed if the neighbor does not respond to a message.  
+Since message transmission is assumed to be instantaneous and reliable, the absence of an immediate response is interpreted as a crash.
+]
 
 ==== Byzantine Failures
 
@@ -723,95 +672,109 @@ Unless stated otherwise, Byzantine nodes are assumed to have full control over t
 
 
 
-== Metrics
-In an overlay network, the state of the system at a given instant can be represented as a graph snapshot of the underlying time-varying graph. Various metrics can then be computed on this graph in order to characterize the structure of the network, monitor its evolution over time, and compare different protocols.
+// == Metrics
+// In an overlay network, the state of the system at a given instant can be represented as a graph snapshot of the underlying time-varying graph. Various metrics can then be computed on this graph in order to characterize the structure of the network, monitor its evolution over time, and compare different protocols.
 
-Metrics provide insights into connectivity, resilience, efficiency, and overall behavior of the network. In the context of time-varying graphs, these metrics can be computed either on a single snapshot $G(t)$ or observed as time-dependent quantities $m(t) = m(G(t))$ that evolve as the network topology changes.
+// Metrics provide insights into connectivity, resilience, efficiency, and overall behavior of the network. In the context of time-varying graphs, these metrics can be computed either on a single snapshot $G(t)$ or observed as time-dependent quantities $m(t) = m(G(t))$ that evolve as the network topology changes.
 
-Commonly used metrics include the indegree and outdegree distributions, the clustering coefficient, the average path length, and the network diameter.
+// Commonly used metrics include the indegree and outdegree distributions, the clustering coefficient, the average path length, and the network diameter.
 
-The *indegree* and *outdegree* distributions are fundamental metrics that describe how connections are distributed among nodes at a given time.
+// The *indegree* and *outdegree* distributions are fundamental metrics that describe how connections are distributed among nodes at a given time.
 
-In a time-varying graph $G = (V, E, T)$, these distributions are computed on a snapshot $G(t) = (V(t), E(t))$ of the network. The outdegree of a node corresponds to the number of outgoing edges it maintains at time $t$, which in most peer-to-peer protocols reflects the size of the node's partial view. As a result, the outdegree is often bounded and relatively stable over time.
+// In a time-varying graph $G = (V, E, T)$, these distributions are computed on a snapshot $G(t) = (V(t), E(t))$ of the network. The outdegree of a node corresponds to the number of outgoing edges it maintains at time $t$, which in most peer-to-peer protocols reflects the size of the node's partial view. As a result, the outdegree is often bounded and relatively stable over time.
 
-In contrast, the indegree represents the number of incoming edges a node receives and may vary significantly across nodes. Monitoring the indegree distribution over time provides valuable insights into how the network adapts, which nodes become highly connected, and whether hubs or imbalances emerge.
-#definition(title: "Indegree and Outdegree Distributions")[
-The *indegree (resp. outdegree) distribution* of a network at time $t$ is the probability distribution of the number of incoming (resp. outgoing) edges of nodes in the graph snapshot $G(t)$.
+// In contrast, the indegree represents the number of incoming edges a node receives and may vary significantly across nodes. Monitoring the indegree distribution over time provides valuable insights into how the network adapts, which nodes become highly connected, and whether hubs or imbalances emerge.
+// #definition(title: "Indegree and Outdegree Distributions")[
+// The *indegree (resp. outdegree) distribution* of a network at time $t$ is the probability distribution of the number of incoming (resp. outgoing) edges of nodes in the graph snapshot $G(t)$.
 
-- For a network following a random graph distribution (Erdős–Rényi model), the degree distribution follows:
-  $P(k) = binom(n-1, k) p^k (1-p)^(n-1-k)$.
+// - For a network following a random graph distribution (Erdős–Rényi model), the degree distribution follows:
+//   $P(k) = binom(n-1, k) p^k (1-p)^(n-1-k)$.
 
-- For a network following a scale-free distribution (Barabási–Albert model), the degree distribution follows:
-  $P(k) = C k^(-gamma)$,
-  where $gamma$ is the power-law exponent and $C$ is a normalization constant.
-] <def:degree-distribution>
+// - For a network following a scale-free distribution (Barabási–Albert model), the degree distribution follows:
+//   $P(k) = C k^(-gamma)$,
+//   where $gamma$ is the power-law exponent and $C$ is a normalization constant.
+// ] <def:degree-distribution>
 
-The *clustering coefficient* measures the tendency of nodes to form tightly connected groups. It quantifies how likely it is that the neighbors of a node are also connected to each other.
+// The *clustering coefficient* measures the tendency of nodes to form tightly connected groups. It quantifies how likely it is that the neighbors of a node are also connected to each other.
 
-In a dynamic peer-to-peer network, the clustering coefficient can be computed at each time step on the snapshot $G(t)$, yielding a time-dependent metric that reflects the local cohesiveness of the network as it evolves. This metric is particularly useful for identifying the emergence of clusters or community structures.
+// In a dynamic peer-to-peer network, the clustering coefficient can be computed at each time step on the snapshot $G(t)$, yielding a time-dependent metric that reflects the local cohesiveness of the network as it evolves. This metric is particularly useful for identifying the emergence of clusters or community structures.
 
-#definition(title: "Clustering Coefficient")[
-The clustering coefficient $C_i(t)$ of a node $i$ at time $t$ is defined as:
-$ C_i(t) = (2 e_i(t)) / (k_i(t)(k_i(t) - 1)) $
-
-Where:
-- $e_i(t)$ is the number of edges between the neighbors of node $i$ in $G(t)$,
-- $k_i(t)$ is the degree of node $i$ at time $t$.
-
-The average clustering coefficient of the network at time $t$ is:
-$ C(t) = 1 /(|V(t)|) sum_(i in V(t)) C_i(t) $
-]
-
-The *average path length* characterizes the efficiency of information dissemination in the network. It corresponds to the mean of the shortest path lengths between all pairs of nodes.
-
-In time-varying graphs, the average path length is computed on each snapshot $G(t)$, allowing the observation of its evolution over time. A decreasing average path length may indicate improved connectivity or the emergence of highly connected nodes.
-
-#definition(title: "Average Path Length")[
-The average path length $a(t)$ of the network at time $t$ is defined as:
-$ a(t) = sum_(s, t' in V(t), s eq.not t') d(s, t') / (|V(t)| (|V(t)| - 1)) $
-
-Where:
-- $d(s, t')$ is the length of the shortest path between nodes $s$ and $t'$ in $G(t)$.
-]
-
-// The *diameter* of a graph is a measure of the longest distance between any two vertices (nodes) in the graph, measured in terms of the number of edges. In other words, the diameter of a graph is the maximum shortest path between any pair of nodes in the network.
-
-// While the average path length provides a basic measure of information dissemination efficiency in algorithms, it may overlook disparities in dissemination speed across different nodes within the network. An algorithm could potentially have a favorable average path length but still exhibit uneven dissemination speeds among nodes due to varying distances. Calculating the network's diameter, however, offers a more comprehensive assessment.
-
-// #definition(title: "Diameter")[
-// The diameter of a network at time $t$ is defined as the length of the longest shortest path between any pair of nodes in the snapshot $G(t)$:
-
-// $
-// "diam"(G(t)) = max_(u, v in V(t)) d(u, v)
-// $
+// #definition(title: "Clustering Coefficient")[
+// The clustering coefficient $C_i(t)$ of a node $i$ at time $t$ is defined as:
+// $ C_i(t) = (2 e_i(t)) / (k_i(t)(k_i(t) - 1)) $
 
 // Where:
-// - $V(t)$ is the set of nodes in the network at time $t$.
-// - $d(u,v)$ is the length of the shortest path between nodes $u$ and $v$.
+// - $e_i(t)$ is the number of edges between the neighbors of node $i$ in $G(t)$,
+// - $k_i(t)$ is the degree of node $i$ at time $t$.
+
+// The average clustering coefficient of the network at time $t$ is:
+// $ C(t) = 1 /(|V(t)|) sum_(i in V(t)) C_i(t) $
 // ]
 
-Beyond local and global structural metrics, connectivity properties play a central role in the analysis of peer-to-peer networks.  Connectivity metrics computed on $G(t)$ allow us to characterize whether the network remains operational, how information can propagate, and how resilient the topology is to node failures or churn.
+// The *average path length* characterizes the efficiency of information dissemination in the network. It corresponds to the mean of the shortest path lengths between all pairs of nodes.
+
+// In time-varying graphs, the average path length is computed on each snapshot $G(t)$, allowing the observation of its evolution over time. A decreasing average path length may indicate improved connectivity or the emergence of highly connected nodes.
+
+// #definition(title: "Average Path Length")[
+// The average path length $a(t)$ of the network at time $t$ is defined as:
+// $ a(t) = sum_(s, t' in V(t), s eq.not t') d(s, t') / (|V(t)| (|V(t)| - 1)) $
+
+// Where:
+// - $d(s, t')$ is the length of the shortest path between nodes $s$ and $t'$ in $G(t)$.
+// ]
+
+// // The *diameter* of a graph is a measure of the longest distance between any two vertices (nodes) in the graph, measured in terms of the number of edges. In other words, the diameter of a graph is the maximum shortest path between any pair of nodes in the network.
+
+// // While the average path length provides a basic measure of information dissemination efficiency in algorithms, it may overlook disparities in dissemination speed across different nodes within the network. An algorithm could potentially have a favorable average path length but still exhibit uneven dissemination speeds among nodes due to varying distances. Calculating the network's diameter, however, offers a more comprehensive assessment.
+
+// // #definition(title: "Diameter")[
+// // The diameter of a network at time $t$ is defined as the length of the longest shortest path between any pair of nodes in the snapshot $G(t)$:
+
+// // $
+// // "diam"(G(t)) = max_(u, v in V(t)) d(u, v)
+// // $
+
+// // Where:
+// // - $V(t)$ is the set of nodes in the network at time $t$.
+// // - $d(u,v)$ is the length of the shortest path between nodes $u$ and $v$.
+// // ]
+
+// Beyond local and global structural metrics, connectivity properties play a central role in the analysis of peer-to-peer networks.  Connectivity metrics computed on $G(t)$ allow us to characterize whether the network remains operational, how information can propagate, and how resilient the topology is to node failures or churn.
 
 
-// #definition(title: "Weakly and Strongly Connected Components")[
-// Let $G(t) = (V(t), E(t))$ be a directed graph representing a snapshot of a peer-to-peer network at time $t$.
+// // #definition(title: "Weakly and Strongly Connected Components")[
+// // Let $G(t) = (V(t), E(t))$ be a directed graph representing a snapshot of a peer-to-peer network at time $t$.
 
-// - A *strongly connected component (SCC)* is a maximal subset of nodes $C subset.eq V(t)$ such that for every pair of nodes $u, v in C$, there exists a directed path from $u$ to $v$ and from $v$ to $u$.
+// // - A *strongly connected component (SCC)* is a maximal subset of nodes $C subset.eq V(t)$ such that for every pair of nodes $u, v in C$, there exists a directed path from $u$ to $v$ and from $v$ to $u$.
 
-// - A *weakly connected component (WCC)* is a maximal subset of nodes $C subset.eq V(t)$ such that the underlying undirected graph obtained by ignoring edge directions is connected.
+// // - A *weakly connected component (WCC)* is a maximal subset of nodes $C subset.eq V(t)$ such that the underlying undirected graph obtained by ignoring edge directions is connected.
 
-// The set of weakly or strongly connected components induces a partition of the vertex set $V(t)$. The number of such components characterizes the fragmentation level of the network at time $t$.
-// ] <def:connectivity>
+// // The set of weakly or strongly connected components induces a partition of the vertex set $V(t)$. The number of such components characterizes the fragmentation level of the network at time $t$.
+// // ] <def:connectivity>
 
-In typical operating conditions, peer-to-peer protocols aim to maintain a connected topology, and the snapshot graph $G(t)$ usually consists of a single weakly connected component. To assess the robustness of the network, we study how connectivity degrades under node removals.
+// In typical operating conditions, peer-to-peer protocols aim to maintain a connected topology, and the snapshot graph $G(t)$ usually consists of a single weakly connected component. To assess the robustness of the network, we study how connectivity degrades under node removals.
 
-Starting from a connected snapshot, nodes are removed uniformly at random, one by one, simulating failures or departures. After each removal, we recompute the number of weakly and strongly connected components. The evolution of these quantities provides a quantitative measure of the network’s resilience: a topology is considered robust if it remains weakly connected, or fragments slowly, despite node failures.
+// Starting from a connected snapshot, nodes are removed uniformly at random, one by one, simulating failures or departures. After each removal, we recompute the number of weakly and strongly connected components. The evolution of these quantities provides a quantitative measure of the network’s resilience: a topology is considered robust if it remains weakly connected, or fragments slowly, despite node failures.
 
-This analysis allows us to compare protocols in terms of fault tolerance and structural stability, independently of their specific message-passing behavior.
+// This analysis allows us to compare protocols in terms of fault tolerance and structural stability, independently of their specific message-passing behavior.
 
 
 
-// == Conclusion
+== Conclusion
+
+In this chapter, we have introduced a formal framework for modeling peer-to-peer systems.  
+Starting from the node as the fundamental computational entity, we modeled each participant as a state machine executing a common protocol and interacting with others through abstract communication channels.
+
+We then represented the overlay network as a graph, whose vertices correspond to nodes and whose edges capture communication relationships.  
+By introducing partial views, protocol steps, protocol cycles, and synchronization models, we provided a structured execution model that enables precise reasoning about the global evolution of the system.  
+This framework was further extended to dynamic settings, where the overlay topology evolves over time due to protocol-driven neighbor updates and churn, naturally leading to a representation in terms of time-varying (temporal) graphs.
+
+Within this abstraction, global system behavior emerges from repeated local interactions, allowing us to reason about properties such as self-organization, convergence, resilience, and fault tolerance in a principled manner.  
+Modeling failures explicitly, and in particular crash failures, further grounds the framework in realistic peer-to-peer settings while preserving analytical tractability.
+
+Having established this unified and abstract modeling framework—where a peer-to-peer system is viewed as a temporal graph whose nodes are state machines—we are now in a position to present our contribution.  
+In the following chapter, we introduce a novel peer-to-peer protocol for unstructured networks.  
+This protocol leverages the local execution model described above to induce desirable global properties, and exhibits innovative features in terms of organization, robustness, and emergent behavior.
 
 // In this chapter, we have presented a comprehensive model of a decentralized learning system, 
 // structured in multiple layers, as illustrated in Figure <fig:system-architecture>. 
