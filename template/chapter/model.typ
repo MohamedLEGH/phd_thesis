@@ -10,6 +10,7 @@
 // #import cosmos.clouds: *
 #show: show-theorion
 
+
 = Model <chap:model>
 
 The peer-to-peer literature encompasses a wide variety of systems, protocols, and
@@ -116,17 +117,17 @@ An undirected graph is an ordered pair $G = (V, E)$:
   - $E subset.eq {{x, y} bar.v x, y in V, x eq.not y}$, a set of edges (also called links or lines), which are unordered pairs of vertices (that is, an edge is associated with two distinct vertices).
 ] <def:graph>
 
-#example[
-  An undirected graph with three vertices and three edges. 
-]
-#diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
+#figure(
+diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
 node((0,0),"", name: "1", radius: 1em)
 edge()
 edge(label("3"))
 node((1,0),"", name: "2", radius: 1em)
 edge()
 node((1,1),"", name: "3", radius: 1em)
-})
+}),
+caption: [Example of an undirected graph with three vertices and three edges.]
+)
 
 #definition(title: "Directed Graph")[
  A directed graph or digraph is a graph in which edges have orientations. A directed graph is an ordered pair $G = (V, E)$:
@@ -135,17 +136,18 @@ node((1,1),"", name: "3", radius: 1em)
   
 ] <def:digraph>
 
-#example[
-  A directed graph with three vertices and three directed edges. 
-]
-#diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
+#figure(  
+diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
 node((0,0),"", name: "1", radius: 1em)
 edge("->")
 edge(label("3"), "->")
 node((1,0),"", name: "2", radius: 1em)
 edge("->")
 node((1,1),"", name: "3", radius: 1em)
-})
+}),
+caption: [Example of a directed graph with three vertices and three directed edges.]
+)
+
 
 #definition(title: "Path")[
 Let $G = (V, E)$ be a graph.
@@ -319,41 +321,137 @@ $
 In network analysis, certain graph topologies frequently appear due to their structural properties. These standard structures serve as fundamental models for understanding connectivity, routing, and aggregation behavior in distributed systems.  
 Each topology has distinct characteristics that can influence how information propagates, how resilient the network is to failures, and how algorithms perform. Below, we summarize some of the most commonly studied graph structures along with their defining properties.
 
+// #show figure: set block(breakable: true)
 
 #figure(
 table(
-  columns: (1fr, 2fr),
+  columns: (1fr, 1fr, 1fr),
   inset: 10pt,
   align: horizon,
 
   table.header(
-    [*Graph Structure*], [*Description*],
+    [*Graph Structure*], [*Description*], [*Example*],
   ),
 
   [Complete Graph],
-  [Every node is connected to every other node, representing maximal connectivity.],
+  [Every node is connected to every other node, representing maximal connectivity.], [#figure(diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
+node((0,0), name: "1", radius: 1em)
+edge(label("2"), "-", stroke: 1pt)
+edge(label("3"), "-", stroke: 1pt)
+edge(label("4"), "-", stroke: 1pt)
+node((1,1), name: "2", radius: 1em)
+edge(label("3"), "-", stroke: 1pt)
+edge(label("4"), "-", stroke: 1pt)
+node((0, 1), name: "3", radius: 1em)
+edge(label("4"), "-", stroke: 1pt)
+node((1,0), name: "4", radius: 1em)
+}),
+)],
 
   [Star Graph],
-  [A central node is connected to all the other nodes.],
+  [A central node is connected to all the other nodes.], [#figure(
+diagram({
+  node((1,0), name: "Server", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
+  edge(label("Client1"), "-", stroke: 1pt)
+  edge(label("Client2"), "-", stroke: 1pt)
+  edge(label("Client3"), "-", stroke: 1pt)
+
+  node((0,1.1), name: "Client1", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
+
+  node((1,1.1), name: "Client2", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
+
+  node((2,1.1), name: "Client3", radius: 1em, stroke: 1pt, fill: green.lighten(60%))  
+}))
+],
 
   [Ring Graph],
-  [Nodes form a closed loop, each connected to two neighbors.],
+  [Nodes form a closed loop, each connected to two neighbors.], [#figure(
+diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
+node((0,0), name: "1", radius: 1em)
+edge( "-", stroke: 1pt)
+node((0.8,0.3), name: "2", radius: 1em)
+edge( "-", stroke: 1pt)
+node((0.8,1.2), name: "3", radius: 1em)
+edge( "-", stroke: 1pt)
+node((0,1.5), name: "4", radius: 1em)
+edge( "-", stroke: 1pt)
+node((-0.8,1.2), name: "6", radius: 1em)
+edge( "-", stroke: 1pt)
+node((-0.8,0.3), name: "6", radius: 1em)
+edge(label("1"),"-", stroke: 1pt)
+}))
+],
 
   [Grid / Lattice Graph],
-  [Nodes arranged in a 2D or multi-dimensional grid, each node connected to its immediate neighbors.],
+  [Nodes arranged in a 2D or multi-dimensional grid, each node connected to its immediate neighbors.], [#figure(diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
+node((0,0), name: "1", radius: 1em)
+edge(label("3"), "-", stroke: 1pt)
+edge(label("4"), "-", stroke: 1pt)
+node((1,1), name: "2", radius: 1em)
+edge(label("3"), "-", stroke: 1pt)
+node((0, 1), name: "3", radius: 1em)
+edge(label("6"), "-", stroke: 1pt)
+node((1,0), name: "4", radius: 1em)
+edge(label("2"), "-", stroke: 1pt)
+edge(label("5"), "-", stroke: 1pt)
+node((2,0), name: "5", radius: 1em)
+edge(label("6"), "-", stroke: 1pt)
+node((2,1), name: "6", radius: 1em)
+}),
+)],
 
   [Tree Graph],
-  [Hierarchical structure with parent-child relationships, no cycles.],
+  [Hierarchical structure with parent-child relationships, no cycles.], [#figure(
+diagram({
+  node((0.6,0), name: "ServerRoot", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
+  edge(label("Server1"), "-", stroke: 1pt)
+  edge(label("Server2"), "-", stroke: 1pt)
+  edge(label("Server3"), "-", stroke: 1pt)
+
+  node((-0.3,0.7), name: "Server1", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
+  edge(label("Client1"), "-", stroke: 1pt)
+  edge(label("Client2"), "-", stroke: 1pt)
+
+  node((0.6,0.7), name: "Server2", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
+  edge(label("Client3"), "-", stroke: 1pt)
+
+  node((1.5,0.7), name: "Server3", radius: 1em, stroke: 1pt, fill: green.lighten(60%))  
+  edge(label("Client4"), "-", stroke: 1pt)
+
+  node((-0.7,1.8), name: "Client1", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
+
+  node((0,1.8), name: "Client2", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
+
+  node((0.6,1.8), name: "Client3", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
+
+  node((1.5,1.8), name: "Client4", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
+
+}))],
 
   [Random Graph],
-  [Edges between nodes are placed randomly according to some probability distribution.],
-
-  [Bipartite Graph],
-  [Nodes are divided into two disjoint sets, with edges only between sets.],
+  [Edges between nodes are placed randomly according to some probability distribution.], [#figure(
+diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
+node((0,0), name: "1", radius: 1em)
+edge(label("5"), "-", stroke: 1pt)
+edge(label("2"), "-", stroke: 1pt)
+node((0.3,1), name: "2", radius: 1em)
+edge(label("5"), "-", stroke: 1pt)
+edge(label("3"), "-", stroke: 1pt)
+node((1,1.5), name: "3", radius: 1em)
+edge(label("5"), "-", stroke: 1pt)
+edge(label("2"), "-", stroke: 1pt)
+node((1.8,1), name: "4", radius: 1em)
+edge(label("1"), "-", stroke: 1pt)
+edge(label("5"), "-", stroke: 1pt)
+node((1.8,0), name: "5", radius: 1em)
+edge(label("1"), "-", stroke: 1pt)
+edge(label("4"), "-", stroke: 1pt)
+}))],
 
 ), caption: [Standard graph structures and their main characteristics.],
 ) <tab:standard-graph-structures>
 
+// #show figure: set block(breakable: false)
 
 // === Network components
 === Overlay Network Modeling
@@ -627,26 +725,40 @@ The graph $G(t) = (V(t), E(t))$ represents the network topology at time $t$. The
 ] <def:tvg>
 
 == Failure Models 
+// citer Raynal
 
-In the previous sections, we have formalized the behavior of nodes, the evolution of the overlay network, and the dynamics of protocol execution in terms of steps and cycles.  
-Having established this abstract execution framework, we now consider the possibility that nodes may fail during the system evolution.  
-Node failures are an important source of perturbation in peer-to-peer systems and can affect both local computations and global network dynamics. We distinguish two main classes of failures in peer-to-peer systems: crash failures and Byzantine failures.
+In the previous sections, we have formalized the behavior of nodes, the evolution of the overlay network, and the dynamics of protocol execution in terms of steps and cycles.
+Having established this abstract execution framework, we now consider the possibility that nodes may fail during the system evolution.
+Node failures are an important source of perturbation in peer-to-peer systems and can affect both local computations and global network dynamics.
+
+In this work, we explicitly situate our analysis within standard fault models from distributed computing, in order to precisely characterize the assumptions under which the protocol operates. We adopt the terminology and notational conventions introduced by Raynal in *Fault-Tolerant Message-Passing Distributed Systems: An Algorithmic Approach* @raynal2018fault.
+
+We distinguish two main classes of failures in peer-to-peer systems: crash failures and Byzantine failures.
 
 ==== Crash Failures
 
 A *crash failure* occurs when a node permanently stops executing the protocol. This may result from hardware faults, software errors, or permanent network disconnection. From the perspective of our abstract model, the specific cause is irrelevant; what matters is the observable effect: a crashed node ceases all activity.
 
+We assume that crash failures are modeled using the *Crash-prone Synchronous Message-Passing model*, denoted *CSMP ⟨n, t⟩ [∅]* (following @raynal2018fault), where:
+
+- *n* is the total number of nodes in the system,
+- *t* is the maximum number of nodes that may crash during execution,
+- [∅] indicates that no additional failure detectors or oracles are assumed.
+
+Under this model, the system is synchronous, communication is reliable, and nodes may only fail by crashing.
+
 When a node crashes:
+
 1. it no longer updates its local state,
 2. it cannot send messages,
 3. it cannot receive or process incoming messages.
 
-Any attempt by another node to contact a crashed node results in the absence of a response.  
-We assume that crash failures are permanent: once a node crashes, it never recovers and never rejoins the system.  
-In our model, a node can only crash at the beginning of a protocol cycle, never in the middle of a cycle. This assumption simplifies the analysis by ensuring that protocol steps and cycles remain atomic.  
+Any attempt by another node to contact a crashed node results in the absence of a response.
+We assume that crash failures are permanent: once a node crashes, it never recovers and never rejoins the system.
+In our model, a node can only crash at the beginning of a protocol cycle, never in the middle of a cycle. This assumption simplifies the analysis by ensuring that protocol steps and cycles remain atomic.
 
 #assumption[
-A node can detect that one of its neighbors has crashed if the neighbor does not respond to a message.  
+A node can detect that one of its neighbors has crashed if the neighbor does not respond to a message.
 Since message transmission is assumed to be instantaneous and reliable, the absence of an immediate response is interpreted as a crash.
 ]
 
@@ -656,8 +768,13 @@ In contrast to crash failures, a Byzantine node remains active but no longer fol
 
 Byzantine behaviors can take many forms, including sending incorrect, inconsistent, or misleading messages, selectively responding to certain nodes, or attempting to disrupt the protocol execution. The common characteristic of Byzantine nodes is that they act maliciously, with the goal of corrupting the protocol execution or degrading the overall behavior of the peer-to-peer network.
 
-Unless stated otherwise, Byzantine nodes are assumed to have full control over their local state and outgoing messages, while still being subject to the constraints of the underlying communication network.
+Byzantine failures are modeled using the *Byzantine Synchronous Message-Passing model*, denoted *BSMP ⟨n, t⟩ [∅]* (following @raynal2018fault), where:
 
+- *n* is the total number of nodes in the system,
+- *t* is the maximum number of Byzantine nodes,
+- [∅] indicates that no additional assumptions (such as authentication, signatures, or trusted components) are made beyond synchrony and reliable communication.
+
+Unless stated otherwise, Byzantine nodes are assumed to have full control over their local state and outgoing messages, while still being subject to the constraints of the underlying communication network.
 
 // == Time Assumptions
 
