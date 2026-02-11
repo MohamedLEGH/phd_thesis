@@ -505,7 +505,7 @@ The *partial view* of a node $v$, denoted $P(v)$, is the set of nodes that $v$ m
   $
   P(v) = "neigh"_G(v)
   $
-]
+] <def:partial-view>
 
 #remark[
 For directed channels, the partial view corresponds to the set of successors of $v$:  
@@ -556,7 +556,7 @@ A peer-to-peer protocol is a distributed algorithm executed by each node in the 
 2. the set of messages that can be exchanged between nodes,
 3. the rules governing message generation, transmission, and handling
 4. the local state transitions performed by a node upon internal events or message reception.
-]
+] <def:p2p-protocol>
 
 The protocol is executed independently by all nodes. Each node follows the same protocol specification, but may exhibit different behaviors depending on its local state, its partial view of the network, and the messages it receives. In our abstract model, we do not consider how the protocol is concretely implemented (e.g., programming language, runtime environment, or communication framework).  
 We focus solely on the *pseudocode* of the protocol, which specifies the rules governing state transitions and message exchanges.
