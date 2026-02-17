@@ -219,7 +219,7 @@ sum_(u, v in V, u eq.not v)
 /
 (|V| (|V| - 1))
 $
-]
+] <def:averagepathlength>
 
 #definition(title: "Diameter")[
   Let $G = (V, E)$ be a graph.
@@ -229,7 +229,7 @@ $
   $
   "diam"(G) = max_(u, v in V) "dist"_G (u, v)
   $
-]
+] <def:diameter>
 
 #definition(title: "Neighborhood")[
 Let $G = (V, E)$ be an undirected graph and let $v in V$ be a vertex.
@@ -271,7 +271,7 @@ the number of vertices adjacent to $v$, or equivalently, the size of its neighbo
 $
 "degree"_G (v) = |"neigh"_G (v)|
 $
-]
+] <def:degree>
 
 #definition(title: "In-degree and Out-degree")[
 Let $G = (V, E)$ be a directed graph and let $v in V$ be a vertex.
@@ -285,7 +285,7 @@ The *in-degree* of $v$ in $G$, denoted by $"indegree"_G (v)$, is the number of p
 $
 "indegree"_G (v) = |"pred"_G (v)|
 $
-]
+] <def:inoutdegree>
 
 #definition(title: "k-Neighborhood")[
 Let $G = (V, E)$ be an undirected graph and let $v in V$ be a vertex.  
