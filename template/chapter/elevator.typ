@@ -591,9 +591,23 @@ using only local information and without global coordination.
 // Before discussing the specific properties of the ELEVATOR protocol, it is necessary to first define what constitutes a hub within our context, as this concept underpins the network's structural objectives.
 
 ELEVATOR is a decentralized peer-to-peer overlay management protocol designed to implement 
-this hub sampling service in practice. It autonomously guides the network toward a desired number of hubs while maintaining structural efficiency. Its operation relies on a combination of preferential attachment and random attachment mechanisms to balance hub emergence with connectivity.
+this hub sampling service. It autonomously guides the network toward a desired number of hubs 
+while maintaining structural efficiency. Its operation relies on a combination of preferential 
+attachment and random attachment mechanisms to balance hub emergence with connectivity.
 
-Having established a formal definition of hubs and of a hub sampling service, we now turn to the desired properties of the ELEVATOR protocol, which characterize its behavior and performance beyond the aspect of hub emergence.
+At a high level, hub emergence is driven by a preferential attachment dynamic. 
+At each protocol step, nodes tend to select the most frequently observed 
+identifiers within their local neighborhood. As this behavior is executed 
+independently by all nodes, highly referenced nodes become increasingly visible, 
+which amplifies their selection probability and leads to the natural emergence 
+of hubs after a few protocol cycles.
+
+In parallel, hubs are used as sources of randomness: since they are present 
+in the partial view of every node, requesting a random identifier from a hub is equivalent to sampling a node uniformly at random in the network. This mechanism allows the protocol to preserve uniformly random outgoing connections alongside the preferential ones. As a result, after a small number of cycles, the overlay stabilizes around the desired topology consisting of $h$ hubs and uniformly random remaining connections.
+
+Having established a formal definition of hubs and of a hub sampling service, 
+we now turn to the desired properties of the ELEVATOR protocol, which 
+characterize its behavior and performance beyond the aspect of hub emergence.
 
 === Desired Properties
 
@@ -743,6 +757,19 @@ Each node retrieves the neighbor's list of their neighbors _i.e._, the neighbors
   ],
   caption: [Elevator algorithm (background thread).],
 ) <Elevator-algorithm-background>
+
+We initially introduced the intuition behind hub emergence, explaining how a 
+combination of preferential attachment and random sampling can naturally lead 
+to the formation of hubs. We then provided a detailed description of the 
+ELEVATOR protocol together with its pseudo-code, specifying its operational 
+mechanisms at the local level. 
+
+However, while this description clarifies how the protocol functions, it does 
+not formally establish its properties. In particular, the convergence toward 
+the desired number of hubs, the preservation of connectivity, and the resulting 
+structural guarantees remain to be demonstrated. The objective of the following 
+section is therefore to provide a theoretical analysis of ELEVATOR and to 
+formally study its emergent behavior.
 
 
 == Theoretical Analysis
