@@ -557,13 +557,25 @@ Equivalently, a hub is a node to which all other nodes are connected, functionin
 The objective of a hub sampling service is to promote the appearance of globally reachable nodes that structurally reduce communication distances while preserving decentralization. 
 Unlike centralized mechanisms, this service operates without global knowledge and must adapt dynamically to network changes.
 
+// #definition(title: "Decentralized Hub Sampling Service")[
+// Let $V$ be the set of nodes in the network and let $h in NN$ 
+// be the desired number of hubs, with $1 <= h <= |V|$.
+
+// A decentralized hub sampling service is a distributed randomized mechanism 
+// that induces the emergence of a subset $H subset.eq V$ such that $|H| = h$, and with all nodes in $H$ being hubs.
+// ]
 #definition(title: "Decentralized Hub Sampling Service")[
 Let $V$ be the set of nodes in the network and let $h in NN$ 
 be the desired number of hubs, with $1 <= h <= |V|$.
 
-A decentralized hub sampling service is a distributed randomized mechanism 
-that induces the emergence of a subset $H subset.eq V$ such that $|H| = h$.
+A decentralized hub sampling service is a protocol that, starting from an arbitrary overlay configuration, induces the emergence 
+of a subset $H subset.eq V$ such that $|H| = h$ and every node in $H$ satisfies 
+the hub property defined in @def:hub.
+
+// This mechanism operates without global coordination and relies solely on local information 
+// available at each node.
 ]
+
 Ideally, the resulting hub set $H$ is drawn according to a uniform distribution 
 over all subsets of $V$ of size $h$, that is:
 
@@ -618,14 +630,35 @@ The API of the hub sampling service mirrors that of classical peer sampling serv
 The focus of this work is to present an implementation of the _getPeer()_ method, Elevator, as a gossip-based algorithm, and to study the performance of its implementation. 
 In addition to these two methods, we add a third method to the API called _getHub()_ that returns a random hub. The _getHub()_ method can be easily derived from _getPeer()_ by filtering the output of _getPeer()_ to only select the $h$ nodes acting as hubs in the network. This method can be useful for applications that only need to contact a hub.
 
-=== Preliminaries
+// === Preliminaries
 
-In the context of our study, we consider an overlay network of interconnected nodes modeled as a directed graph. Communication within this network is bidirectional, corresponding to an underlying undirected graph that represents the physical network. Each node in this network possesses a unique address, akin to an IP address in the context of the Internet, serving as an abstract identifier of its identity. Nodes maintain a local list called _cache_, which contains addresses of other nodes, and represents their partial knowledge of the network's node set. The maximum size of this cache, denoted by parameter _c_, is uniform across all nodes. The cache is pivotal for peer sampling, as it serves as the basis for neighbor selection and information exchange. At the network's inception, nodes are initially connected to a random subset of nodes, forming what is known as a random _k_-out graph. Subsequently, new nodes joining the network also establish connections with a random subset of existing nodes, a process that populates their cache and integrates them into the network. Given the decentralized nature of the network, peer sampling algorithms are designed to operate asynchronously, as it is the case for Elevator, and all algorithms presented in this paper, but to help the evaluation of protocols during simulations, we can refer to the idea of _cycles_ of the protocol. During each cycle, every node initiates one execution of the peer sampling protocol, potentially updating its cache based on interactions with neighboring nodes. By leveraging cycles, we can analyze the convergence, performance, and robustness of peer sampling protocols under varying conditions and scenarios within the decentralized network environment.
+// In the context of our study, we consider an overlay network of interconnected nodes modeled as a directed graph. Communication within this network is bidirectional, corresponding to an underlying undirected graph that represents the physical network. Each node in this network possesses a unique address, akin to an IP address in the context of the Internet, serving as an abstract identifier of its identity. Nodes maintain a local list called _cache_, which contains addresses of other nodes, and represents their partial knowledge of the network's node set. The maximum size of this cache, denoted by parameter _c_, is uniform across all nodes. The cache is pivotal for peer sampling, as it serves as the basis for neighbor selection and information exchange. At the network's inception, nodes are initially connected to a random subset of nodes, forming what is known as a random _k_-out graph. Subsequently, new nodes joining the network also establish connections with a random subset of existing nodes, a process that populates their cache and integrates them into the network. Given the decentralized nature of the network, peer sampling algorithms are designed to operate asynchronously, as it is the case for Elevator, and all algorithms presented in this paper, but to help the evaluation of protocols during simulations, we can refer to the idea of _cycles_ of the protocol. During each cycle, every node initiates one execution of the peer sampling protocol, potentially updating its cache based on interactions with neighboring nodes. By leveraging cycles, we can analyze the convergence, performance, and robustness of peer sampling protocols under varying conditions and scenarios within the decentralized network environment.
+
+=== Model
+
+We instantiate the formal framework introduced in the @chap:model.
+
+We consider a peer-to-peer system composed of a set of nodes $V$, modeled as in @def:node-system, and evolving according to the global system @def:global-system. The overlay is represented as a time-varying 
+graph $G(t) = (V, E(t))$ in the sense of @def:tvg, and each node maintains 
+a partial view as defined previously.
+
+For both the theoretical analysis and simulation experiments, we assume 
+that the initial overlay forms a random $k$-out graph, i.e., each node selects 
+$k$ distinct nodes uniformly at random to populate its partial view. 
+Similarly, when a new node joins the network, it initializes its partial 
+view by connecting to $k$ nodes chosen uniformly at random.
+
+Although the protocol operates asynchronously, we analyze its evolution 
+using the notion of protocol cycles defined in @def:protocol-cycle, 
+where each node executes one protocol step per cycle.
+
+All nodes execute the same peer-to-peer protocol, namely Elevator.
+
 
 === Elevator core concepts
 To achieve both robustness and a low network diameter, we integrate two fundamental concepts: preferential attachment and random attachment, each serving distinct yet complementary roles in shaping the network topology.
 
-*Preferential Attachment.* Drawing from the concept pioneered by Barabási and Albert @barabasi1999emergence, preferential attachment dictates that new connections in the network are established preferentially with nodes possessing a higher number of existing connections. In our adaptation, we modify this concept to elevate certain nodes to the status of hubs without requiring the network to continuously grow. Instead of new nodes joining and preferentially connecting to highly connected nodes, each existing node leverages information from its neighbors to identify and connect to the most frequently connected nodes (up to a predefined number \emph{h}). This mechanism enables the organic emergence of hubs within the network, with selected nodes naturally assuming central roles based on their connectivity without any explicit distinction other than their number of incoming links.
+*Preferential Attachment.* Drawing from the concept pioneered by Barabási and Albert @barabasi1999emergence, preferential attachment dictates that new connections in the network are established preferentially with nodes possessing a higher number of existing connections. In our adaptation, we modify this concept to elevate certain nodes to the status of hubs without requiring the network to continuously grow. Instead of new nodes joining and preferentially connecting to highly connected nodes, each existing node leverages information from its neighbors to identify and connect to the most frequently connected nodes (up to a predefined number _h_). This mechanism enables the organic emergence of hubs within the network, with selected nodes naturally assuming central roles based on their connectivity without any explicit distinction other than their number of incoming links.
 
 *Random Attachment.* Inspired by gossip-based peer sampling algorithms @jelasity2007gossip  @stavrou2004lightweight, random attachment ensures that nodes maintain connections with a representative and diverse subset of the network. This strategy promotes network robustness by preventing excessive clustering and dependency on specific nodes (hubs). When existing hubs disappear (e.g., due to failures or departure), other nodes within the network are opportunistically elevated to hub status, ensuring continuity and adaptability of the network topology over time.
 

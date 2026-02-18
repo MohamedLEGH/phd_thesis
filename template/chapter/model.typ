@@ -642,7 +642,7 @@ In this model, we abstract away from execution time and computational cost.
 A *protocol cycle* is defined as a logical execution round in which every node in the network executes exactly one protocol step.
 
 Formally, a protocol cycle consists of a sequence of protocol steps such that each node in $V$ executes the protocol once.
-]
+] <def:protocol-cycle>
 
 Regarding the execution of a protocol cycle, we distinguish between two possible execution models.
 
