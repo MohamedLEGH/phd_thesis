@@ -1486,43 +1486,14 @@ Our implementation activates the counter-attack at cycle 100, allowing sufficien
 
 The critical insight is that Byzantine nodes cannot manipulate their node identifiers, which are assigned during network initialization. Therefore, even if Byzantine nodes dominate the initial hub selection process, the subsequent deterministic redistribution treats all nodes equally based on their immutable identifiers.
 
+We measure Elevator's Byzantine resilience using two key metrics: (i) _Hub formation rate_ — the number of hub positions held by legitimate nodes versus attackers (Byzantine nodes), and (ii) _Network topology stability_ — whether hub formation continues to function correctly under attack.
+Each test runs for 1000 cycles to ensure network stabilization, and results are averaged over 100 independent simulations to account for randomness in network initialization and protocol execution. We first evaluate the impact of Byzantine attacks on Elevator, and then the effectiveness of the LIFT countermeasure protocol.
+
 === Impact of byzantine attacks
 
-*Evaluation Metrics:*  
-We measure Elevator's Byzantine resilience using two key metrics:  
-(i) _Hub formation rate_ — the number of hub positions held by legitimate nodes versus attackers (Byzantine nodes), and  
-(ii) _Network topology stability_ — whether hub formation continues to function correctly under attack.
+We assess the impact of adversarial behavior, beginning with the simplest case of a single Byzantine node in a network of 1,000 nodes whose objective is to become a hub. Results in @fig:single_byzantine_active and @fig:single_byzantine_passive indicate that an isolated adversary, whether passive or active, cannot significantly disrupt hub formation. In the passive scenario, the malicious node becomes a hub in only 2 out of 100 simulations, while in the active scenario this number rises modestly to 7 out of 100; in both cases, the system consistently maintains exactly 10 hubs. Extending the analysis to multiple but non-coordinated Byzantine nodes (5% of the network), we observe similarly limited influence, as shown in @fig:independent_byzantine. On average, 0.95 out of 10 hubs are Byzantine, meaning that although Byzantine nodes represent 5% of all nodes, they account for 9.5% of hubs. This moderate amplification indicates that without coordination, adversaries are unable to substantially bias the preferential attachment mechanism underlying Elevator.
 
-Each test runs for 1000 cycles to ensure network stabilization, and results are averaged over 100 independent simulations to account for randomness in network initialization and protocol execution.
-
-We first evaluate the impact of Byzantine attacks on Elevator, and then the effectiveness of the LIFT countermeasure protocol.
-
-As shown in @fig:no_attack, when Elevator runs without Byzantine nodes, convergence to the 10 hubs occurs very quickly — in fewer than 4 cycles on average.
-
-We analyze the impact of a single Byzantine node in a network of 1,000 nodes. The malicious node's objective is to become a hub.
-
-Figure @fig:single_byzantine shows that a single Byzantine node, regardless of attack strategy, cannot significantly impact hub formation.
-
-- In the passive case, the malicious node becomes a hub 2 times out of 100 simulations, and the total number of hubs remains 10.
-- In the active case, the malicious node becomes a hub 7 times out of 100 simulations, while the number of hubs also remains 10.
-
-These results provide confidence in Elevator’s resistance against isolated adversarial behavior.
-
-We now evaluate attacks involving multiple non-coordinated Byzantine nodes, randomly placed in the network.
-
-As shown in @fig:independent_byzantine, independent Byzantine nodes have limited impact on hub formation. On average, 0.95 out of 10 hubs are Byzantine. Thus, although Byzantine nodes represent 5% of the network, they account for 9.5% of hubs — a noticeable but still limited amplification.
-
-This highlights the importance of coordination in attacking Elevator’s hub selection mechanism.
-
-We now examine coordinated Byzantine attacks, where each malicious node knows the full list of Byzantine nodes and shares it when responding to cache requests. Byzantine nodes are again randomly distributed in the network.
-
-Figures @fig:1percent_byzantine, @fig:2percent_byzantine and @fig:5percent_byzantine illustrate a critical vulnerability threshold.
-
-At 1% Byzantine participation, we observe on average 1.34 Byzantine hubs, meaning the proportion increases from 1% of nodes to 13.4% of hubs.
-
-A sharp transition occurs around 2% Byzantine participation, where coordinated attackers begin to systematically dominate hub formation. This threshold correlates strongly with the cache size parameter (_c = 20_), suggesting that when the number of Byzantine nodes approaches the cache size, coordinated responses can overwhelm the random sampling mechanism.
-
-At 5% Byzantine participation, all 10 hubs become Byzantine.
+In contrast, coordinated Byzantine attacks reveal markedly different behavior. When malicious nodes share information and strategically reinforce one another, a critical vulnerability threshold emerges, as illustrated in @fig:1percent_byzantine, @fig:2percent_byzantine and @fig:5percent_byzantine. At a 1% participation rate, we observe on average 1.34 Byzantine hubs, corresponding to an amplification from 1% of nodes to 13.4% of hubs. A sharp transition occurs around 2% Byzantine participation, where coordinated attackers begin to systematically dominate hub formation. This threshold correlates strongly with the cache size parameter (_c = 20_), suggesting that when the number of Byzantine nodes approaches the cache size, coordinated responses can effectively overwhelm the random sampling mechanism. At 5% participation, hub capture becomes complete, with all 10 hubs controlled by Byzantine nodes.
 
 
 === Effect of Lift algorithm
@@ -1598,16 +1569,12 @@ At 5% Byzantine participation, all 10 hubs become Byzantine.
 [#figure(
   image("../../Images/Elevator/Elevator_context_1000_100xp_diameter_color.pdf"),
   caption: [Diameter of the network, after the run of the Elevator algorithm, during each context (no failures, 50% crash, churn, and hub-targeted attack).],
-) <fig:ElevatorDiameter>]
-)
-
-#figure(
-  image("../../Images/CANDAR"),
-  caption: [Running of Elevator without attack. Convergence to the hubs occurs in fewer than 4 cycles.],
+) <fig:ElevatorDiameter>],
+[#figure(
+  image("../../Images/CANDAR/no_attack.pdf"),
+  caption: [Running of Elevator without attack.],
 ) <fig:no_attack>
-
-#grid(
-  columns: 2,
+],
   [
     #figure(
       image("../../Images/CANDAR/elevator.ElevatorVOneByzantine2_oneByzantineActif_1000_nb_hubs_100_cycles.pdf"),
@@ -1619,29 +1586,28 @@ At 5% Byzantine participation, all 10 hubs become Byzantine.
       image("../../Images/CANDAR/elevator.ElevatorVOneByzantine_oneByzantinePassif_1000_nb_hubs_100_cycles.pdf"),
       caption: [Passive Byzantine behavior.],
     ) <fig:single_byzantine_passive>
-  ]
-)
-
-#figure(
+  ],
+  [#figure(
   image("../../Images/CANDAR/elevator.ElevatorVByzantine2_5percentindep_1000_nb_hubs_100_cycles.pdf"),
-  caption: [Independent Byzantine attack at 5% participation showing limited hub infiltration.],
+  caption: [Independent Byzantine attack at 5% rate.],
 ) <fig:independent_byzantine>
-
-#figure(
+],
+[#figure(
   image("../../Images/CANDAR/elevator.ElevatorVByzantine2_1percentrandom_1000_nb_hubs_100_cycles.pdf"),
-  caption: [Byzantine hub infiltration at 1% participation rate.],
+  caption: [Byzantine hub infiltration at 1% rate.],
 ) <fig:1percent_byzantine>
-
-#figure(
+],
+[#figure(
   image("../../Images/CANDAR/elevator.ElevatorVByzantine2_2percentrandom_1000_nb_hubs_100_cycles.pdf"),
-  caption: [Byzantine hub infiltration at 2% participation rate showing the vulnerability threshold.],
+  caption: [Byzantine hub infiltration at 2% rate.],
 ) <fig:2percent_byzantine>
-
-#figure(
+],
+[#figure(
   image("../../Images/CANDAR/elevator.ElevatorVByzantine2_5percentrandom_1000_nb_hubs_100_cycles.pdf"),
-  caption: [Byzantine hub infiltration at 5% participation rate where all hubs are Byzantine.],
+  caption: [Byzantine hub infiltration at 5% rate.],
 ) <fig:5percent_byzantine>
-
+],
+)
 
 == Implementation over TCP/IP
 
