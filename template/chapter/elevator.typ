@@ -482,6 +482,15 @@ Fasino et al. (2021) @fasino2021generating present a method for generating large
 
 Meng and Zhou (2023) @meng2023scale revisit the concept of scale-free networks by highlighting the distinction between the degree distribution (DD) and the degree–degree distance distribution (DDDD). They show that networks exhibiting a power-law DD form only a subset of those with power-law DDDD, and that some networks may have non-power-law DD but still display power-law DDDD. The authors propose two models: a no-growth preferential attachment model, in which nodes are fixed and links are added internally based on degree-dependent probabilities, and a fitness-based model, where links form deterministically if the sum of node fitnesses exceeds a threshold. These approaches emphasize that network structure can emerge from internal rewiring or node fitness rather than growth, and suggest that DDDD provides a more comprehensive measure of scale-free properties than traditional degree distributions. The models are non-decentralized and do not consider churn.
 
+=== Byzantine-Resilient protocols
+
+Byzantine attacks @byzantine refer to arbitrary and potentially malicious behaviors by nodes in a distributed system. Unlike crash failures or omission faults, Byzantine nodes may deviate from the protocol in unpredictable ways, such as sending inconsistent messages to different peers, forging data, or coordinating with other malicious nodes to subvert the system. These attacks pose a significant threat to the robustness and correctness of distributed protocols, especially in decentralized environments where trust assumptions are minimal. In the context of peer sampling and hub selection protocols, Byzantine nodes can manipulate their local views to influence the overlay topology and gain disproportionate visibility. Designing protocols resilient to such behaviors is therefore essential to maintain reliability, fairness, and convergence guarantees under adversarial conditions.
+
+Among Byzantine fault-tolerant protocols, Phenix @wouhaybi2004phenix enables the creation of power-law networks while remaining resilient to Byzantine nodes attempting targeted attacks, such as becoming hubs or disconnecting nodes from the network. When a node detects that it risks disconnection, it switches to a maintenance mode and creates additional connections with preferred (highly connected) nodes to preserve connectivity. The Brahms protocol @bortnikov2008brahms relies on a gossip-based peer sampling algorithm resistant to flooding attacks, in which Byzantine nodes attempt to propagate their identifiers widely to bias local views. Brahms achieves unbiased ID sampling from potentially biased histories using min-wise independent permutations.
+
+Similarly, @anceaume2021byzantine proposes a mechanism capable of producing uniform ID samples while adapting to dynamic environments. Basalt @basalt builds upon Brahms and introduces a ranking function to determine cache updates. Secure Peer Sampling @jesi2010secure extends the Newscast gossip protocol @jelasity2007gossip by incorporating cryptographic keys, a certificate authority, and a hub-detection mechanism to mitigate malicious behavior. SecureCyclon @antonov2023securecyclon, derived from Cyclon @voulgaris2005cyclon, introduces additional security features enabling nodes to detect and blacklist malicious participants that violate the peer sampling protocol. Finally, AUPE @mukam2024aupe leverages trusted hardware components (e.g., Intel SGX) to monitor and control the dissemination of identifiers within the system.
+
+
 === Metrics
 In order to evaluate the effectiveness of an overlay management protocol, it is necessary to define quantitative metrics that capture the structural and dynamical properties of the resulting network. In an overlay network, the state of the system at a given instant can be represented as a graph snapshot of the underlying time-varying graph (as seen in @def:tvg). Various metrics can then be computed on this graph in order to characterize the structure of the network, monitor its evolution over time, and compare different protocols. Metrics provide insights into connectivity, resilience, efficiency, and overall behavior of the network. In the context of time-varying graphs, these metrics can be computed either on a single snapshot $G(t)$ or observed as time-dependent quantities $m(t) = m(G(t))$ that evolve as the network topology changes.
 Commonly used metrics include the indegree and outdegree distributions, the clustering coefficient, the average path length, and the network diameter.
@@ -668,6 +677,53 @@ where each node executes one protocol step per cycle.
 
 All nodes execute the same peer-to-peer protocol, namely Elevator.
 
+==== Byzantine model
+Our Byzantine model assumes that a certain percentage of nodes are Byzantine from the start.
+These malicious nodes try to break the Elevator protocol by sending false information
+during cache exchanges, manipulating the hub selection process.
+
+The goal of Byzantine attackers is to get selected as hub by the correct nodes
+(that genuinely execute the protocol). Obviously, if there is a fraction $p$
+of Byzantine nodes overall, then it is trivial for the Byzantine nodes to obtain
+a fraction $p$ of the hubs (they should just behave as correct nodes).
+So, the Byzantine nodes strive to obtain a higher fraction of the hubs
+than their fraction of the nodes.
+
+
+*Attack Mechanism:*  
+When legitimate nodes ask Byzantine nodes for their cache contents or backward
+peers information (i.e., the nodes who contacted them in the past),
+the Byzantine nodes respond with fake data designed to help malicious nodes
+become hubs.
+
+This attack works because Elevator relies on nodes honestly reporting
+their connectivity information. Apart from that, Byzantine nodes perform
+the protocol like other nodes. Byzantine nodes modify their behavior in order
+to achieve the goal of having a large proportion of hubs be Byzantine,
+but their objective is also to avoid detection.
+If their behavior deviates too much from that of a normal node,
+they could easily be detected and blacklisted.
+
+We are studying several types of Byzantine nodes:
+
++ Passive unique Byzantine:  
+  A single Byzantine sending an empty cache.
+
++ Active unique Byzantine:  
+  A single Byzantine who sends his modified cache with a reference to himself
+  (to increase his probability of being chosen as a hub).
+
++ Non-coordinating Byzantine nodes:  
+  Multiple Byzantine nodes who send their modified cache with a reference
+  to themselves but do not include references to other Byzantine nodes.
+
++ Coordinated Byzantine nodes:  
+  Each Byzantine node maintains a coordinated fake cache containing references
+  to all other Byzantine participants in the network.
+  When responding to legitimate cache requests,
+  Byzantine nodes return sublists of this coordinated cache,
+  effectively creating an artificial preference for Byzantine nodes
+  in the sampling process.
 
 === Elevator core concepts
 To achieve both robustness and a low network diameter, we integrate two fundamental concepts: preferential attachment and random attachment, each serving distinct yet complementary roles in shaping the network topology.
@@ -780,6 +836,125 @@ Additionally, we have three temporary structures: _(i)_ _frequency_map_ holds th
   caption: [Elevator algorithm (background thread).],
 ) <Elevator-algorithm-background>
 
+The Elevator protocol was not designed to be resilient to Byzantine attacks, and the protocol assumes that each node is honest and returns reliable information. Since in Elevator each node modifies its cache based on the cache of its neighbors, having one or more Byzantine nodes among its neighbors significantly changes the local behavior of the protocol (for a given node) and therefore the overall convergence toward the _h_ hubs. In terms of pseudo-code for the Byzantine nodes, this amounts to replacing the background Elevator process (@Elevator-algorithm-background) with the following algorithms: @DoNothingAttack for the passive unique Byzantine, @NonCoordinatingAttack for the active unique Byzantine attack and the multiple non-coordinating Byzantines, and @CoordinatedAttack for the multiple coordinated Byzantines.
+
+
+#figure(
+  pseudocode-list(booktabs: true)[
+    - backward list: *backward_peers*
+
+    + *loop*
+      + (request, peer) $arrow.l$ receive()
+
+      + *if* request == CACHE_REQUEST
+        + backward_peers.add(peer)
+        + backward_peers.shuffle()
+        + send([], None, peer)
+  ],
+  caption: [Do-nothing attack.],
+) <DoNothingAttack>
+
+#figure(
+  pseudocode-list(booktabs: true)[
+    - my address: *my_address*
+    - backward list: *backward_peers*
+
+    + *loop*
+      + (request, peer) $arrow.l$ receive()
+
+      + *if* request == CACHE_REQUEST
+        + backward_peers.add(peer)
+        + backward_peers.shuffle()
+        + modified_cache $arrow.l$ cache.remove(random()).add(my_address)
+        + send(modified_cache, my_address, peer)
+  ],
+  caption: [Non-coordinating attack.],
+) <NonCoordinatingAttack>
+
+#figure(
+  pseudocode-list(booktabs: true)[
+    - addresses of all byzantine nodes: *all_byzantines*
+    - backward list: *backward_peers*
+
+    + *loop*
+      + (request, peer) $arrow.l$ receive()
+
+      + *if* request == CACHE_REQUEST
+        + backward_peers.add(peer)
+        + backward_peers.shuffle()
+        + all_byzantines.shuffle()
+        + modified_cache $arrow.l$ all_byzantines[0:c]
+        + random_backward $arrow.l$ all_byzantines.random_value()
+        + send(modified_cache, random_backward, peer)
+  ],
+  caption: [Coordinated attack.],
+) <CoordinatedAttack>
+
+// It is therefore necessary to consider an alternative algorithm, based on Elevator but which takes into account the possibility of Byzantine attacks, while remaining decentralized.
+  
+=== LIFT protocol
+To address Elevator's vulnerability to Byzantine attacks, we propose a deterministic hub redistribution mechanism (that we name LIFT) that activates after the network has converged to its initial hub configuration. Our approach leverages the fact that node identifiers are assigned randomly and cannot be modified by Byzantine nodes. If Byzantine nodes are active, we hope that our new protocol will be more efficient than Elevator in terms of resilience, and if Byzantine nodes are not active, we hope that the protocol will have no impact on protocol performance and convergence towards hubs.
+
+The counter-attack operates in two phases: an initial convergence phase using standard Elevator, followed by a deterministic hub redistribution phase.
+
+*Phase 1 – Initial Convergence:*  
+// The network runs the standard Elevator protocol for a predetermined number of cycles (100 cycles in our implementation) to allow hub formation. We would like to point out that, according to simulation results, the Elevator protocol converges on average in 4 cycles. Therefore, 100 cycles is more than enough time to ensure convergence, corresponding to a network topology with _h_ nodes present in everyone's cache, and the remaining cache entries filled with uniformly random identifiers of other nodes.  
+The network runs the standard Elevator protocol for a predetermined number of cycles to allow hub formation. During this phase, Byzantine nodes may successfully infiltrate hub positions through coordinated attacks.
+
+*Phase 2 – Hub Redistribution:*  
+After convergence, all correct nodes simultaneously execute the following deterministic process (see @algo:lift for detailed pseudocode):
+
++ Each correct node retrieves the identifiers of the _h_ current hubs (which may be Byzantine). Since Elevator has converged, the first _h_ elements of each correct node’s cache correspond to the addresses of the _h_ hubs (a hub may contain itself in its cache).
+
++ Each node builds a seed by concatenating the _h_ hub identifiers. Because these identifiers are already sorted, the resulting seed is identical for every correct node.
+
++ Each node initializes a pseudo-random number generator (PRNG) using this seed. The PRNG used is Java’s default implementation, namely a linear congruential generator @knuth1997taocp3. Since both the seed and the PRNG are identical for all correct nodes, the generated sequence is identical, effectively creating a shared random list of values.
+
++ Each correct node generates _h_ new random values using the PRNG, corresponding to _h_ node identifiers in the network. If a generated value has already been selected, the PRNG is invoked again until a fresh identifier is obtained.
+
++ Each correct node replaces the first _h_ identifiers in its cache (corresponding to the potentially Byzantine hubs) with the _h_ identifiers generated by the PRNG. The old hub connections are therefore removed and replaced with new hubs chosen uniformly at random.
+
+
+#figure(
+  pseudocode-list(booktabs: true)[
+    - current hub list: *H*
+    - network size: *N*
+    - target hubs: *h*
+
+    + hubIDs $arrow.l$ getSortedHubIDs(H) 
+      // Extract and sort hub node IDs
+
+    + seed $arrow.l$ hashCode(hubIDs) 
+      // Generate deterministic seed
+
+    + prng $arrow.l$ Random(seed) 
+      // Initialize PRNG with seed
+
+    + selectedIDs $arrow.l$ {}
+    + newHubs $arrow.l$ {}
+
+    + *while* selectedIDs.size() < h
+      + randomID $arrow.l$ prng.nextInt(N) 
+        // Random node ID in [0, N-1]
+
+      + *if* randomID notin selectedIDs
+        + targetNode $arrow.l$ network.get(randomID)
+
+        + *if* targetNode != null and targetNode.isUp()
+          + selectedIDs $arrow.l$ selectedIDs $union$ {randomID}
+          + newHubs $arrow.l$ newHubs $union$ {targetNode}
+
+    + replaceCache(newHubs, currentNode) 
+      // Update cache with new hubs
+  ],
+  caption: [LIFT: Deterministic Hub Redistribution.],
+) <algo:lift>
+
+Since all nodes use the same seed derived from the initial hub selection, they deterministically select identical new hub sets. Because node identifiers are randomly assigned and immutable, each node has equal probability $h / N$ of becoming a hub, regardless of Byzantine status. The algorithm replaces the cache contents entirely: the first _h_ positions are filled with the deterministically selected new hubs, while the remaining positions are populated with random non-hub nodes to maintain cache diversity.
+
+The critical hypothesis is that Byzantine nodes cannot manipulate their node identifiers, which are assigned during network initialization. Therefore, even if Byzantine nodes dominate the initial hub selection process, the subsequent deterministic redistribution treats all nodes equally based on their immutable identifiers.
+
+== Theoretical Analysis
 We initially introduced the intuition behind hub emergence, explaining how a 
 combination of preferential attachment and random sampling can naturally lead 
 to the formation of hubs. We then provided a detailed description of the 
@@ -793,9 +968,7 @@ structural guarantees remain to be demonstrated. The objective of the following
 section is therefore to provide a theoretical analysis of ELEVATOR and to 
 formally study its emergent behavior.
 
-
-== Theoretical Analysis
-In order to analyze and model the ELEVATOR protocol we adopt several simplifying assumptions; without them a formal analysis would be extremely difficult if not impossible. First, we assume a failure-free network with a constant number of nodes. The random identifiers returned to hubs via the BACKWARD_REQUEST mechanism are considered equivalent to identifiers drawn from a uniform distribution. When selecting preferred nodes, if a node encounters two or more candidates with equal occurrence frequency, it deterministically selects the candidate with the smallest identifier. All nodes are assumed to execute the protocol synchronously and without failure at every cycle. Prior to the first cycle, the network is assumed to be highly connected and its topology is modeled as a uniform $k$-out random graph (with $k=c$ equal to the cache size common to all nodes). The parameter $h$ (the target number of hubs) is also assumed to be identical across all nodes. Our objective with our analysis is to demonstrate the stability and convergence of Elevator. We also wish to model the convergence speed of the protocol.
+In order to analyze and model the ELEVATOR protocol we adopt several simplifying assumptions; without them a formal analysis would be extremely difficult if not impossible. First, we assume a failure-free network with a constant number of nodes. We thus don't take into account Byzantine nodes and the LIFT protocol. The random identifiers returned to hubs via the BACKWARD_REQUEST mechanism are considered equivalent to identifiers drawn from a uniform distribution. When selecting preferred nodes, if a node encounters two or more candidates with equal occurrence frequency, it deterministically selects the candidate with the smallest identifier. All nodes are assumed to execute the protocol synchronously and without failure at every cycle. Prior to the first cycle, the network is assumed to be highly connected and its topology is modeled as a uniform $k$-out random graph (with $k=c$ equal to the cache size common to all nodes). The parameter $h$ (the target number of hubs) is also assumed to be identical across all nodes. Our objective with our analysis is to demonstrate the stability and convergence of Elevator. We also wish to model the convergence speed of the protocol.
 
 === Stability
 We define the stability of the Elevator algorithm as the property that, once convergence to a set of $h$ hubs has been reached, both the list of hubs and their number $h$ remain (with high probability) constant over time.  
@@ -1315,190 +1488,34 @@ This is because once the hubs are in place they do not change (except in the eve
 
 == Resilience to Byzantine attacks
 
-=== Attack model
-Our attack model assumes that a certain percentage of nodes are Byzantine from the start.
-These malicious nodes try to break the Elevator protocol by sending false information
-during cache exchanges, manipulating the hub selection process.
-
-The goal of Byzantine attackers is to get selected as hub by the correct nodes
-(that genuinely execute the protocol). Obviously, if there is a fraction $p$
-of Byzantine nodes overall, then it is trivial for the Byzantine nodes to obtain
-a fraction $p$ of the hubs (they should just behave as correct nodes).
-So, the Byzantine nodes strive to obtain a higher fraction of the hubs
-than their fraction of the nodes.
-
-
-*Attack Mechanism:*  
-When legitimate nodes ask Byzantine nodes for their cache contents or backward
-peers information (i.e., the nodes who contacted them in the past),
-the Byzantine nodes respond with fake data designed to help malicious nodes
-become hubs.
-
-This attack works because Elevator relies on nodes honestly reporting
-their connectivity information. Apart from that, Byzantine nodes perform
-the protocol like other nodes. Byzantine nodes modify their behavior in order
-to achieve the goal of having a large proportion of hubs be Byzantine,
-but their objective is also to avoid detection.
-If their behavior deviates too much from that of a normal node,
-they could easily be detected and blacklisted.
-
-We are studying several types of Byzantine nodes:
-
-+ Passive unique Byzantine:  
-  A single Byzantine sending an empty cache.
-
-+ Active unique Byzantine:  
-  A single Byzantine who sends his modified cache with a reference to himself
-  (to increase his probability of being chosen as a hub).
-
-+ Non-coordinating Byzantine nodes:  
-  Multiple Byzantine nodes who send their modified cache with a reference
-  to themselves but do not include references to other Byzantine nodes.
-
-+ Coordinated Byzantine nodes:  
-  Each Byzantine node maintains a coordinated fake cache containing references
-  to all other Byzantine participants in the network.
-  When responding to legitimate cache requests,
-  Byzantine nodes return sublists of this coordinated cache,
-  effectively creating an artificial preference for Byzantine nodes
-  in the sampling process.
-
-#figure(
-  pseudocode-list(booktabs: true)[
-    - backward list: *backward_peers*
-
-    + *loop*
-      + (request, peer) $arrow.l$ receive()
-
-      + *if* request == CACHE_REQUEST
-        + backward_peers.add(peer)
-        + backward_peers.shuffle()
-        + send([], None, peer)
-  ],
-  caption: [Do-nothing attack.],
-) <DoNothingAttack>
-
-#figure(
-  pseudocode-list(booktabs: true)[
-    - my address: *my_address*
-    - backward list: *backward_peers*
-
-    + *loop*
-      + (request, peer) $arrow.l$ receive()
-
-      + *if* request == CACHE_REQUEST
-        + backward_peers.add(peer)
-        + backward_peers.shuffle()
-        + modified_cache $arrow.l$ cache.remove(random()).add(my_address)
-        + send(modified_cache, my_address, peer)
-  ],
-  caption: [Non-coordinating attack.],
-) <NonCoordinatingAttack>
-
-#figure(
-  pseudocode-list(booktabs: true)[
-    - addresses of all byzantine nodes: *all_byzantines*
-    - backward list: *backward_peers*
-
-    + *loop*
-      + (request, peer) $arrow.l$ receive()
-
-      + *if* request == CACHE_REQUEST
-        + backward_peers.add(peer)
-        + backward_peers.shuffle()
-        + all_byzantines.shuffle()
-        + modified_cache $arrow.l$ all_byzantines[0:c]
-        + random_backward $arrow.l$ all_byzantines.random_value()
-        + send(modified_cache, random_backward, peer)
-  ],
-  caption: [Coordinated attack.],
-) <CoordinatedAttack>
-
-In terms of pseudo-code, this amounts to replacing the background Elevator process (@Elevator-algorithm-background) with the following algorithms: @DoNothingAttack for the passive unique Byzantine, @NonCoordinatingAttack for the active unique Byzantine attack and the multiple non-coordinating Byzantines, and @CoordinatedAttack for the multiple coordinated Byzantines.
-
-The Elevator protocol was not designed to be resilient to Byzantine attacks, and the protocol assumes that each node is honest and returns reliable information. Since in Elevator each node modifies its cache based on the cache of its neighbors, having one or more Byzantine nodes among its neighbors significantly changes the local behavior of the protocol (for a given node) and therefore the overall convergence toward the _h_ hubs.
-
-It is therefore necessary to consider an alternative algorithm, based on Elevator but which takes into account the possibility of Byzantine attacks, while remaining decentralized.
-
-  
-=== Lift protocol
-To address Elevator's vulnerability to Byzantine attacks, we propose a deterministic hub redistribution mechanism (that we name Lift) that activates after the network has converged to its initial hub configuration. Our approach leverages the fact that node identifiers are assigned randomly and cannot be modified by Byzantine nodes. If Byzantine nodes are active, we hope that our new protocol will be more efficient than Elevator in terms of resilience, and if Byzantine nodes are not active, we hope that the protocol will have no impact on protocol performance and convergence towards hubs.
-
-The counter-attack operates in two phases: an initial convergence phase using standard Elevator, followed by a deterministic hub redistribution phase.
-
-*Phase 1 – Initial Convergence:*  
-The network runs the standard Elevator protocol for a predetermined number of cycles (100 cycles in our implementation) to allow hub formation. We would like to point out that, according to simulation results, the Elevator protocol converges on average in 4 cycles. Therefore, 100 cycles is more than enough time to ensure convergence, corresponding to a network topology with _h_ nodes present in everyone's cache, and the remaining cache entries filled with uniformly random identifiers of other nodes.  
-
-During this phase, Byzantine nodes may successfully infiltrate hub positions through coordinated attacks.
-
-*Phase 2 – Hub Redistribution:*  
-After convergence, all correct nodes simultaneously execute the following deterministic process (see @algo:lift for detailed pseudocode):
-
-+ Each correct node retrieves the identifiers of the _h_ current hubs (which may be Byzantine). Since Elevator has converged, the first _h_ elements of each correct node’s cache correspond to the addresses of the _h_ hubs (a hub may contain itself in its cache).
-
-+ Each node builds a seed by concatenating the _h_ hub identifiers. Because these identifiers are already sorted, the resulting seed is identical for every correct node.
-
-+ Each node initializes a pseudo-random number generator (PRNG) using this seed. The PRNG used is Java’s default implementation, namely a linear congruential generator @knuth1997taocp3. Since both the seed and the PRNG are identical for all correct nodes, the generated sequence is identical, effectively creating a shared random list of values.
-
-+ Each correct node generates _h_ new random values using the PRNG, corresponding to _h_ node identifiers in the network. If a generated value has already been selected, the PRNG is invoked again until a fresh identifier is obtained.
-
-+ Each correct node replaces the first _h_ identifiers in its cache (corresponding to the potentially Byzantine hubs) with the _h_ identifiers generated by the PRNG. The old hub connections are therefore removed and replaced with new hubs chosen uniformly at random.
-
-
-#figure(
-  pseudocode-list(booktabs: true)[
-    - current hub list: *H*
-    - network size: *N*
-    - target hubs: *h*
-
-    + hubIDs $arrow.l$ getSortedHubIDs(H) 
-      // Extract and sort hub node IDs
-
-    + seed $arrow.l$ hashCode(hubIDs) 
-      // Generate deterministic seed
-
-    + prng $arrow.l$ Random(seed) 
-      // Initialize PRNG with seed
-
-    + selectedIDs $arrow.l$ {}
-    + newHubs $arrow.l$ {}
-
-    + *while* selectedIDs.size() < h
-      + randomID $arrow.l$ prng.nextInt(N) 
-        // Random node ID in [0, N-1]
-
-      + *if* randomID notin selectedIDs
-        + targetNode $arrow.l$ network.get(randomID)
-
-        + *if* targetNode != null and targetNode.isUp()
-          + selectedIDs $arrow.l$ selectedIDs $union$ {randomID}
-          + newHubs $arrow.l$ newHubs $union$ {targetNode}
-
-    + replaceCache(newHubs, currentNode) 
-      // Update cache with new hubs
-  ],
-  caption: [LIFT: Deterministic Hub Redistribution.],
-) <algo:lift>
-
-Since all nodes use the same seed derived from the initial hub selection, they deterministically select identical new hub sets. Because node identifiers are randomly assigned and immutable, each node has equal probability $h / N$ of becoming a hub, regardless of Byzantine status.
-
-Our implementation activates the counter-attack at cycle 100, allowing sufficient time for initial hub formation while preventing Byzantine nodes from establishing permanent control. The algorithm replaces the cache contents entirely: the first _h_ positions are filled with the deterministically selected new hubs, while the remaining positions are populated with random non-hub nodes to maintain cache diversity.
-
-The critical insight is that Byzantine nodes cannot manipulate their node identifiers, which are assigned during network initialization. Therefore, even if Byzantine nodes dominate the initial hub selection process, the subsequent deterministic redistribution treats all nodes equally based on their immutable identifiers.
-
 We measure Elevator's Byzantine resilience using two key metrics: (i) _Hub formation rate_ — the number of hub positions held by legitimate nodes versus attackers (Byzantine nodes), and (ii) _Network topology stability_ — whether hub formation continues to function correctly under attack.
 Each test runs for 1000 cycles to ensure network stabilization, and results are averaged over 100 independent simulations to account for randomness in network initialization and protocol execution. We first evaluate the impact of Byzantine attacks on Elevator, and then the effectiveness of the LIFT countermeasure protocol.
 
 === Impact of byzantine attacks
 
-We assess the impact of adversarial behavior, beginning with the simplest case of a single Byzantine node in a network of 1,000 nodes whose objective is to become a hub. Results in @fig:single_byzantine_active and @fig:single_byzantine_passive indicate that an isolated adversary, whether passive or active, cannot significantly disrupt hub formation. In the passive scenario, the malicious node becomes a hub in only 2 out of 100 simulations, while in the active scenario this number rises modestly to 7 out of 100; in both cases, the system consistently maintains exactly 10 hubs. Extending the analysis to multiple but non-coordinated Byzantine nodes (5% of the network), we observe similarly limited influence, as shown in @fig:independent_byzantine. On average, 0.95 out of 10 hubs are Byzantine, meaning that although Byzantine nodes represent 5% of all nodes, they account for 9.5% of hubs. This moderate amplification indicates that without coordination, adversaries are unable to substantially bias the preferential attachment mechanism underlying Elevator.
+Our experimental evaluation of Elevator under Byzantine attacks reveals several important insights regarding its resilience and limitations. When the protocol runs without malicious nodes, convergence to the 10 hubs occurs very quickly — in fewer than 4 cycles on average (@fig:no_attack). Introducing a single Byzantine node in a 1,000-node network shows minimal disruption: in the passive case, the malicious node becomes a hub only 2 times out of 100 simulations, while in the active case, it becomes a hub 7 times out of 100; in both cases, the total number of hubs remains 10 (@fig:single_byzantine_active, @fig:single_byzantine_passive). This confirms that Elevator is robust against isolated adversarial behavior.
 
-In contrast, coordinated Byzantine attacks reveal markedly different behavior. When malicious nodes share information and strategically reinforce one another, a critical vulnerability threshold emerges, as illustrated in @fig:1percent_byzantine, @fig:2percent_byzantine and @fig:5percent_byzantine. At a 1% participation rate, we observe on average 1.34 Byzantine hubs, corresponding to an amplification from 1% of nodes to 13.4% of hubs. A sharp transition occurs around 2% Byzantine participation, where coordinated attackers begin to systematically dominate hub formation. This threshold correlates strongly with the cache size parameter (_c = 20_), suggesting that when the number of Byzantine nodes approaches the cache size, coordinated responses can effectively overwhelm the random sampling mechanism. At 5% participation, hub capture becomes complete, with all 10 hubs controlled by Byzantine nodes.
+When multiple non-coordinated Byzantine nodes are introduced randomly in the network, their impact remains limited. On average, only 0.95 out of 10 hubs are Byzantine, meaning that although the attackers represent 5% of the nodes, they account for 9.5% of hubs (@fig:independent_byzantine). This highlights that coordination is a critical factor for a successful attack. Indeed, coordinated Byzantine nodes — each aware of all other Byzantine nodes and sharing this information when responding to cache requests — dramatically increase the risk of hub capture. Our experiments show a sharp vulnerability threshold around 2% Byzantine participation (@fig:1percent_byzantine, @fig:2percent_byzantine, @fig:5percent_byzantine): at 1%, the proportion of Byzantine hubs rises from 1% of nodes to 13.4% of hubs, and at 5%, all 10 hubs become Byzantine. This threshold aligns closely with the cache size parameter (_c = 20_), indicating that coordinated attackers need to approach or exceed the cache size to overwhelm the random sampling mechanism effectively.
 
+These findings demonstrate that while Elevator is resilient to individual or independent attacks, its main vulnerability lies in coordinated misinformation. Consequently, it is necessary to implement a defense mechanism that mitigates the influence of Byzantine nodes and restores fairness.
 
-=== Effect of Lift algorithm
+=== Effectiveness of LIFT countermeasure
+
+We evaluate the effectiveness of our LIFT protocol across different Byzantine participation rates, using the same experimental setup as in the vulnerability analysis. The countermeasure is activated at cycle 100, after which we observe its impact on hub formation and Byzantine infiltration.
+
+At 5% Byzantine participation, the counter-attack is highly effective. After activation, Byzantine hubs are rapidly eliminated and remain at a minimal level for the rest of the simulation. The average total number of hubs decreases slightly to 9.58, while the average number of Byzantine hubs falls to 0.34. In other words, we go from 5% Byzantine nodes to 3.4% Byzantine hubs, representing an almost complete recovery from Byzantine infiltration with only a minor reduction in overall hubs (@fig:counter_5percent).
+
+For 10% Byzantine participation, the countermeasure initially removes Byzantine hubs effectively at cycle 100, but over subsequent cycles, Byzantine nodes gradually regain hub positions. By the end of the simulation, the network has on average 3.19 Byzantine hubs, and the total number of hubs has decreased from 10 to 7.82. This corresponds to approximately 40% of hubs being Byzantine. Although the majority of hubs remain non-Byzantine, the effectiveness is noticeably reduced compared to the 5% case (@fig:counter_10percent).
+
+At 15% Byzantine participation, the LIFT countermeasure’s effectiveness diminishes further. While the initial elimination at cycle 100 is successful, Byzantine nodes progressively reestablish themselves as hubs, reaching an average of 4.21 Byzantine hubs by the end. The total number of hubs also decreases from 10 to 6.71, meaning roughly 62% of hubs are now Byzantine. At this level, the countermeasure fails to maintain effective control over hub formation (@fig:counter_15percent).
 
 === Summary
+
+The results demonstrate that the LIFT counter-attack successfully disrupts Byzantine coordination at lower participation levels, such as 5%, by introducing a deterministic selection process for new hubs. However, as Byzantine participation increases to 10% and 15%, the effectiveness diminishes: malicious nodes gradually re-infiltrate hub positions following the initial activation of the countermeasure. Concurrently, the total number of hubs decreases, suggesting that some correct nodes are prevented by Byzantine nodes from maintaining their hub positions.
+
+An interesting and unexpected observation is that, even after the countermeasure, Byzantine nodes continue to attempt hub capture and achieve partial success. This behavior can prevent full retention of all hubs in certain cases. Consequently, the empirical results show a slight deviation from theoretical expectations, which predicted an average of B/N Byzantine hubs. Despite this, LIFT significantly reduces the influence of Byzantine nodes and has the advantage of being lightweight, as it operates as a one-shot solution.
+
+The proposed counter-attack mitigates Elevator's primary vulnerability—coordinated manipulation of hub selection—by introducing a deterministic redistribution mechanism based on immutable node identifiers. This approach requires synchronized activation at a predetermined cycle but does not rely on Byzantine-resistant communication. While effective at limiting Byzantine influence, the mechanism assumes a static network during activation and is sensitive to timing of convergence, making it less effective under high Byzantine participation rates or network churn.
 
 #grid(
   columns: 2,
@@ -1607,7 +1624,20 @@ In contrast, coordinated Byzantine attacks reveal markedly different behavior. W
   caption: [Byzantine hub infiltration at 5% rate.],
 ) <fig:5percent_byzantine>
 ],
-)
+[#figure(
+      image("../../Images/CANDAR/elevator.ElevatorVCounter_5percentcounter_1000_nb_hubs_100_cycles.pdf"),
+      caption: [Counter-attack effectiveness at 5% rate.],
+    ) <fig:counter_5percent>],
+    [    #figure(
+      image("../../Images/CANDAR/elevator.ElevatorVCounter_10percentcounter_1000_nb_hubs_100_cycles.pdf"),
+      caption: [Counter-attack effectiveness at 10% rate.],
+    ) <fig:counter_10percent>],
+    [    #figure(
+      image("../../Images/CANDAR/elevator.ElevatorVCounter_15percentcounter_1000_nb_hubs_100_cycles.pdf"),
+      caption: [Counter-attack effectiveness at 15% rate.],
+    ) <fig:counter_15percent>
+],
+  )
 
 == Implementation over TCP/IP
 
