@@ -33,7 +33,7 @@ Hence, there exists a pressing need for a protocol that fosters the organic emer
 
 By enabling nodes to organically assume the role of hubs, our protocol aims to strike a balance between leveraging the efficiency of hub-based networks for applications like federated learning, while mitigating vulnerabilities associated with static hub designations.
 
-Our primary goal is to develop a protocol (called ELEVATOR) that autonomously promotes nodes to act as hubs within unstructured peer-to-peer networks. To achieve this goal, we hybridize two fundamental concepts: 
+Our primary goal is to develop a protocol (called Elevator) that autonomously promotes nodes to act as hubs within unstructured peer-to-peer networks. To achieve this goal, we hybridize two fundamental concepts: 
 _preferential attachment_, and _random attachment_.
 By integrating these two concepts, our protocol promotes a balanced network structure, where hubs emerge organically based on connectivity patterns and yet adapt to dynamic network changes. 
 This approach not only fosters robustness against failures and disruptions but also maintains a low network diameter, facilitating efficient communication and information propagation. The parameter _h_, representing the desired number of hubs, allows for flexibility and control over the network's topology, enabling tailored configurations to suit specific application requirements and network environments.
@@ -545,16 +545,16 @@ Moreover, existing approaches rarely address the resilience of such hub-oriented
 // == Description & Properties
 // The key desired properties we expect from our protocol are _connectivity_ (the overlay remains connected), _low-diameter_ (for efficient communication), _convergence_ (properties are obtained in an autonomous manner), _stability_ (structural overlay properties are maintained throughout execution), and _robustness_ (resilience to churn and targeted attacks). They will serve as metrics during simulation experiments to ascertain the efficacy of our algorithm.
 
-== ELEVATOR Protocol
+== Elevator Protocol
 
-ELEVATOR introduces a new abstraction in overlay network management, called the *hub sampling service*. 
+Elevator introduces a new abstraction in overlay network management, called the *hub sampling service*. 
 This service can be viewed as a generalization of the traditional peer sampling service: 
 instead of returning arbitrary random peers, it aims to enable the random emergence and maintenance of a controlled number of hub nodes within the overlay.
 
 #definition(title: "Hub")[
 Let $G = (V, E)$ be a directed overlay graph representing the state of the network, where each node $v in V$ maintains a partial view $P(v) subset.eq V$.
 
-In the context of the ELEVATOR protocol, a node $h in V$ is defined as a *hub* if its identifier appears in the partial view of every node in the network, including itself:
+In the context of the Elevator protocol, a node $h in V$ is defined as a *hub* if its identifier appears in the partial view of every node in the network, including itself:
 
 $
 forall v in V, quad h in P(v)
@@ -597,9 +597,9 @@ for every subset $S subset.eq V$ with $|S| = h$.
 In practice, the decentralized protocol approximates this ideal uniform selection 
 using only local information and without global coordination.
 
-// Before discussing the specific properties of the ELEVATOR protocol, it is necessary to first define what constitutes a hub within our context, as this concept underpins the network's structural objectives.
+// Before discussing the specific properties of the Elevator protocol, it is necessary to first define what constitutes a hub within our context, as this concept underpins the network's structural objectives.
 
-ELEVATOR is a decentralized peer-to-peer overlay management protocol designed to implement 
+Elevator is a decentralized peer-to-peer overlay management protocol designed to implement 
 this hub sampling service. It autonomously guides the network toward a desired number of hubs 
 while maintaining structural efficiency. Its operation relies on a combination of preferential 
 attachment and random attachment mechanisms to balance hub emergence with connectivity.
@@ -615,16 +615,16 @@ In parallel, hubs are used as sources of randomness: since they are present
 in the partial view of every node, requesting a random identifier from a hub is equivalent to sampling a node uniformly at random in the network. This mechanism allows the protocol to preserve uniformly random outgoing connections alongside the preferential ones. As a result, after a small number of cycles, the overlay stabilizes around the desired topology consisting of $h$ hubs and uniformly random remaining connections.
 
 Having established a formal definition of hubs and of a hub sampling service, 
-we now turn to the desired properties of the ELEVATOR protocol, which 
+we now turn to the desired properties of the Elevator protocol, which 
 characterize its behavior and performance beyond the aspect of hub emergence.
 
 === Desired Properties
 
-The ELEVATOR protocol is designed to satisfy a set of fundamental structural and dynamical properties that characterize the quality and usefulness of the maintained overlay.
+The Elevator protocol is designed to satisfy a set of fundamental structural and dynamical properties that characterize the quality and usefulness of the maintained overlay.
 
-*Connectivity* is an indispensable property. An overlay management protocol that fails to maintain global connectivity is of limited practical value, as network partitions prevent nodes from communicating and undermine any distributed application running on top of the overlay. Therefore, ELEVATOR must ensure that the network remains connected despite churn and topology adaptations.
+*Connectivity* is an indispensable property. An overlay management protocol that fails to maintain global connectivity is of limited practical value, as network partitions prevent nodes from communicating and undermine any distributed application running on top of the overlay. Therefore, Elevator must ensure that the network remains connected despite churn and topology adaptations.
 
-*Low-diameter* is a central objective of our approach. The introduction of hubs is precisely motivated by the need to reduce communication distances across the network. A small diameter implies that messages can reach any node within a limited number of hops, enabling fast information dissemination, efficient aggregation, and improved responsiveness. By promoting the emergence of well-connected hub nodes, ELEVATOR aims to maintain short paths between arbitrary pairs of nodes.
+*Low-diameter* is a central objective of our approach. The introduction of hubs is precisely motivated by the need to reduce communication distances across the network. A small diameter implies that messages can reach any node within a limited number of hops, enabling fast information dissemination, efficient aggregation, and improved responsiveness. By promoting the emergence of well-connected hub nodes, Elevator aims to maintain short paths between arbitrary pairs of nodes.
 
 *Convergence* refers to the protocol’s ability to autonomously drive the network toward the desired topology, characterized by a controlled number of hubs. Starting from an arbitrary initial configuration, the overlay should progressively evolve toward the target structural properties in a timely manner. Rapid convergence is particularly important in dynamic environments where network conditions continuously change.
 
@@ -632,12 +632,12 @@ The ELEVATOR protocol is designed to satisfy a set of fundamental structural and
 
 Finally, *Robustness* captures the resilience of the protocol to churn and targeted attacks. Since hubs play a central structural role, the protocol must tolerate their potential failure and allow new hubs to emerge when necessary, thereby preserving connectivity and low-diameter properties even under adverse conditions.
 
-Some of these properties will be formally analyzed in the theoretical study preceding the simulation section, where we provide analytical arguments and proofs for key structural guarantees. The remaining aspects will be empirically evaluated through simulation experiments to assess the overall effectiveness and reliability of the ELEVATOR protocol.
+Some of these properties will be formally analyzed in the theoretical study preceding the simulation section, where we provide analytical arguments and proofs for key structural guarantees. The remaining aspects will be empirically evaluated through simulation experiments to assess the overall effectiveness and reliability of the Elevator protocol.
 
 // === Desired Properties
 // The key desired properties we expect from our protocol are _connectivity_ (the overlay remains connected), _low-diameter_ (for efficient communication), _convergence_ (properties are obtained in an autonomous manner), _stability_ (structural overlay properties are maintained throughout execution), and _robustness_ (resilience to churn and targeted attacks). They will serve as metrics during simulation experiments to ascertain the efficacy of our algorithm.
 
-// The key properties targeted by ELEVATOR are:
+// The key properties targeted by Elevator are:
 
 // - _Connectivity_: the overlay remains connected at all times.
 // - _Low-diameter_: the network maintains short paths for efficient communication.
@@ -893,8 +893,28 @@ The Elevator protocol was not designed to be resilient to Byzantine attacks, and
 
 // It is therefore necessary to consider an alternative algorithm, based on Elevator but which takes into account the possibility of Byzantine attacks, while remaining decentralized.
   
-=== LIFT protocol
-To address Elevator's vulnerability to Byzantine attacks, we propose a deterministic hub redistribution mechanism (that we name LIFT) that activates after the network has converged to its initial hub configuration. Our approach leverages the fact that node identifiers are assigned randomly and cannot be modified by Byzantine nodes. If Byzantine nodes are active, we hope that our new protocol will be more efficient than Elevator in terms of resilience, and if Byzantine nodes are not active, we hope that the protocol will have no impact on protocol performance and convergence towards hubs.
+=== Lift protocol
+
+#definition(title: "Pseudo-Random Number Generator")[
+Let $λ in NN$ be a security parameter.
+
+A pseudo-random number generator (PRNG) is a deterministic algorithm
+
+$
+G : {0,1}^λ -> {0,1}^*
+$
+
+such that:
+
+- (Determinism) For any seed $s in {0,1}^λ$, the output $G(s)$ is uniquely determined.
+  In particular, two executions of $G$ on the same seed produce the same output.
+
+- (Pseudo-randomness) When the seed $s$ is sampled uniformly at random from
+  ${0,1}^λ$, the output $G(s)$ is computationally indistinguishable from
+  a truly random bitstring of the same length.
+] <def:prng>
+
+To address Elevator's vulnerability to Byzantine attacks, we propose a deterministic hub redistribution mechanism (that we name Lift) that activates after the network has converged to its initial hub configuration. Our approach leverages the fact that node identifiers are assigned randomly and cannot be modified by Byzantine nodes. If Byzantine nodes are active, we hope that our new protocol will be more efficient than Elevator in terms of resilience, and if Byzantine nodes are not active, we hope that the protocol will have no impact on protocol performance and convergence towards hubs.
 
 The counter-attack operates in two phases: an initial convergence phase using standard Elevator, followed by a deterministic hub redistribution phase.
 
@@ -922,11 +942,8 @@ After convergence, all correct nodes simultaneously execute the following determ
     - network size: *N*
     - target hubs: *h*
 
-    + hubIDs $arrow.l$ getSortedHubIDs(H) 
+    + seed $arrow.l$ getSortedHubIDs(H) 
       // Extract and sort hub node IDs
-
-    + seed $arrow.l$ hashCode(hubIDs) 
-      // Generate deterministic seed
 
     + prng $arrow.l$ Random(seed) 
       // Initialize PRNG with seed
@@ -938,7 +955,7 @@ After convergence, all correct nodes simultaneously execute the following determ
       + randomID $arrow.l$ prng.nextInt(N) 
         // Random node ID in [0, N-1]
 
-      + *if* randomID notin selectedIDs
+      + *if* randomID *not in* selectedIDs
         + targetNode $arrow.l$ network.get(randomID)
 
         + *if* targetNode != null and targetNode.isUp()
@@ -948,28 +965,32 @@ After convergence, all correct nodes simultaneously execute the following determ
     + replaceCache(newHubs, currentNode) 
       // Update cache with new hubs
   ],
-  caption: [LIFT: Deterministic Hub Redistribution.],
+  caption: [Lift: Deterministic Hub Redistribution.],
 ) <algo:lift>
 
 Since all nodes use the same seed derived from the initial hub selection, they deterministically select identical new hub sets. Because node identifiers are randomly assigned and immutable, each node has equal probability $h / N$ of becoming a hub, regardless of Byzantine status. The algorithm replaces the cache contents entirely: the first _h_ positions are filled with the deterministically selected new hubs, while the remaining positions are populated with random non-hub nodes to maintain cache diversity.
 
-The critical hypothesis is that Byzantine nodes cannot manipulate their node identifiers, which are assigned during network initialization. Therefore, even if Byzantine nodes dominate the initial hub selection process, the subsequent deterministic redistribution treats all nodes equally based on their immutable identifiers.
+The critical hypothesis is that Byzantine nodes cannot manipulate their node identifiers, which are assigned uniformly at random during network initialization and remain immutable thereafter.
+
+We further assume that the pseudo-random number generator (PRNG) used in the protocol is correct and cannot be biased or influenced by Byzantine nodes. In particular, the seed provided to the PRNG is obtained by concatenating the identifiers of the selected hubs. Since each node identifier is independently and uniformly generated at initialization, this concatenation can be modeled as a uniformly random seed.
+
+Therefore, even if Byzantine nodes dominate the initial hub selection process, the subsequent deterministic redistribution treats all nodes equally, as it depends solely on immutable identifiers and on the output of an unbiased PRNG.
 
 == Theoretical Analysis
 We initially introduced the intuition behind hub emergence, explaining how a 
 combination of preferential attachment and random sampling can naturally lead 
 to the formation of hubs. We then provided a detailed description of the 
-ELEVATOR protocol together with its pseudo-code, specifying its operational 
+Elevator protocol together with its pseudo-code, specifying its operational 
 mechanisms at the local level. 
 
 However, while this description clarifies how the protocol functions, it does 
 not formally establish its properties. In particular, the convergence toward 
 the desired number of hubs, the preservation of connectivity, and the resulting 
 structural guarantees remain to be demonstrated. The objective of the following 
-section is therefore to provide a theoretical analysis of ELEVATOR and to 
+section is therefore to provide a theoretical analysis of Elevator and to 
 formally study its emergent behavior.
 
-In order to analyze and model the ELEVATOR protocol we adopt several simplifying assumptions; without them a formal analysis would be extremely difficult if not impossible. First, we assume a failure-free network with a constant number of nodes. We thus don't take into account Byzantine nodes and the LIFT protocol. The random identifiers returned to hubs via the BACKWARD_REQUEST mechanism are considered equivalent to identifiers drawn from a uniform distribution. When selecting preferred nodes, if a node encounters two or more candidates with equal occurrence frequency, it deterministically selects the candidate with the smallest identifier. All nodes are assumed to execute the protocol synchronously and without failure at every cycle. Prior to the first cycle, the network is assumed to be highly connected and its topology is modeled as a uniform $k$-out random graph (with $k=c$ equal to the cache size common to all nodes). The parameter $h$ (the target number of hubs) is also assumed to be identical across all nodes. Our objective with our analysis is to demonstrate the stability and convergence of Elevator. We also wish to model the convergence speed of the protocol.
+In order to analyze and model the Elevator protocol we adopt several simplifying assumptions; without them a formal analysis would be extremely difficult if not impossible. First, we assume a failure-free network with a constant number of nodes. We thus don't take into account Byzantine nodes and the Lift protocol. The random identifiers returned to hubs via the BACKWARD_REQUEST mechanism are considered equivalent to identifiers drawn from a uniform distribution. When selecting preferred nodes, if a node encounters two or more candidates with equal occurrence frequency, it deterministically selects the candidate with the smallest identifier. All nodes are assumed to execute the protocol synchronously and without failure at every cycle. Prior to the first cycle, the network is assumed to be highly connected and its topology is modeled as a uniform $k$-out random graph (with $k=c$ equal to the cache size common to all nodes). The parameter $h$ (the target number of hubs) is also assumed to be identical across all nodes. Our objective with our analysis is to demonstrate the stability and convergence of Elevator. We also wish to model the convergence speed of the protocol.
 
 === Stability
 We define the stability of the Elevator algorithm as the property that, once convergence to a set of $h$ hubs has been reached, both the list of hubs and their number $h$ remain (with high probability) constant over time.  
@@ -1480,7 +1501,7 @@ Its the same for the average path length and the diameter, there is no impact, a
 === Resilience to Byzantine attacks
 We measure Elevator's Byzantine resilience using two key metrics: (i) _Hub formation rate_ — the number of hub positions held by legitimate nodes versus attackers (Byzantine nodes), and (ii) _Network topology stability_ — whether hub formation continues to function correctly under attack.
 Each test runs for 1000 cycles to ensure network stabilization, and results are averaged over 100 independent simulations to account for randomness in network initialization and protocol execution. 
-// We first evaluate the impact of Byzantine attacks on Elevator, and then the effectiveness of the LIFT countermeasure protocol.
+// We first evaluate the impact of Byzantine attacks on Elevator, and then the effectiveness of the Lift countermeasure protocol.
 
 // === Impact of byzantine attacks
 
@@ -1490,15 +1511,15 @@ When multiple non-coordinated Byzantine nodes are introduced randomly in the net
 
 These findings demonstrate that while Elevator is resilient to individual or independent attacks, its main vulnerability lies in coordinated misinformation. Consequently, it is necessary to implement a defense mechanism that mitigates the influence of Byzantine nodes and restores fairness.
 
-=== Effectiveness of LIFT countermeasure
+=== Effectiveness of Lift countermeasure
 
-We evaluate the effectiveness of our LIFT protocol across different Byzantine participation rates, using the same experimental setup as in the vulnerability analysis. The countermeasure is activated at cycle 100, after which we observe its impact on hub formation and Byzantine infiltration.
+We evaluate the effectiveness of our Lift protocol across different Byzantine participation rates, using the same experimental setup as in the vulnerability analysis. The countermeasure is activated at cycle 100, after which we observe its impact on hub formation and Byzantine infiltration.
 
 At 5% Byzantine participation, the counter-attack is highly effective. After activation, Byzantine hubs are rapidly eliminated and remain at a minimal level for the rest of the simulation. The average total number of hubs decreases slightly to 9.58, while the average number of Byzantine hubs falls to 0.34. In other words, we go from 5% Byzantine nodes to 3.4% Byzantine hubs, representing an almost complete recovery from Byzantine infiltration with only a minor reduction in overall hubs (@fig:counter_5percent).
 
 For 10% Byzantine participation, the countermeasure initially removes Byzantine hubs effectively at cycle 100, but over subsequent cycles, Byzantine nodes gradually regain hub positions. By the end of the simulation, the network has on average 3.19 Byzantine hubs, and the total number of hubs has decreased from 10 to 7.82. This corresponds to approximately 40% of hubs being Byzantine. Although the majority of hubs remain non-Byzantine, the effectiveness is noticeably reduced compared to the 5% case (@fig:counter_10percent).
 
-At 15% Byzantine participation, the LIFT countermeasure’s effectiveness diminishes further. While the initial elimination at cycle 100 is successful, Byzantine nodes progressively reestablish themselves as hubs, reaching an average of 4.21 Byzantine hubs by the end. The total number of hubs also decreases from 10 to 6.71, meaning roughly 62% of hubs are now Byzantine. At this level, the countermeasure fails to maintain effective control over hub formation (@fig:counter_15percent).
+At 15% Byzantine participation, the Lift countermeasure’s effectiveness diminishes further. While the initial elimination at cycle 100 is successful, Byzantine nodes progressively reestablish themselves as hubs, reaching an average of 4.21 Byzantine hubs by the end. The total number of hubs also decreases from 10 to 6.71, meaning roughly 62% of hubs are now Byzantine. At this level, the countermeasure fails to maintain effective control over hub formation (@fig:counter_15percent).
 
 // === Summary
 
@@ -1512,9 +1533,9 @@ At 15% Byzantine participation, the LIFT countermeasure’s effectiveness dimini
 
 // === Summary
 
-// The results demonstrate that the LIFT counter-attack successfully disrupts Byzantine coordination at lower participation levels, such as 5%, by introducing a deterministic selection process for new hubs. However, as Byzantine participation increases to 10% and 15%, the effectiveness diminishes: malicious nodes gradually re-infiltrate hub positions following the initial activation of the countermeasure. Concurrently, the total number of hubs decreases, suggesting that some correct nodes are prevented by Byzantine nodes from maintaining their hub positions.
+// The results demonstrate that the Lift counter-attack successfully disrupts Byzantine coordination at lower participation levels, such as 5%, by introducing a deterministic selection process for new hubs. However, as Byzantine participation increases to 10% and 15%, the effectiveness diminishes: malicious nodes gradually re-infiltrate hub positions following the initial activation of the countermeasure. Concurrently, the total number of hubs decreases, suggesting that some correct nodes are prevented by Byzantine nodes from maintaining their hub positions.
 
-// An interesting and unexpected observation is that, even after the countermeasure, Byzantine nodes continue to attempt hub capture and achieve partial success. This behavior can prevent full retention of all hubs in certain cases. Consequently, the empirical results show a slight deviation from theoretical expectations, which predicted an average of B/N Byzantine hubs. Despite this, LIFT significantly reduces the influence of Byzantine nodes and has the advantage of being lightweight, as it operates as a one-shot solution.
+// An interesting and unexpected observation is that, even after the countermeasure, Byzantine nodes continue to attempt hub capture and achieve partial success. This behavior can prevent full retention of all hubs in certain cases. Consequently, the empirical results show a slight deviation from theoretical expectations, which predicted an average of B/N Byzantine hubs. Despite this, Lift significantly reduces the influence of Byzantine nodes and has the advantage of being lightweight, as it operates as a one-shot solution.
 
 // The proposed counter-attack mitigates Elevator's primary vulnerability—coordinated manipulation of hub selection—by introducing a deterministic redistribution mechanism based on immutable node identifiers. This approach requires synchronized activation at a predetermined cycle but does not rely on Byzantine-resistant communication. While effective at limiting Byzantine influence, the mechanism assumes a static network during activation and is sensitive to timing of convergence, making it less effective under high Byzantine participation rates or network churn.
 
@@ -1524,9 +1545,9 @@ At 15% Byzantine participation, the LIFT countermeasure’s effectiveness dimini
 
 // Across different failure contexts, the overall distribution shape and structural metrics remain stable. As illustrated in @fig:ElevatorContextCoefClust, @fig:ElevatorAveragePathLength, and @fig:ElevatorDiameter, the clustering coefficient, average path length, and diameter exhibit only minor variations. This stability is an intrinsic property of the protocol: once hubs emerge, they remain stable over time (except in the presence of failures), which explains the robustness of global metrics. In this regard, Elevator demonstrates greater structural stability than Phenix, particularly concerning diameter and average path length.
 
-// We then evaluated the protocol under Byzantine behavior and assessed the effectiveness of the LIFT counter-attack. The results show that LIFT successfully disrupts coordinated Byzantine hub capture at lower participation rates (e.g., 5%) by introducing a deterministic hub redistribution mechanism. However, as Byzantine participation increases (10% and 15%), its effectiveness decreases: malicious nodes progressively regain hub positions after the countermeasure is triggered. Additionally, the total number of hubs may decrease, indicating that Byzantine interference can prevent some correct nodes from maintaining their hub status.
+// We then evaluated the protocol under Byzantine behavior and assessed the effectiveness of the Lift counter-attack. The results show that Lift successfully disrupts coordinated Byzantine hub capture at lower participation rates (e.g., 5%) by introducing a deterministic hub redistribution mechanism. However, as Byzantine participation increases (10% and 15%), its effectiveness decreases: malicious nodes progressively regain hub positions after the countermeasure is triggered. Additionally, the total number of hubs may decrease, indicating that Byzantine interference can prevent some correct nodes from maintaining their hub status.
 
-// Interestingly, even after activation of the countermeasure, Byzantine nodes continue attempting hub capture and achieve partial success, leading to slight deviations from the theoretical expectation of an average of $B/N$ Byzantine hubs. Nevertheless, LIFT significantly reduces Byzantine influence while remaining lightweight, as it operates as a one-shot solution.
+// Interestingly, even after activation of the countermeasure, Byzantine nodes continue attempting hub capture and achieve partial success, leading to slight deviations from the theoretical expectation of an average of $B/N$ Byzantine hubs. Nevertheless, Lift significantly reduces Byzantine influence while remaining lightweight, as it operates as a one-shot solution.
 
 // Overall, the proposed counter-attack mitigates Elevator’s primary vulnerability—coordinated manipulation of hub selection—by introducing a deterministic redistribution mechanism based on immutable node identifiers. While effective at limiting Byzantine influence, the mechanism assumes a static network during activation and is sensitive to convergence timing, which explains its reduced effectiveness under higher Byzantine participation rates or network churn.
 === Summary
@@ -1535,11 +1556,11 @@ We first analyzed the structural properties of the network produced by the Eleva
 
 Across different failure contexts, the overall distribution shape and structural metrics remain stable. As illustrated in @fig:ElevatorContextCoefClust, @fig:ElevatorAveragePathLength, and @fig:ElevatorDiameter, the clustering coefficient, average path length, and diameter exhibit only minor variations. This stability is an intrinsic property of the protocol: once hubs emerge, they remain stable over time (except in the presence of failures), which explains the robustness of global metrics. In this regard, Elevator demonstrates greater structural stability than Phenix, particularly concerning diameter and average path length.
 
-We then evaluated the protocol under Byzantine behavior and assessed the effectiveness of the LIFT counter-attack. The results show that LIFT successfully disrupts coordinated Byzantine hub capture at lower participation rates (e.g., 5%) by introducing a deterministic hub redistribution mechanism. However, as Byzantine participation increases (10% and 15%), its effectiveness decreases: malicious nodes progressively regain hub positions after the countermeasure is triggered. Additionally, the total number of hubs may decrease, indicating that Byzantine interference can prevent some correct nodes from maintaining their hub status.
+We then evaluated the protocol under Byzantine behavior and assessed the effectiveness of the Lift counter-attack. The results show that Lift successfully disrupts coordinated Byzantine hub capture at lower participation rates (e.g., 5%) by introducing a deterministic hub redistribution mechanism. However, as Byzantine participation increases (10% and 15%), its effectiveness decreases: malicious nodes progressively regain hub positions after the countermeasure is triggered. Additionally, the total number of hubs may decrease, indicating that Byzantine interference can prevent some correct nodes from maintaining their hub status.
 
-Interestingly, even after activation of the countermeasure, Byzantine nodes continue attempting hub capture and achieve partial success, leading to slight deviations from the theoretical expectation of an average of $B/N$ Byzantine hubs. Nevertheless, LIFT significantly reduces Byzantine influence while remaining lightweight, as it operates as a one-shot solution.
+Interestingly, even after activation of the countermeasure, Byzantine nodes continue attempting hub capture and achieve partial success, leading to slight deviations from the theoretical expectation of an average of $B/N$ Byzantine hubs. Nevertheless, Lift significantly reduces Byzantine influence while remaining lightweight, as it operates as a one-shot solution.
 
-Overall, our simulation results demonstrate that Elevator achieves the targeted structural properties, including the emergence of a controlled number of hubs, bounded degree, and low network diameter. The protocol proves resilient to crash failures and churn, maintaining stable global metrics under dynamic conditions. However, it remains vulnerable to coordinated Byzantine attacks. The proposed LIFT countermeasure increases resilience against such attacks without compromising the decentralization or the performance of the protocol.
+Overall, our simulation results demonstrate that Elevator achieves the targeted structural properties, including the emergence of a controlled number of hubs, bounded degree, and low network diameter. The protocol proves resilient to crash failures and churn, maintaining stable global metrics under dynamic conditions. However, it remains vulnerable to coordinated Byzantine attacks. The proposed Lift countermeasure increases resilience against such attacks without compromising the decentralization or the performance of the protocol.
 
 #grid(
   columns: 2,
@@ -1811,6 +1832,6 @@ We then validated these properties through extensive simulations. The results de
 
 Beyond simulations, we implemented Elevator on real peer-to-peer networks, confirming its practical feasibility and validating that its theoretical and simulated properties hold in realistic environments.
 
-We also investigated the vulnerability of Elevator to Byzantine attacks. Our analysis shows that, while the protocol is resilient to failures and churn, it remains vulnerable to coordinated Byzantine strategies aiming at capturing hub positions. To address this limitation, we proposed a modification of the algorithm, LIFT, which increases resilience against Byzantine behavior through a deterministic redistribution mechanism. Importantly, this countermeasure improves robustness without compromising decentralization or degrading the performance of the protocol.
+We also investigated the vulnerability of Elevator to Byzantine attacks. Our analysis shows that, while the protocol is resilient to failures and churn, it remains vulnerable to coordinated Byzantine strategies aiming at capturing hub positions. To address this limitation, we proposed a modification of the algorithm, Lift, which increases resilience against Byzantine behavior through a deterministic redistribution mechanism. Importantly, this countermeasure improves robustness without compromising decentralization or degrading the performance of the protocol.
 
 Elevator opens the way to a new class of algorithms that we refer to as hub sampling algorithms, where structural centrality is deliberately engineered within unstructured overlays. One particularly promising application domain is artificial intelligence, and federated learning in particular, where controlled hub structures may accelerate model aggregation and dissemination. This use case will be studied in detail in the next chapter.
