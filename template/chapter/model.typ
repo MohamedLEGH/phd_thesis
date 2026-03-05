@@ -715,9 +715,9 @@ This representation allows us to treat the structure of the overlay network as p
 // In our model, such dynamics are captured by allowing the network graph $G = (V, E)$ to vary across protocol cycles, and thus the representation of our overlay is a time-varying graph (or temporal graph), as defined in the literature @holme2012temporal.
 // As a result, the structure of the overlay network becomes part of the system state and participates in the global evolution of the system.
 
-#definition(title: "Time-Varying Graph")[
+#definition(title: "Time-Varying Graph with churn")[
 A time-varying graph is a tuple $G = (V, E, T)$ where:
-- $T$ is a time domain, which may be discrete or continuous;
+- $T$ is a time domain, which is discrete;
 - $V(t)$ is the set of vertices present at time $t in T$;
 - $E(t) subset.eq {{x, y} | x, y in V(t), x eq.not y}$ is the set of edges present at time $t$.
 

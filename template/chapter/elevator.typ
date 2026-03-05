@@ -106,6 +106,9 @@ Furthermore, _information dissemination services_, often based on gossip or epid
 A peer sampling service provides each node with addresses of other nodes in the network, thereby enabling communication and maintaining connectivity. Indeed, it is often impractical or impossible for a node to store the addresses of all other nodes in the network in memory, particularly in peer-to-peer networks, which can often contain several hundred thousand nodes. Furthermore, these nodes do not necessarily remain connected all the time, and the number of nodes in the network fluctuates constantly. Each node will therefore only maintain a limited number of addresses of other nodes in the network, known as the partial view or neighbor list of each node. There is therefore a need for a service that allows us to connect to other nodes in the network, particularly given the risk that all our neighbors may be disconnected and that we may thus find ourselves disconnected from the network due to a lack of neighbors with whom to communicate.
 Typically, the objective of a peer sampling service is to supply node addresses that are as random and uniformly distributed as possible, so as to avoid structural bias and network partitioning.
 
+
+// citer Anne Marie Kerrmarec, definition du peer sampling oracle
+
 #definition(title: "Peer Sampling Oracle")[
 An ideal peer sampling oracle is a random variable $S$ taking values in $V$, 
 distributed according to a probability distribution $pi$ over $V$.
@@ -618,7 +621,7 @@ Having established a formal definition of hubs and of a hub sampling service,
 we now turn to the desired properties of the Elevator protocol, which 
 characterize its behavior and performance beyond the aspect of hub emergence.
 
-=== Desired Properties
+=== Desired Properties for our protocol
 
 The Elevator protocol is designed to satisfy a set of fundamental structural and dynamical properties that characterize the quality and usefulness of the maintained overlay.
 
@@ -634,6 +637,17 @@ Finally, *Robustness* captures the resilience of the protocol to churn and targe
 
 Some of these properties will be formally analyzed in the theoretical study preceding the simulation section, where we provide analytical arguments and proofs for key structural guarantees. The remaining aspects will be empirically evaluated through simulation experiments to assess the overall effectiveness and reliability of the Elevator protocol.
 
+=== How to achieve the desired properties ?
+To achieve both robustness and a low network diameter, we integrate two fundamental concepts: preferential attachment and random attachment, each serving distinct yet complementary roles in shaping the network topology.
+
+*Preferential Attachment.* Drawing from the concept pioneered by Barabási and Albert @barabasi1999emergence, preferential attachment dictates that new connections in the network are established preferentially with nodes possessing a higher number of existing connections. In our adaptation, we modify this concept to elevate certain nodes to the status of hubs without requiring the network to continuously grow. Instead of new nodes joining and preferentially connecting to highly connected nodes, each existing node leverages information from its neighbors to identify and connect to the most frequently connected nodes (up to a predefined number _h_). This mechanism enables the organic emergence of hubs within the network, with selected nodes naturally assuming central roles based on their connectivity without any explicit distinction other than their number of incoming links.
+
+*Random Attachment.* Inspired by gossip-based peer sampling algorithms @jelasity2007gossip  @stavrou2004lightweight, random attachment ensures that nodes maintain connections with a representative and diverse subset of the network. This strategy promotes network robustness by preventing excessive clustering and dependency on specific nodes (hubs). When existing hubs disappear (e.g., due to failures or departure), other nodes within the network are opportunistically elevated to hub status, ensuring continuity and adaptability of the network topology over time.
+
+Our target is to obtain a topology of the network that has the following properties: _(i)_ There are _h_ defined hubs, with _h_ a parameter defined before the start of the network and common to all nodes, _(ii)_ ignoring hubs, the distribution of the remaining connections is random, and _(iii)_ each node has _c_ connections, consisting of _h_ connections to hubs and _c-h_ connections to random nodes.
+
+// Through simulation evaluation, we demonstrate in the sequel the effectiveness and advantages of our protocol with respect to state-of-the-art algorithms.
+
 // === Desired Properties
 // The key desired properties we expect from our protocol are _connectivity_ (the overlay remains connected), _low-diameter_ (for efficient communication), _convergence_ (properties are obtained in an autonomous manner), _stability_ (structural overlay properties are maintained throughout execution), and _robustness_ (resilience to churn and targeted attacks). They will serve as metrics during simulation experiments to ascertain the efficacy of our algorithm.
 
@@ -645,6 +659,61 @@ Some of these properties will be formally analyzed in the theoretical study prec
 // - _Stability_: the overlay maintains its structural properties throughout execution.
 // - _Robustness_: the network is resilient to churn and targeted attacks.
 
+// === Preliminaries
+
+// In the context of our study, we consider an overlay network of interconnected nodes modeled as a directed graph. Communication within this network is bidirectional, corresponding to an underlying undirected graph that represents the physical network. Each node in this network possesses a unique address, akin to an IP address in the context of the Internet, serving as an abstract identifier of its identity. Nodes maintain a local list called _cache_, which contains addresses of other nodes, and represents their partial knowledge of the network's node set. The maximum size of this cache, denoted by parameter _c_, is uniform across all nodes. The cache is pivotal for peer sampling, as it serves as the basis for neighbor selection and information exchange. At the network's inception, nodes are initially connected to a random subset of nodes, forming what is known as a random _k_-out graph. Subsequently, new nodes joining the network also establish connections with a random subset of existing nodes, a process that populates their cache and integrates them into the network. Given the decentralized nature of the network, peer sampling algorithms are designed to operate asynchronously, as it is the case for Elevator, and all algorithms presented in this paper, but to help the evaluation of protocols during simulations, we can refer to the idea of _cycles_ of the protocol. During each cycle, every node initiates one execution of the peer sampling protocol, potentially updating its cache based on interactions with neighboring nodes. By leveraging cycles, we can analyze the convergence, performance, and robustness of peer sampling protocols under varying conditions and scenarios within the decentralized network environment.
+
+
+// ==== Byzantine model
+// We adopt the Byzantine failure model defined in the previous chapter, namely the *Byzantine Synchronous Message-Passing model* (BSMP ⟨n, t⟩ [∅]). Our Byzantine model assumes that a certain percentage of nodes are Byzantine from the start.
+// These malicious nodes try to break the Elevator protocol by sending false information
+// during cache exchanges, manipulating the hub selection process.
+
+// The goal of Byzantine attackers is to get selected as hub by the correct nodes
+// (that genuinely execute the protocol). Obviously, if there is a fraction $p$
+// of Byzantine nodes overall, then it is trivial for the Byzantine nodes to obtain
+// a fraction $p$ of the hubs (they should just behave as correct nodes).
+// So, the Byzantine nodes strive to obtain a higher fraction of the hubs
+// than their fraction of the nodes.
+
+
+// *Attack Mechanism:*  
+// When legitimate nodes ask Byzantine nodes for their cache contents or backward
+// peers information (i.e., the nodes who contacted them in the past),
+// the Byzantine nodes respond with fake data designed to help malicious nodes
+// become hubs.
+
+// This attack works because Elevator relies on nodes honestly reporting
+// their connectivity information. Apart from that, Byzantine nodes perform
+// the protocol like other nodes. Byzantine nodes modify their behavior in order
+// to achieve the goal of having a large proportion of hubs be Byzantine,
+// but their objective is also to avoid detection.
+// If their behavior deviates too much from that of a normal node,
+// they could easily be detected and blacklisted.
+
+// We are studying several types of Byzantine nodes:
+
+// + Passive unique Byzantine:  
+//   A single Byzantine sending an empty cache.
+
+// + Active unique Byzantine:  
+//   A single Byzantine who sends his modified cache with a reference to himself
+//   (to increase his probability of being chosen as a hub).
+
+// + Non-coordinating Byzantine nodes:  
+//   Multiple Byzantine nodes who send their modified cache with a reference
+//   to themselves but do not include references to other Byzantine nodes.
+
+// + Coordinated Byzantine nodes:  
+//   Each Byzantine node maintains a coordinated fake cache containing references
+//   to all other Byzantine participants in the network.
+//   When responding to legitimate cache requests,
+//   Byzantine nodes return sublists of this coordinated cache,
+//   effectively creating an artificial preference for Byzantine nodes
+//   in the sampling process.
+
+// === Elevator core concepts
+
 === Service API
 // == Properties
 
@@ -653,83 +722,6 @@ The API of the hub sampling service mirrors that of classical peer sampling serv
 The focus of this work is to present an implementation of the _getPeer()_ method, Elevator, as a gossip-based algorithm, and to study the performance of its implementation. 
 In addition to these two methods, we add a third method to the API called _getHub()_ that returns a random hub. The _getHub()_ method can be easily derived from _getPeer()_ by filtering the output of _getPeer()_ to only select the $h$ nodes acting as hubs in the network. This method can be useful for applications that only need to contact a hub.
 
-// === Preliminaries
-
-// In the context of our study, we consider an overlay network of interconnected nodes modeled as a directed graph. Communication within this network is bidirectional, corresponding to an underlying undirected graph that represents the physical network. Each node in this network possesses a unique address, akin to an IP address in the context of the Internet, serving as an abstract identifier of its identity. Nodes maintain a local list called _cache_, which contains addresses of other nodes, and represents their partial knowledge of the network's node set. The maximum size of this cache, denoted by parameter _c_, is uniform across all nodes. The cache is pivotal for peer sampling, as it serves as the basis for neighbor selection and information exchange. At the network's inception, nodes are initially connected to a random subset of nodes, forming what is known as a random _k_-out graph. Subsequently, new nodes joining the network also establish connections with a random subset of existing nodes, a process that populates their cache and integrates them into the network. Given the decentralized nature of the network, peer sampling algorithms are designed to operate asynchronously, as it is the case for Elevator, and all algorithms presented in this paper, but to help the evaluation of protocols during simulations, we can refer to the idea of _cycles_ of the protocol. During each cycle, every node initiates one execution of the peer sampling protocol, potentially updating its cache based on interactions with neighboring nodes. By leveraging cycles, we can analyze the convergence, performance, and robustness of peer sampling protocols under varying conditions and scenarios within the decentralized network environment.
-
-=== Model
-
-We instantiate the formal framework introduced in the @chap:model.
-
-We consider a peer-to-peer system composed of a set of nodes $V$, modeled as in @def:node-system, and evolving according to the global system @def:global-system. The overlay is represented as a time-varying graph $G(t) = (V, E(t))$ in the sense of @def:tvg, and each node maintains a partial view as defined previously.
-
-For both the theoretical analysis and simulation experiments, we assume that the initial overlay forms a random $k$-out graph, i.e., each node selects $k$ distinct nodes uniformly at random to populate its partial view. Similarly, when a new node joins the network, it initializes its partial view by connecting to $k$ nodes chosen uniformly at random.
-
-Although the protocol operates asynchronously, we analyze its evolution using the notion of protocol cycles defined in @def:protocol-cycle, where each node executes one protocol step per cycle.
-
-We adopt the crash failure model defined in the previous chapter, namely the *Crash-prone Synchronous Message-Passing model* (CSMP ⟨n, t⟩ [∅]), in which up to $t$ nodes may permanently crash, communication is reliable, and failures occur only at the beginning of protocol cycles.
-
-All nodes execute the same peer-to-peer protocol, namely Elevator.
-
-==== Byzantine model
-We adopt the Byzantine failure model defined in the previous chapter, namely the *Byzantine Synchronous Message-Passing model* (BSMP ⟨n, t⟩ [∅]). Our Byzantine model assumes that a certain percentage of nodes are Byzantine from the start.
-These malicious nodes try to break the Elevator protocol by sending false information
-during cache exchanges, manipulating the hub selection process.
-
-The goal of Byzantine attackers is to get selected as hub by the correct nodes
-(that genuinely execute the protocol). Obviously, if there is a fraction $p$
-of Byzantine nodes overall, then it is trivial for the Byzantine nodes to obtain
-a fraction $p$ of the hubs (they should just behave as correct nodes).
-So, the Byzantine nodes strive to obtain a higher fraction of the hubs
-than their fraction of the nodes.
-
-
-*Attack Mechanism:*  
-When legitimate nodes ask Byzantine nodes for their cache contents or backward
-peers information (i.e., the nodes who contacted them in the past),
-the Byzantine nodes respond with fake data designed to help malicious nodes
-become hubs.
-
-This attack works because Elevator relies on nodes honestly reporting
-their connectivity information. Apart from that, Byzantine nodes perform
-the protocol like other nodes. Byzantine nodes modify their behavior in order
-to achieve the goal of having a large proportion of hubs be Byzantine,
-but their objective is also to avoid detection.
-If their behavior deviates too much from that of a normal node,
-they could easily be detected and blacklisted.
-
-We are studying several types of Byzantine nodes:
-
-+ Passive unique Byzantine:  
-  A single Byzantine sending an empty cache.
-
-+ Active unique Byzantine:  
-  A single Byzantine who sends his modified cache with a reference to himself
-  (to increase his probability of being chosen as a hub).
-
-+ Non-coordinating Byzantine nodes:  
-  Multiple Byzantine nodes who send their modified cache with a reference
-  to themselves but do not include references to other Byzantine nodes.
-
-+ Coordinated Byzantine nodes:  
-  Each Byzantine node maintains a coordinated fake cache containing references
-  to all other Byzantine participants in the network.
-  When responding to legitimate cache requests,
-  Byzantine nodes return sublists of this coordinated cache,
-  effectively creating an artificial preference for Byzantine nodes
-  in the sampling process.
-
-// === Elevator core concepts
-=== How to achieve the desired properties ?
-To achieve both robustness and a low network diameter, we integrate two fundamental concepts: preferential attachment and random attachment, each serving distinct yet complementary roles in shaping the network topology.
-
-*Preferential Attachment.* Drawing from the concept pioneered by Barabási and Albert @barabasi1999emergence, preferential attachment dictates that new connections in the network are established preferentially with nodes possessing a higher number of existing connections. In our adaptation, we modify this concept to elevate certain nodes to the status of hubs without requiring the network to continuously grow. Instead of new nodes joining and preferentially connecting to highly connected nodes, each existing node leverages information from its neighbors to identify and connect to the most frequently connected nodes (up to a predefined number _h_). This mechanism enables the organic emergence of hubs within the network, with selected nodes naturally assuming central roles based on their connectivity without any explicit distinction other than their number of incoming links.
-
-*Random Attachment.* Inspired by gossip-based peer sampling algorithms @jelasity2007gossip  @stavrou2004lightweight, random attachment ensures that nodes maintain connections with a representative and diverse subset of the network. This strategy promotes network robustness by preventing excessive clustering and dependency on specific nodes (hubs). When existing hubs disappear (e.g., due to failures or departure), other nodes within the network are opportunistically elevated to hub status, ensuring continuity and adaptability of the network topology over time.
-
-Our target is to obtain a topology of the network that has the following properties: _(i)_ There are _h_ defined hubs, with _h_ a parameter defined before the start of the network and common to all nodes, _(ii)_ ignoring hubs, the distribution of the remaining connections is random, and _(iii)_ each node has _c_ connections, consisting of _h_ connections to hubs and _c-h_ connections to random nodes.
-
-// Through simulation evaluation, we demonstrate in the sequel the effectiveness and advantages of our protocol with respect to state-of-the-art algorithms.
 
 === Elevator detailed description
 // we now present the detailed design of the Elevator protocol, describing how these mechanisms are concretely implemented in a fully decentralized setting. 
@@ -836,8 +828,56 @@ Additionally, we have three temporary structures: _(i)_ _frequency_map_ holds th
 ) <Elevator-algorithm-background>
 
 === Byzantine protocols
+The Elevator protocol was not designed to be resilient to Byzantine attacks, and the protocol assumes that each node is honest and returns reliable information. Since in Elevator each node modifies its cache based on the cache of its neighbors, having one or more Byzantine nodes among its neighbors significantly changes the local behavior of the protocol (for a given node) and therefore the overall convergence toward the _h_ hubs.
 
-The Elevator protocol was not designed to be resilient to Byzantine attacks, and the protocol assumes that each node is honest and returns reliable information. Since in Elevator each node modifies its cache based on the cache of its neighbors, having one or more Byzantine nodes among its neighbors significantly changes the local behavior of the protocol (for a given node) and therefore the overall convergence toward the _h_ hubs. In terms of pseudo-code for the Byzantine nodes, this amounts to replacing the background Elevator process (@Elevator-algorithm-background) with the following algorithms: @DoNothingAttack for the passive unique Byzantine, @NonCoordinatingAttack for the active unique Byzantine attack and the multiple non-coordinating Byzantines, and @CoordinatedAttack for the multiple coordinated Byzantines.
+To describe how such malicious behavior can affect the protocol, we adopt the Byzantine failure model defined in the previous chapter, namely the *Byzantine Synchronous Message-Passing model* (BSMP ⟨n, t⟩ [∅]). Our Byzantine model assumes that a certain percentage of nodes are Byzantine from the start.
+These malicious nodes try to break the Elevator protocol by sending false information
+during cache exchanges, manipulating the hub selection process.
+
+The goal of Byzantine attackers is to get selected as hub by the correct nodes
+(that genuinely execute the protocol). Obviously, if there is a fraction $p$
+of Byzantine nodes overall, then it is trivial for the Byzantine nodes to obtain
+a fraction $p$ of the hubs (they should just behave as correct nodes).
+So, the Byzantine nodes strive to obtain a higher fraction of the hubs
+than their fraction of the nodes.
+
+
+*Attack Mechanism:*  
+When legitimate nodes ask Byzantine nodes for their cache contents or backward
+peers information (i.e., the nodes who contacted them in the past),
+the Byzantine nodes respond with fake data designed to help malicious nodes
+become hubs.
+
+This attack works because Elevator relies on nodes honestly reporting
+their connectivity information. Apart from that, Byzantine nodes perform
+the protocol like other nodes. Byzantine nodes modify their behavior in order
+to achieve the goal of having a large proportion of hubs be Byzantine,
+but their objective is also to avoid detection.
+If their behavior deviates too much from that of a normal node,
+they could easily be detected and blacklisted.
+
+We are studying several types of Byzantine nodes:
+
++ Passive unique Byzantine:  
+  A single Byzantine sending an empty cache.
+
++ Active unique Byzantine:  
+  A single Byzantine who sends his modified cache with a reference to himself
+  (to increase his probability of being chosen as a hub).
+
++ Non-coordinating Byzantine nodes:  
+  Multiple Byzantine nodes who send their modified cache with a reference
+  to themselves but do not include references to other Byzantine nodes.
+
++ Coordinated Byzantine nodes:  
+  Each Byzantine node maintains a coordinated fake cache containing references
+  to all other Byzantine participants in the network.
+  When responding to legitimate cache requests,
+  Byzantine nodes return sublists of this coordinated cache,
+  effectively creating an artificial preference for Byzantine nodes
+  in the sampling process.
+
+In terms of pseudo-code for the Byzantine nodes, this amounts to replacing the background Elevator process (@Elevator-algorithm-background) with the following algorithms: @DoNothingAttack for the passive unique Byzantine, @NonCoordinatingAttack for the active unique Byzantine attack and the multiple non-coordinating Byzantines, and @CoordinatedAttack for the multiple coordinated Byzantines.
 
 
 #figure(
@@ -990,8 +1030,45 @@ structural guarantees remain to be demonstrated. The objective of the following
 section is therefore to provide a theoretical analysis of Elevator and to 
 formally study its emergent behavior.
 
-In order to analyze and model the Elevator protocol we adopt several simplifying assumptions; without them a formal analysis would be extremely difficult if not impossible. First, we assume a failure-free network with a constant number of nodes. We thus don't take into account Byzantine nodes and the Lift protocol. The random identifiers returned to hubs via the BACKWARD_REQUEST mechanism are considered equivalent to identifiers drawn from a uniform distribution. When selecting preferred nodes, if a node encounters two or more candidates with equal occurrence frequency, it deterministically selects the candidate with the smallest identifier. All nodes are assumed to execute the protocol synchronously and without failure at every cycle. Prior to the first cycle, the network is assumed to be highly connected and its topology is modeled as a uniform $k$-out random graph (with $k=c$ equal to the cache size common to all nodes). The parameter $h$ (the target number of hubs) is also assumed to be identical across all nodes. Our objective with our analysis is to demonstrate the stability and convergence of Elevator. We also wish to model the convergence speed of the protocol.
+// === Model
 
+First we instantiate the formal framework introduced in the @chap:model. We consider a peer-to-peer system composed of a set of nodes $V$, modeled as in @def:node-system, and evolving according to the global system @def:global-system. The overlay is represented as a time-varying graph $G(t) = (V, E(t))$ in the sense of @def:tvg, and each node maintains a partial view as defined previously. For both the theoretical analysis and simulation experiments, we assume that the initial overlay forms a random $k$-out graph, i.e., each node selects $k$ distinct nodes uniformly at random to populate its partial view. Similarly, when a new node joins the network, it initializes its partial view by connecting to $k$ nodes chosen uniformly at random. Although the protocol operates asynchronously, we analyze its evolution using the notion of protocol cycles defined in @def:protocol-cycle, where each node executes one protocol step per cycle.
+
+// We adopt the crash failure model defined in the previous chapter, namely the *Crash-prone Synchronous Message-Passing model* (CSMP ⟨n, t⟩ [∅]), in which up to $t$ nodes may permanently crash, communication is reliable, and failures occur only at the beginning of protocol cycles.
+
+*All nodes execute the same peer-to-peer protocol, namely Elevator.*
+
+
+In order to analyze and model the Elevator protocol, we adopt several 
+simplifying assumptions. Without these assumptions, a formal analysis would 
+be extremely difficult, if not impossible.
+
+==== Assumptions:
+- We assume a failure-free network with a constant number of nodes. In 
+  particular, Byzantine behavior and the Lift protocol are not considered 
+  in this analysis.
+
+- The random identifiers returned to hubs through the `BACKWARD_REQUEST` 
+  mechanism are assumed to be equivalent to identifiers drawn from a 
+  uniform distribution.
+
+- When selecting preferred nodes, if a node encounters two or more 
+  candidates with the same occurrence frequency, it deterministically 
+  selects the candidate with the smallest identifier.
+
+- All nodes are assumed to execute the protocol synchronously and 
+  correctly at every cycle.
+
+- Prior to the first cycle, the network is assumed to be highly connected 
+  and its topology is modeled as a uniform $k$-out random graph, where 
+  $k = c$ corresponds to the cache size shared by all nodes.
+
+- The parameter $h$ (the target number of hubs) is assumed to be identical 
+  for all nodes.
+
+Under these assumptions, our objective is to analyze the stability and the 
+convergence of the Elevator protocol, and to characterize its convergence 
+speed.
 === Stability
 We define the stability of the Elevator algorithm as the property that, once convergence to a set of $h$ hubs has been reached, both the list of hubs and their number $h$ remain (with high probability) constant over time.  
 
@@ -1458,6 +1535,22 @@ Again, this value is due to the presence of hubs in the network.
 The Phenix algorithm yields similar results.
 This is better than PROOFS and Newscast, which output respectively 3 and 4 for this metric.
 
+#grid(
+  columns: 2,
+  [#figure(
+  image("../../Images/Elevator/normal_1000_100xp_clustering_color.pdf"),
+  caption: [Clustering coefficient computed during the simulation (no failures), for each algorithm, every 10 cycles],
+) <fig:ClustCoef>],
+[#figure(
+  image("../../Images/Elevator/normal_1000_100xp_average_path_color.pdf"),
+  caption: [Average path length computed during the simulation (no failures), for each algorithm, every 10 cycles],
+) <fig:AveragePathLength>],
+[#figure(
+  image("../../Images/Elevator/normal_1000_100xp_diameter_color.pdf"),
+  caption: [Diameter computed during the simulation (no failures), for each algorithm, every 10 cycles],
+) <fig:Diameter>],
+)
+
 We also compared the algorithms according to their resilience to crashes, churn, and byzantine attacks, as shown below.
 // Additional results and the accompanying figures are included in the Appendix @sec:figures.
 
@@ -1473,6 +1566,22 @@ It's because the nodes have kept in their cache the addresses of (old) nodes who
 In @fig:ClustCoefCrash, the clustering coefficient evolution shows that it is not affected by the crashes, as we have almost the same results as those obtained without a crash.
 The same observation holds for the average path length and the diameter, as we can see in @fig:AveragePathLengthCrash and @fig:DiameterCrash.
 
+#grid(
+  columns: 2,
+[#figure(
+  image("../../Images/Elevator/crash_1000_100xp_clustering_color.pdf"),
+  caption: [Clustering coefficient computed with a 50% crash, for each algorithm, every 10 cycles],
+) <fig:ClustCoefCrash>],
+[#figure(
+  image("../../Images/Elevator/crash_1000_100xp_average_path_color.pdf"),
+  caption: [Average path length computed with a 50% crash, for each algorithm, every 10 cycles],
+) <fig:AveragePathLengthCrash>],
+[#figure(
+  image("../../Images/Elevator/crash_1000_100xp_diameter_color.pdf"),
+  caption: [Diameter computed with a 50% crash, for each algorithm, every 10 cycles],
+) <fig:DiameterCrash>],
+)
+
 === Resilience to churn
 
 We now analyze the performance of the four algorithms when the network is subject to churn.
@@ -1487,6 +1596,22 @@ In @fig:ClustCoefChurn we can observe that we have almost the same results as th
 For the average path length, PROOFS is the most affected, with a value going from 2.25 without churn to a value of 2.5 with churn, and the value keep increasing after the end of the churn, going up to 2.75, as we can see in @fig:AveragePathLengthChurn.
 In @fig:DiameterChurn, we can see that the diameter varies with churn, with a mean going up to 3.25 instead of 2.0, but the values for Phenix and Elevator remain below the ones of Newscast and PROOFS.
 
+#grid(
+  columns: 2,
+[#figure(
+  image("../../Images/Elevator/churn_1000_100xp_clustering_color.pdf"),
+  caption: [Clustering coefficient computed with churn, for each algorithm, every 10 cycles],
+) <fig:ClustCoefChurn>],
+[#figure(
+  image("../../Images/Elevator/churn_1000_100xp_average_path_color.pdf"),
+  caption: [Average path length computed with churn, for each algorithm, every 10 cycles],
+) <fig:AveragePathLengthChurn>],
+[#figure(
+  image("../../Images/Elevator/churn_1000_100xp_diameter_color.pdf"),
+  caption: [Diameter computed with churn, for each algorithm, every 10 cycles],
+) <fig:DiameterChurn>],
+)
+
 === Resilience to hub-targeted failures
 
 We hereby analyze the performance of the four algorithms after a failure on the hubs during the execution of the simulation.
@@ -1498,6 +1623,22 @@ We are thus confident in the capacity of our algorithm to promote new nodes to t
 In @fig:ClustCoefCrashHub we can see that we have almost the same results as the results obtained without crashes for the clustering coefficient.
 Its the same for the average path length and the diameter, there is no impact, as we can see in @fig:AveragePathLengthCrashHub and @fig:DiameterCrashHub.
 
+#grid(
+  columns: 2,
+[#figure(
+  image("../../Images/Elevator/crash_hub_1000_100xp_clustering_color.pdf"),
+  caption: [Clustering coefficient computed with a hub-targeted failure, for each algorithm, every 10 cycles],
+) <fig:ClustCoefCrashHub>],
+[#figure(
+  image("../../Images/Elevator/crash_hub_1000_100xp_average_path_color.pdf"),
+  caption: [Average path length computed with a hub-targeted failure, for each algorithm, every 10 cycles],
+) <fig:AveragePathLengthCrashHub>],
+[#figure(
+  image("../../Images/Elevator/crash_hub_1000_100xp_diameter_color.pdf"),
+  caption: [Diameter computed with a hub-targeted failure, for each algorithm, every 10 cycles],
+) <fig:DiameterCrashHub>],
+)
+
 === Resilience to Byzantine attacks
 We measure Elevator's Byzantine resilience using two key metrics: (i) _Hub formation rate_ — the number of hub positions held by legitimate nodes versus attackers (Byzantine nodes), and (ii) _Network topology stability_ — whether hub formation continues to function correctly under attack.
 Each test runs for 1000 cycles to ensure network stabilization, and results are averaged over 100 independent simulations to account for randomness in network initialization and protocol execution. 
@@ -1507,9 +1648,56 @@ Each test runs for 1000 cycles to ensure network stabilization, and results are 
 
 Our experimental evaluation of Elevator under Byzantine attacks reveals several important insights regarding its resilience and limitations. When the protocol runs without malicious nodes, convergence to the 10 hubs occurs very quickly — in fewer than 4 cycles on average (@fig:no_attack). Introducing a single Byzantine node in a 1,000-node network shows minimal disruption: in the passive case, the malicious node becomes a hub only 2 times out of 100 simulations, while in the active case, it becomes a hub 7 times out of 100; in both cases, the total number of hubs remains 10 (@fig:single_byzantine_active, @fig:single_byzantine_passive). This confirms that Elevator is robust against isolated adversarial behavior.
 
-When multiple non-coordinated Byzantine nodes are introduced randomly in the network, their impact remains limited. On average, only 0.95 out of 10 hubs are Byzantine, meaning that although the attackers represent 5% of the nodes, they account for 9.5% of hubs (@fig:independent_byzantine). This highlights that coordination is a critical factor for a successful attack. Indeed, coordinated Byzantine nodes — each aware of all other Byzantine nodes and sharing this information when responding to cache requests — dramatically increase the risk of hub capture. Our experiments show a sharp vulnerability threshold around 2% Byzantine participation (@fig:1percent_byzantine, @fig:2percent_byzantine, @fig:5percent_byzantine): at 1%, the proportion of Byzantine hubs rises from 1% of nodes to 13.4% of hubs, and at 5%, all 10 hubs become Byzantine. This threshold aligns closely with the cache size parameter (_c = 20_), indicating that coordinated attackers need to approach or exceed the cache size to overwhelm the random sampling mechanism effectively.
+When multiple non-coordinated Byzantine nodes are introduced randomly in the network, their impact remains limited. On average, only 0.95 out of 10 hubs are Byzantine, meaning that although the attackers represent 5% of the nodes, they account for 9.5% of hubs (@fig:independent_byzantine). 
+
+#grid(
+  columns: 2,
+[#figure(
+  image("../../Images/CANDAR/no_attack.pdf"),
+  caption: [Running of Elevator without attack.],
+) <fig:no_attack>
+],
+  [
+    #figure(
+      image("../../Images/CANDAR/elevator.ElevatorVOneByzantine2_oneByzantineActif_1000_nb_hubs_100_cycles.pdf"),
+      caption: [Active Byzantine behavior.],
+    ) <fig:single_byzantine_active>
+  ],
+  [
+    #figure(
+      image("../../Images/CANDAR/elevator.ElevatorVOneByzantine_oneByzantinePassif_1000_nb_hubs_100_cycles.pdf"),
+      caption: [Passive Byzantine behavior.],
+    ) <fig:single_byzantine_passive>
+  ],
+  [#figure(
+  image("../../Images/CANDAR/elevator.ElevatorVByzantine2_5percentindep_1000_nb_hubs_100_cycles.pdf"),
+  caption: [Independent Byzantine attack at 5% rate.],
+) <fig:independent_byzantine>
+],)
+
+This highlights that coordination is a critical factor for a successful attack. Indeed, coordinated Byzantine nodes — each aware of all other Byzantine nodes and sharing this information when responding to cache requests — dramatically increase the risk of hub capture. Our experiments show a sharp vulnerability threshold around 2% Byzantine participation (@fig:1percent_byzantine, @fig:2percent_byzantine, @fig:5percent_byzantine): at 1%, the proportion of Byzantine hubs rises from 1% of nodes to 13.4% of hubs, and at 5%, all 10 hubs become Byzantine. This threshold aligns closely with the cache size parameter (_c = 20_), indicating that coordinated attackers need to approach or exceed the cache size to overwhelm the random sampling mechanism effectively.
+
 
 These findings demonstrate that while Elevator is resilient to individual or independent attacks, its main vulnerability lies in coordinated misinformation. Consequently, it is necessary to implement a defense mechanism that mitigates the influence of Byzantine nodes and restores fairness.
+
+#grid(
+  columns: 2,
+[#figure(
+  image("../../Images/CANDAR/elevator.ElevatorVByzantine2_1percentrandom_1000_nb_hubs_100_cycles.pdf"),
+  caption: [Byzantine hub infiltration at 1% rate.],
+) <fig:1percent_byzantine>
+],
+[#figure(
+  image("../../Images/CANDAR/elevator.ElevatorVByzantine2_2percentrandom_1000_nb_hubs_100_cycles.pdf"),
+  caption: [Byzantine hub infiltration at 2% rate.],
+) <fig:2percent_byzantine>
+],
+[#figure(
+  image("../../Images/CANDAR/elevator.ElevatorVByzantine2_5percentrandom_1000_nb_hubs_100_cycles.pdf"),
+  caption: [Byzantine hub infiltration at 5% rate.],
+) <fig:5percent_byzantine>
+],
+)
 
 === Effectiveness of Lift countermeasure
 
@@ -1520,6 +1708,23 @@ At 5% Byzantine participation, the counter-attack is highly effective. After act
 For 10% Byzantine participation, the countermeasure initially removes Byzantine hubs effectively at cycle 100, but over subsequent cycles, Byzantine nodes gradually regain hub positions. By the end of the simulation, the network has on average 3.19 Byzantine hubs, and the total number of hubs has decreased from 10 to 7.82. This corresponds to approximately 40% of hubs being Byzantine. Although the majority of hubs remain non-Byzantine, the effectiveness is noticeably reduced compared to the 5% case (@fig:counter_10percent).
 
 At 15% Byzantine participation, the Lift countermeasure’s effectiveness diminishes further. While the initial elimination at cycle 100 is successful, Byzantine nodes progressively reestablish themselves as hubs, reaching an average of 4.21 Byzantine hubs by the end. The total number of hubs also decreases from 10 to 6.71, meaning roughly 62% of hubs are now Byzantine. At this level, the countermeasure fails to maintain effective control over hub formation (@fig:counter_15percent).
+
+#grid(
+  columns: 2,
+[#figure(
+      image("../../Images/CANDAR/elevator.ElevatorVCounter_5percentcounter_1000_nb_hubs_100_cycles.pdf"),
+      caption: [Counter-attack effectiveness at 5% rate.],
+    ) <fig:counter_5percent>],
+    [    #figure(
+      image("../../Images/CANDAR/elevator.ElevatorVCounter_10percentcounter_1000_nb_hubs_100_cycles.pdf"),
+      caption: [Counter-attack effectiveness at 10% rate.],
+    ) <fig:counter_10percent>],
+    [    #figure(
+      image("../../Images/CANDAR/elevator.ElevatorVCounter_15percentcounter_1000_nb_hubs_100_cycles.pdf"),
+      caption: [Counter-attack effectiveness at 15% rate.],
+    ) <fig:counter_15percent>
+],
+  )
 
 // === Summary
 
@@ -1554,64 +1759,8 @@ At 15% Byzantine participation, the Lift countermeasure’s effectiveness dimini
 
 We first analyzed the structural properties of the network produced by the Elevator protocol. The in-degree distribution remains consistent across different numbers of hubs (see @fig:degreeDistributionVariableNbHubs and @fig:CompareContext), except in the extreme case where $h = c = 20$. In this configuration, nodes connect exclusively to hubs, resulting in a multi-star topology and eliminating random connections. This behavior is fully aligned with the protocol definition, where all outgoing links become preferential.
 
-Across different failure contexts, the overall distribution shape and structural metrics remain stable. As illustrated in @fig:ElevatorContextCoefClust, @fig:ElevatorAveragePathLength, and @fig:ElevatorDiameter, the clustering coefficient, average path length, and diameter exhibit only minor variations. This stability is an intrinsic property of the protocol: once hubs emerge, they remain stable over time (except in the presence of failures), which explains the robustness of global metrics. In this regard, Elevator demonstrates greater structural stability than Phenix, particularly concerning diameter and average path length.
-
-We then evaluated the protocol under Byzantine behavior and assessed the effectiveness of the Lift counter-attack. The results show that Lift successfully disrupts coordinated Byzantine hub capture at lower participation rates (e.g., 5%) by introducing a deterministic hub redistribution mechanism. However, as Byzantine participation increases (10% and 15%), its effectiveness decreases: malicious nodes progressively regain hub positions after the countermeasure is triggered. Additionally, the total number of hubs may decrease, indicating that Byzantine interference can prevent some correct nodes from maintaining their hub status.
-
-Interestingly, even after activation of the countermeasure, Byzantine nodes continue attempting hub capture and achieve partial success, leading to slight deviations from the theoretical expectation of an average of $B/N$ Byzantine hubs. Nevertheless, Lift significantly reduces Byzantine influence while remaining lightweight, as it operates as a one-shot solution.
-
-Overall, our simulation results demonstrate that Elevator achieves the targeted structural properties, including the emergence of a controlled number of hubs, bounded degree, and low network diameter. The protocol proves resilient to crash failures and churn, maintaining stable global metrics under dynamic conditions. However, it remains vulnerable to coordinated Byzantine attacks. The proposed Lift countermeasure increases resilience against such attacks without compromising the decentralization or the performance of the protocol.
-
 #grid(
   columns: 2,
-  [#figure(
-  image("../../Images/Elevator/normal_1000_100xp_clustering_color.pdf"),
-  caption: [Clustering coefficient computed during the simulation (no failures), for each algorithm, every 10 cycles],
-) <fig:ClustCoef>],
-[#figure(
-  image("../../Images/Elevator/normal_1000_100xp_average_path_color.pdf"),
-  caption: [Average path length computed during the simulation (no failures), for each algorithm, every 10 cycles],
-) <fig:AveragePathLength>],
-[#figure(
-  image("../../Images/Elevator/normal_1000_100xp_diameter_color.pdf"),
-  caption: [Diameter computed during the simulation (no failures), for each algorithm, every 10 cycles],
-) <fig:Diameter>],
-[#figure(
-  image("../../Images/Elevator/crash_1000_100xp_clustering_color.pdf"),
-  caption: [Clustering coefficient computed with a 50% crash, for each algorithm, every 10 cycles],
-) <fig:ClustCoefCrash>],
-[#figure(
-  image("../../Images/Elevator/crash_1000_100xp_average_path_color.pdf"),
-  caption: [Average path length computed with a 50% crash, for each algorithm, every 10 cycles],
-) <fig:AveragePathLengthCrash>],
-[#figure(
-  image("../../Images/Elevator/crash_1000_100xp_diameter_color.pdf"),
-  caption: [Diameter computed with a 50% crash, for each algorithm, every 10 cycles],
-) <fig:DiameterCrash>],
-[#figure(
-  image("../../Images/Elevator/churn_1000_100xp_clustering_color.pdf"),
-  caption: [Clustering coefficient computed with churn, for each algorithm, every 10 cycles],
-) <fig:ClustCoefChurn>],
-[#figure(
-  image("../../Images/Elevator/churn_1000_100xp_average_path_color.pdf"),
-  caption: [Average path length computed with churn, for each algorithm, every 10 cycles],
-) <fig:AveragePathLengthChurn>],
-[#figure(
-  image("../../Images/Elevator/churn_1000_100xp_diameter_color.pdf"),
-  caption: [Diameter computed with churn, for each algorithm, every 10 cycles],
-) <fig:DiameterChurn>],
-[#figure(
-  image("../../Images/Elevator/crash_hub_1000_100xp_clustering_color.pdf"),
-  caption: [Clustering coefficient computed with a hub-targeted failure, for each algorithm, every 10 cycles],
-) <fig:ClustCoefCrashHub>],
-[#figure(
-  image("../../Images/Elevator/crash_hub_1000_100xp_average_path_color.pdf"),
-  caption: [Average path length computed with a hub-targeted failure, for each algorithm, every 10 cycles],
-) <fig:AveragePathLengthCrashHub>],
-[#figure(
-  image("../../Images/Elevator/crash_hub_1000_100xp_diameter_color.pdf"),
-  caption: [Diameter computed with a hub-targeted failure, for each algorithm, every 10 cycles],
-) <fig:DiameterCrashHub>],
 [#figure(
   image("../../Images/Elevator/Elevator_1000_100xp_indegree_color.pdf"),
   caption: [In-degree distribution of the network, after the run of the Elevator algorithm, with a variable number of hubs (5 hubs, 10 hubs, 15 hubs, 20 hubs), no failures.],
@@ -1620,6 +1769,12 @@ Overall, our simulation results demonstrate that Elevator achieves the targeted 
   image("../../Images/Elevator/Elevator_context_1000_100xp_indegree_color.pdf"),
   caption: [In-degree distribution of the network, after the run of the Elevator algorithm, during each context (no failures, 50% crash, churn, and hub-targeted failure).],
 ) <fig:CompareContext>],
+)
+
+Across different failure contexts, the overall distribution shape and structural metrics remain stable. As illustrated in @fig:ElevatorContextCoefClust, @fig:ElevatorAveragePathLength, and @fig:ElevatorDiameter, the clustering coefficient, average path length, and diameter exhibit only minor variations. This stability is an intrinsic property of the protocol: once hubs emerge, they remain stable over time (except in the presence of failures), which explains the robustness of global metrics. In this regard, Elevator demonstrates greater structural stability than Phenix, particularly concerning diameter and average path length.
+
+#grid(
+  columns: 2,
 [#figure(
   image("../../Images/Elevator/Elevator_context_1000_100xp_clustering_color.pdf"),
   caption: [Clustering of the network, after the run of the Elevator algorithm, during each context (no failures, 50% crash, churn, and hub-targeted failure).],
@@ -1632,59 +1787,18 @@ Overall, our simulation results demonstrate that Elevator achieves the targeted 
   image("../../Images/Elevator/Elevator_context_1000_100xp_diameter_color.pdf"),
   caption: [Diameter of the network, after the run of the Elevator algorithm, during each context (no failures, 50% crash, churn, and hub-targeted failure).],
 ) <fig:ElevatorDiameter>],
-[#figure(
-  image("../../Images/CANDAR/no_attack.pdf"),
-  caption: [Running of Elevator without attack.],
-) <fig:no_attack>
-],
-  [
-    #figure(
-      image("../../Images/CANDAR/elevator.ElevatorVOneByzantine2_oneByzantineActif_1000_nb_hubs_100_cycles.pdf"),
-      caption: [Active Byzantine behavior.],
-    ) <fig:single_byzantine_active>
-  ],
-  [
-    #figure(
-      image("../../Images/CANDAR/elevator.ElevatorVOneByzantine_oneByzantinePassif_1000_nb_hubs_100_cycles.pdf"),
-      caption: [Passive Byzantine behavior.],
-    ) <fig:single_byzantine_passive>
-  ],
-  [#figure(
-  image("../../Images/CANDAR/elevator.ElevatorVByzantine2_5percentindep_1000_nb_hubs_100_cycles.pdf"),
-  caption: [Independent Byzantine attack at 5% rate.],
-) <fig:independent_byzantine>
-],
-[#figure(
-  image("../../Images/CANDAR/elevator.ElevatorVByzantine2_1percentrandom_1000_nb_hubs_100_cycles.pdf"),
-  caption: [Byzantine hub infiltration at 1% rate.],
-) <fig:1percent_byzantine>
-],
-[#figure(
-  image("../../Images/CANDAR/elevator.ElevatorVByzantine2_2percentrandom_1000_nb_hubs_100_cycles.pdf"),
-  caption: [Byzantine hub infiltration at 2% rate.],
-) <fig:2percent_byzantine>
-],
-[#figure(
-  image("../../Images/CANDAR/elevator.ElevatorVByzantine2_5percentrandom_1000_nb_hubs_100_cycles.pdf"),
-  caption: [Byzantine hub infiltration at 5% rate.],
-) <fig:5percent_byzantine>
-],
-[#figure(
-      image("../../Images/CANDAR/elevator.ElevatorVCounter_5percentcounter_1000_nb_hubs_100_cycles.pdf"),
-      caption: [Counter-attack effectiveness at 5% rate.],
-    ) <fig:counter_5percent>],
-    [    #figure(
-      image("../../Images/CANDAR/elevator.ElevatorVCounter_10percentcounter_1000_nb_hubs_100_cycles.pdf"),
-      caption: [Counter-attack effectiveness at 10% rate.],
-    ) <fig:counter_10percent>],
-    [    #figure(
-      image("../../Images/CANDAR/elevator.ElevatorVCounter_15percentcounter_1000_nb_hubs_100_cycles.pdf"),
-      caption: [Counter-attack effectiveness at 15% rate.],
-    ) <fig:counter_15percent>
-],
-  )
+)
+
+We then evaluated the protocol under Byzantine behavior and assessed the effectiveness of the Lift counter-attack. The results show that Lift successfully disrupts coordinated Byzantine hub capture at lower participation rates (e.g., 5%) by introducing a deterministic hub redistribution mechanism. However, as Byzantine participation increases (10% and 15%), its effectiveness decreases: malicious nodes progressively regain hub positions after the countermeasure is triggered. Additionally, the total number of hubs may decrease, indicating that Byzantine interference can prevent some correct nodes from maintaining their hub status.
+
+Interestingly, even after activation of the countermeasure, Byzantine nodes continue attempting hub capture and achieve partial success, leading to slight deviations from the theoretical expectation of an average of $B/N$ Byzantine hubs. Nevertheless, Lift significantly reduces Byzantine influence while remaining lightweight, as it operates as a one-shot solution.
+
+Overall, our simulation results demonstrate that Elevator achieves the targeted structural properties, including the emergence of a controlled number of hubs, bounded degree, and low network diameter. The protocol proves resilient to crash failures and churn, maintaining stable global metrics under dynamic conditions. However, it remains vulnerable to coordinated Byzantine attacks. The proposed Lift countermeasure increases resilience against such attacks without compromising the decentralization or the performance of the protocol.
 
 == Implementation over TCP/IP
+
+// make repository public
+// add link to repository
 
 To complement the simulation-based evaluation presented earlier, we implemented a fully operational version of the Elevator protocol over real TCP/IP networks. This implementation was carried out in collaboration with an undergraduate intern and serves two main purposes: (i) validating the feasibility of Elevator in a realistic peer-to-peer environment, and (ii) assessing its behavior under asynchronous execution, failures, and heterogeneous deployment conditions.
 
@@ -1760,21 +1874,6 @@ From a systems perspective, the implementation revealed a high degree of concurr
 
 Overall, this TCP/IP implementation confirms that Elevator is not only theoretically sound and effective in simulation, but also practical and robust when deployed over real peer-to-peer networks. It further demonstrates that the protocol tolerates asynchronous execution, node failures, and dynamic network conditions, making it suitable for realistic distributed environments.
 
-=== CPU Information Collection
-
-Monitoring CPU usage is a critical aspect of evaluating the performance and behavior of each node in the network. Metrics such as CPU utilization (%CPU), CPU time, and memory allocation provide insight into the resource consumption of individual processes. To automate this process, we developed the script `info.py`, which collects these metrics for all nodes and stores them in a CSV file for subsequent analysis. The script is executed at the end of the `launch_nodes.sh` script to ensure that metrics are captured throughout the lifetime of the experiment.
-
-The `info.py` script identifies all processes named `main` and retrieves their process identifiers (PIDs). Using these PIDs, it executes system commands to extract the desired metrics, including CPU and memory statistics. This approach enables precise monitoring of the computational load imposed by the Elevator protocol on each node.
-
-Following preliminary tests on a personal machine, the implementation and scripts were adapted to conduct experiments in a dedicated Linux environment. This allows for more controlled and scalable evaluation of the protocol under realistic system conditions.
-
-For the single-machine experiments, three configurations of the Elevator protocol were tested. In all configurations, the network consisted of 100 nodes executing 100 protocol cycles, with each node maintaining a cache of size 20. The three versions differed in the number of hubs: Version 1 used 10 hubs, Version 2 used 5 hubs, and Version 3 used a single hub. These experiments allowed us to evaluate the impact of varying the number of hubs on the stabilization and performance of the protocol while keeping other parameters constant. For all three versions, the experiments were conducted using 100 nodes with a cache size of 20 and 100 protocol cycles, while varying the number of hubs. The resulting graphs (@fig:Victor100nodes, @fig:Victor100nodesSynchrone and @fig:Victor100nodesAsynchrone) were consistent with those presented in the previous section, showing rapid stabilization of hubs within the first cycles, regardless of parameter variations. Analysis of CPU metrics revealed that certain nodes consumed nearly twice the %CPU and CPU time compared to others. These nodes were identified as the selected hubs, which aligns with the intrinsic definition of a hub: a node maintaining a large number of connections to other peers. Indeed, hubs transmit their caches to a larger subset of nodes, explaining the increased computational load observed.
-
-For the two-machine experiments, the network was distributed across a server and a local machine. The server hosted 99 nodes, while the local machine hosted a single node, resulting in a total of 100 nodes. All nodes executed 100 protocol cycles, and each maintained a cache of size 20. The experiment used 10 hubs. This configuration allowed us to observe the behavior and stabilization of hubs in a distributed setup spanning multiple machines, providing insight into the protocol's robustness under a heterogeneous deployment. The results obtained mirrored those of the single-machine experiments. As seen in @fig:Victor100nodesCluster, @fig:Victor100nodesClusterSynchrone and @fig:Victor100nodesClusterAsynchrone, hubs consistently stabilized within the first cycles, demonstrating that the protocol behavior is robust under a distributed setup spanning multiple machines.
-
-
-Experimental results confirmed theoretical expectations, with rapid convergence to the preconfigured number of hubs across all tested scenarios. Variations in node parameters did not affect the overall stabilization behavior, illustrating the robustness of the Elevator protocol. Future work may involve scaling the experiments to larger networks distributed across more machines to assess performance at a greater scale and to compare results under more heterogeneous deployment conditions.
-
 #grid(
   columns: 2,
   [#figure(
@@ -1789,7 +1888,21 @@ Experimental results confirmed theoretical expectations, with rapid convergence 
   image("../../Images/Victor/graphe_4HUBS_deco_Cycles.pdf"),
   caption: [Crash of the hubs in the middle of the experiment, with $N=50$, $c=10$ and $h=4$],
 ) <fig:VictorCrash>],
-  [#figure(
+)
+
+=== CPU Information Collection
+
+Monitoring CPU usage is a critical aspect of evaluating the performance and behavior of each node in the network. Metrics such as CPU utilization (%CPU), CPU time, and memory allocation provide insight into the resource consumption of individual processes. To automate this process, we developed the script `info.py`, which collects these metrics for all nodes and stores them in a CSV file for subsequent analysis. The script is executed at the end of the `launch_nodes.sh` script to ensure that metrics are captured throughout the lifetime of the experiment.
+
+The `info.py` script identifies all processes named `main` and retrieves their process identifiers (PIDs). Using these PIDs, it executes system commands to extract the desired metrics, including CPU and memory statistics. This approach enables precise monitoring of the computational load imposed by the Elevator protocol on each node.
+
+Following preliminary tests on a personal machine, the implementation and scripts were adapted to conduct experiments in a dedicated Linux environment. This allows for more controlled and scalable evaluation of the protocol under realistic system conditions.
+
+For the single-machine experiments, three configurations of the Elevator protocol were tested. In all configurations, the network consisted of 100 nodes executing 100 protocol cycles, with each node maintaining a cache of size 20. The three versions differed in the number of hubs: Version 1 used 10 hubs, Version 2 used 5 hubs, and Version 3 used a single hub. These experiments allowed us to evaluate the impact of varying the number of hubs on the stabilization and performance of the protocol while keeping other parameters constant. For all three versions, the experiments were conducted using 100 nodes with a cache size of 20 and 100 protocol cycles, while varying the number of hubs. The resulting graphs (@fig:Victor100nodes, @fig:Victor100nodesSynchrone and @fig:Victor100nodesAsynchrone) were consistent with those presented in the previous section, showing rapid stabilization of hubs within the first cycles, regardless of parameter variations. Analysis of CPU metrics revealed that certain nodes consumed nearly twice the %CPU and CPU time compared to others. These nodes were identified as the selected hubs, which aligns with the intrinsic definition of a hub: a node maintaining a large number of connections to other peers. Indeed, hubs transmit their caches to a larger subset of nodes, explaining the increased computational load observed.
+
+#grid(
+  columns: 2,
+[#figure(
   image("../../Images/Victor/graphe_test_V1_10_HUBS.pdf"),
   caption: [Number of hubs at each cycle, semi-synchronous, with $N=100$, $c=20$ and $h=10$],
 ) <fig:Victor100nodes>],
@@ -1801,6 +1914,15 @@ Experimental results confirmed theoretical expectations, with rapid convergence 
   image("../../Images/Victor/graphe_test_V2_5_HUBS.pdf"),
   caption: [Number of hubs, asynchronous mode, with $N=100$, $c=20$ and $h=1$],
 ) <fig:Victor100nodesAsynchrone>],
+)
+
+For the two-machine experiments, the network was distributed across a server and a local machine. The server hosted 99 nodes, while the local machine hosted a single node, resulting in a total of 100 nodes. All nodes executed 100 protocol cycles, and each maintained a cache of size 20. The experiment used 10 hubs. This configuration allowed us to observe the behavior and stabilization of hubs in a distributed setup spanning multiple machines, providing insight into the protocol's robustness under a heterogeneous deployment. The results obtained mirrored those of the single-machine experiments. As seen in @fig:Victor100nodesCluster, @fig:Victor100nodesClusterSynchrone and @fig:Victor100nodesClusterAsynchrone, hubs consistently stabilized within the first cycles, demonstrating that the protocol behavior is robust under a distributed setup spanning multiple machines.
+
+
+Experimental results confirmed theoretical expectations, with rapid convergence to the preconfigured number of hubs across all tested scenarios. Variations in node parameters did not affect the overall stabilization behavior, illustrating the robustness of the Elevator protocol. Future work may involve scaling the experiments to larger networks distributed across more machines to assess performance at a greater scale and to compare results under more heterogeneous deployment conditions.
+
+#grid(
+  columns: 2,
   [#figure(
   image("../../Images/Victor/graphe_test2_V1.pdf"),
   caption: [Experiments on a cluster of 2 machines, semi-synchronous mode, with $N=100$, $c=20$ and $h=10$],
