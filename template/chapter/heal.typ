@@ -382,100 +382,188 @@ HEAL overlay construction via the Elevator protocol (that dynamically assigns
 
 // == Description
 
-=// = Properties
+// = Properties
 
-=// = Theoretical Analysis
+// = Theoretical Analysis
 
-=// = Simulation-Based Evaluation
+== Simulation-Based Evaluation
 
-// e evaluated our algorithm using simulations on the Gossipy
- simulator #footnote[https://github.com/makgyver/gossipy]. We compared Hub
-L// earning against Federated Learning @mcmahan2017communication,
-G// aia @hsieh2017gaia, Gossip Learning @ormandi2013gossip, Epidemic
-L// earning @de2024epidemic, Epidemic Learning on a Chord
-t// opology @stoica2001chord, Epidemic Learning on a ring topology, and
-F// edlay @hua2024towards. For the static topologies (Federated Learning, ring,
-C// hord, and Gaia), we generated the topology using the Python library
-N// etworkx#footnote[https://networkx.org/].
-F// or the dynamic topologies (Gossip Learning, Epidemic Learning, Fedlay and Hub
-L// earning with Elevator), we generated the topology using the PeerSim
-s// imulator @p2p09-peersim.
-I// n Elevator (used by Hub Learning), the connections are directional. However,
-t// o compare them with other algorithms (which assume an undirected graph), we
-m// odified the underlying graph of the topology generated to make it undirected.
-A// ll evaluations were conducted with a network of 100 nodes. For Elevator, we
-u// sed 5 hubs, as we found this number to be a good balance between performance
-a// nd resilience. For Gaia, we had 5 servers responsible for aggregation (to
-c// ompare with the 5 hubs) and 19 nodes (or workers) attached to each server.
-E// ach algorithm was evaluated 5 times, and we present the average results
-o// btained.
+We evaluated our algorithm using simulations on the Gossipy
+simulator#footnote[https://github.com/makgyver/gossipy]. We compared Hub
+Learning against Federated Learning @mcmahan2017communication,
+Gaia @hsieh2017gaia, Gossip Learning @ormandi2013gossip, Epidemic
+Learning @de2024epidemic, Epidemic Learning on a Chord
+topology @stoica2001chord, Epidemic Learning on a ring topology, and
+Fedlay @hua2024towards. For the static topologies (Federated Learning, ring,
+Chord, and Gaia), we generated the topology using the Python library
+Networkx#footnote[https://networkx.org/].
+For the dynamic topologies (Gossip Learning, Epidemic Learning, Fedlay and Hub
+Learning with Elevator), we generated the topology using the PeerSim
+simulator @p2p09-peersim.
+In Elevator (used by Hub Learning), the connections are directional. However,
+to compare them with other algorithms (which assume an undirected graph), we
+modified the underlying graph of the topology generated to make it undirected.
+All evaluations were conducted with a network of 100 nodes. For Elevator, we
+used 5 hubs, as we found this number to be a good balance between performance
+and resilience. For Gaia, we had 5 servers responsible for aggregation (to
+compare with the 5 hubs) and 19 nodes (or workers) attached to each server.
+Each algorithm was evaluated 5 times, and we present the average results
+obtained.
 
-W// e assessed all protocols on two tasks: a binary classification task (Logistic
-R// egression @hosmer2013applied on the Spambase dataset @spambase_94, with a
-l// earning rate of 0.1) and on a multinomial classification task
-(// LeNet5 @lecun1989backpropagation on the MNIST dataset @lecun2010mnist, with a
-l// earning rate of 0.001). The weight decay (regularization parameter) was fixed
-a// t 0.01. Our algorithm was evaluated under various conditions: the failure of
-2// 0% of nodes, the failure of a hub, the failure of all 5 hubs, and during churn
-(// where 10% of nodes disappear at each cycle and are replaced by new nodes).
+We assessed all protocols on two tasks: a binary classification task (Logistic
+Regression @hosmer2013applied on the Spambase dataset @spambase_94, with a
+learning rate of 0.1) and on a multinomial classification task
+(LeNet5 @lecun1989backpropagation on the MNIST dataset @lecun2010mnist, with a
+learning rate of 0.001). The weight decay (regularization parameter) was fixed
+at 0.01. Our algorithm was evaluated under various conditions: the failure of
+20% of nodes, the failure of a hub, the failure of all 5 hubs, and during churn
+(where 10% of nodes disappear at each cycle and are replaced by new nodes).
 
-A// ll simulations were run on 16 vCPU, using 64G of memory, on a cluster
-c// omposed of 10 servers.
+All simulations were run on 16 vCPU, using 64G of memory, on a cluster
+composed of 10 servers.
 
-// _// Crash-free, churn-free environment:_
-F// or simulations without failures and churn, we ran all algorithms over 1000
-c// ycles, on the two learning tasks (Spambase, MNIST). As shown in
-@// fig:AccuracyMNIST, when there are no failures in the network, Federated
-L// earning performs best, which was expected. Surprisingly, the ring topology
-p// erforms second best despite lower connectivity.
-O// ther topologies based on random graphs perform less well. HEAL, however,
-p// erforms very well for both the Spambase and MNIST datasets.
+_Crash-free, churn-free environment:_
+For simulations without failures and churn, we ran all algorithms over 1000
+cycles, on the two learning tasks (Spambase, MNIST). As shown in
+@fig:AccuracyMNIST, when there are no failures in the network, Federated
+Learning performs best, which was expected. Surprisingly, the ring topology
+performs second best despite lower connectivity.
+Other topologies based on random graphs perform less well. HEAL, however,
+performs very well for both the Spambase and MNIST datasets.
 
-I// n @tab:all_results we have compiled the results for all learning algorithms,
-f// or the two learning tasks, with the final accuracy obtained after 1000 cycles.
-F// ederated Learning, Gaia, and HEAL have very similar results, with a final
-a// ccuracy of around 0.88 on Spambase, and 0.95 on MNIST. Gossip-based approaches
-a// chieve values of 0.85 and 0.91 on Spambase and MNIST.
-C// onvergence time is very fast for aggregator-based approaches: on Spambase,
-F// ederated Learning converges to 0.85 in 2 cycles, and HEAL takes 4 cycles. On
-t// he other hand, to converge on 0.90 accuracy, HEAL takes 339 cycles while
-F// ederated Learning takes 135 cycles, hinting at possible HEAL optimization,
-e// .g. adjusting the learning rate.
-O// n MNIST, HEAL performs very well, even better than Federated Learning, and it
-c// onverges to 0.95 accuracy in 76 cycles.
+In @tab:all_results we have compiled the results for all learning algorithms,
+for the two learning tasks, with the final accuracy obtained after 1000 cycles.
+Federated Learning, Gaia, and HEAL have very similar results, with a final
+accuracy of around 0.88 on Spambase, and 0.95 on MNIST. Gossip-based approaches
+achieve values of 0.85 and 0.91 on Spambase and MNIST.
+Convergence time is very fast for aggregator-based approaches: on Spambase,
+Federated Learning converges to 0.85 in 2 cycles, and HEAL takes 4 cycles. On
+the other hand, to converge on 0.90 accuracy, HEAL takes 339 cycles while
+Federated Learning takes 135 cycles, hinting at possible HEAL optimization,
+e.g. adjusting the learning rate.
+On MNIST, HEAL performs very well, even better than Federated Learning, and it
+converges to 0.95 accuracy in 76 cycles.
 
-// _// HEAL parameterized with number of hubs and number chosen hubs:_
-W// e ran simulations of HEAL, changing the number of hubs over 2000 cycles. On
-@// fig:AccuracyVariousNbHubs, we observe that increasing the number of hubs (and
-t// he number of hubs to which clients send their model) has almost no impact on
-a// ccuracy, which is expected since hubs aggregate models. There is a slight drop
-i// n accuracy when the number of hubs is increased significantly, due to the fact
-t// hat only non-hubs are learning, not hubs. Increasing the number of hubs to
-w// hich we send our model, from 1 to $"nb\hubs"/2$, slightly increases
-c// onvergence speed.
+_HEAL parameterized with number of hubs and number chosen hubs:_
+We ran simulations of HEAL, changing the number of hubs over 2000 cycles. On
+@fig:AccuracyVariousNbHubs, we observe that increasing the number of hubs (and
+the number of hubs to which clients send their model) has almost no impact on
+accuracy, which is expected since hubs aggregate models. There is a slight drop
+in accuracy when the number of hubs is increased significantly, due to the fact
+that only non-hubs are learning, not hubs. Increasing the number of hubs to
+which we send our model, from 1 to $"nb\_hubs"/2$, slightly increases
+convergence speed.
 
-// _// Crashes-prone environment:_
-W// e analyze the performance of the algorithms when the network suffers crashes.
-T// o simulate a brutal failure we disconnected 20% of the nodes chosen uniformly
-a// t random, just after the start of the learning process, i.e., in this case, we
-h// ave disconnected 20 nodes at cycle 10, and we compared HEAL with Chord, Gaia
-a// nd Fedlay. HEAL is the algorithm with the best results, although Gaia remains
-v// ery close, as seen in @fig:AccuracyCrash20peers.
+_Crashes-prone environment:_
+We analyze the performance of the algorithms when the network suffers crashes.
+To simulate a brutal failure we disconnected 20% of the nodes chosen uniformly
+at random, just after the start of the learning process, i.e., in this case, we
+have disconnected 20 nodes at cycle 10, and we compared HEAL with Chord, Gaia
+and Fedlay. HEAL is the algorithm with the best results, although Gaia remains
+very close, as seen in @fig:AccuracyCrash20peers.
 
-// _// HEAL under churn environment and hub-targeted attacks:_
-W// e further analyzed the performance of HEAL under network churn conditions. To
-s// imulate churn, we disconnected 10% of the nodes at each cycle and replaced
-t// hem with an equal number of new nodes, each connected to 20 nodes uniformly at
-r// andom, between cycles 50 and 150.
-W// e also analyzed the performance of the main learning algorithms after a
-t// argeted attack on the hubs during the execution of the simulation. We tested
-t// wo scenarios, one where we disconnected one of the 5 hubs, and another where
-w// e disconnected all 5 hubs at the same time. In both cases the failure happened
-i// n round 10. In @fig:AccuracyContexts, we have compared the execution of HEAL
-w// ithout failures, and with different failure scenarios (crash of 20 nodes, crash
-o// f one hub, crash of all 5 hubs, churn). As can be seen, there is no significant
-i// mpact when 20 nodes or hubs crash. Indeed, thanks to the Elevator overlay, even
-w// hen all the hubs are shutdown, 5 new nodes are elected very quickly as hubs,
-a// nd the training job continues as if no catastrophic event had happened. During
-c// hurn, model accuracy falls slightly, but rises again very quickly once churn is
-o// ver, back to the level without failures.
+_HEAL under churn environment and hub-targeted attacks:_
+We further analyzed the performance of HEAL under network churn conditions. To
+simulate churn, we disconnected 10% of the nodes at each cycle and replaced
+them with an equal number of new nodes, each connected to 20 nodes uniformly at
+random, between cycles 50 and 150.
+We also analyzed the performance of the main learning algorithms after a
+targeted attack on the hubs during the execution of the simulation. We tested
+two scenarios, one where we disconnected one of the 5 hubs, and another where
+we disconnected all 5 hubs at the same time. In both cases the failure happened
+in round 10. In @fig:AccuracyContexts, we have compared the execution of HEAL
+without failures, and with different failure scenarios (crash of 20 nodes, crash
+of one hub, crash of all 5 hubs, churn). As can be seen, there is no significant
+impact when 20 nodes or hubs crash. Indeed, thanks to the Elevator overlay, even
+when all the hubs are shutdown, 5 new nodes are elected very quickly as hubs,
+and the training job continues as if no catastrophic event had happened. During
+churn, model accuracy falls slightly, but rises again very quickly once churn is
+over, back to the level without failures.
+
+#figure(
+  grid(
+    columns: 2,
+    gutter: 1em,
+    [
+      #figure(
+        image("../../Images/HEAL/normal_accuracy_MNIST_color.pdf", width: 100%),
+        caption: [Without failures],
+      ) <fig:AccuracyMNIST>
+    ],
+    [
+      #figure(
+        image("../../Images/HEAL/crash20peers_accuracy_MNIST_color.pdf", width: 100%),
+        caption: [When 20% of the nodes fail at round 10],
+      ) <fig:AccuracyCrash20peers>
+    ],
+  ),
+  caption: [Accuracy of various communication protocols, for the MNIST dataset,
+  with a network of 100 nodes, during 1000 cycles. HEAL overlay has 5 hubs,
+  each node sends its model to one hub.],
+)
+
+#figure(
+  grid(
+    columns: 2,
+    gutter: 1em,
+    [
+      #figure(
+        image("../../Images/HEAL/various_hub_accuracy_MNIST_color.pdf", width: 100%),
+        caption: [HEAL with different numbers of hubs (_h_), from 1 to 25, each
+        node sent its model to (_s_) hubs, with (_s_) equals to 1 or $h/2$,
+        no failures, 2000 cycles],
+      ) <fig:AccuracyVariousNbHubs>
+    ],
+    [
+      #figure(
+        image("../../Images/HEAL/hub_learning_accuracy_allcontexts_color.pdf", width: 100%),
+        caption: [HEAL for all contexts (no failures, crash of 20 peers, crash
+        of 1 hub, crash of all hubs, churn), with 5 hubs, each node sent its
+        model to one hub, 200 cycles],
+      ) <fig:AccuracyContexts>
+    ],
+  ),
+  caption: [Accuracy of HEAL for the MNIST dataset, with 100 nodes.],
+)
+
+#figure(
+  table(
+    columns: (auto, auto, auto),
+    align: center,
+    stroke: 0.5pt,
+
+    [*Method*], [*Spambase*], [*MNIST (LeNet)*],
+
+    [Federated Learning], [0.9087], [0.9742],
+    [Gaia],              [0.8826], [0.9442],
+    [Gossip Learning],   [0.8322], [0.7098],
+    [Epidemic Learning], [0.9548], [0.9111],
+    [Ring],              [0.9076], [0.9499],
+    [Chord],             [0.9063], [0.9542],
+    [FedLay],            [0.9056], [0.9639],
+    [HEAL],              [0.9001], [0.9687],
+  ),
+  caption: [Final accuracy by communication method and dataset used. HEAL overlay
+  with 5 hubs, each node sends its model to one hub (fault and churn free
+  scenario).],
+) <tab:all_results>
+
+== Conclusion
+
+In this paper we introduced HEAL protocol for decentralized learning that
+combines the convergence speed of Federated Learning with the resilience to
+churn and failures of Gossip and Epidemic Learning. Our simulation results
+(summarized in @tab:all_results) show that, on the MNIST dataset, HEAL (with 5
+hubs) achieves an accuracy 136% higher than Gossip Learning, 106% higher than
+Epidemic Learning and 99% of the accuracy of the baseline Federated Learning.
+HEAL achieves an accuracy of 0.95 in 76 cycles, which is one cycle slower than
+Gaia, and much faster than random graph methods, which achieve this value in 5
+times as many cycles. By setting HEAL with 7 hubs and the number of hubs to
+which each node sends its model at 3, it is possible to reduce it to 33 cycles,
+which is 2.3 times faster than Gaia (the second best result). Our protocol
+continues to operate in the presence of faults, and in each fault scenario, the
+final accuracy is at most equal to 98% of the accuracy in a fault-free context.
+HEAL paves the way for a new approach to decentralized learning, featuring a
+cross-layer approach. Our future work will focus on adapting HEAL to
+heterogeneous environments, enhancing its robustness against various attacks
+(e.g. poisoning attacks, model attacks, etc).
