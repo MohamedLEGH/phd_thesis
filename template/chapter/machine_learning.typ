@@ -8,26 +8,48 @@
 
 = From Centralized to Decentralized Machine Learning
 
+Artificial intelligence and machine learning have become central drivers of
+technological innovation over the past decade, transforming domains ranging from
+healthcare and finance to autonomous systems and natural language processing.
+The remarkable progress achieved in these fields has been largely fueled by the
+availability of massive datasets and the computational power of centralized
+infrastructures, where data is collected, stored, and processed in a single
+location. However, despite this rapid advancement, surprisingly little attention
+has been devoted to the question of decentralization. Most state-of-the-art
+approaches implicitly assume the existence of a central authority capable of
+aggregating data and coordinating the learning process, an assumption that is
+increasingly at odds with the reality of modern distributed systems, privacy
+regulations, and the sheer scale of connected devices. This chapter examines the
+shift from centralized to decentralized machine learning, exploring the
+motivations, challenges, and state-of-the-art approaches that define this
+emerging and critical research direction.
+
 == Machine Learning
-Before discussing *federated learning* and *decentralized learning*, it is essential to first establish a clear understanding of classical *machine learning*. 
-In this section, we provide the fundamental definitions and concepts of machine learning, which form the basis for more advanced distributed learning paradigms. 
-// We introduce the notions of *machine learning models*, *parameters and weights*, *datasets*, *loss functions*, and *optimization procedures*, which will serve as a foundation for subsequent discussions on federated and decentralized learning frameworks.
 
-#definition(title: "Machine Learning (Tom Mitchell, 1997)" )[
-Following Tom Mitchell @learning1997tom, a *machine learning* system can be formally defined as :
+Before discussing *decentralized learning*, it is essential to first establish
+a clear understanding of classical *machine learning*.
+In this section, we provide the fundamental definitions and concepts of machine
+learning, which form the basis for more advanced distributed learning paradigms.
+The definitions and concepts presented here are drawn from the foundational
+works of Tom Mitchell @learning1997tom and the Deep Learning book
+@Goodfellow-et-al-2016, two references in the field.
 
-"A computer program is said to *learn* from experience $E$ with respect
+// Machine learning is the art of teaching computers to recognize patterns in data so they can make predictions or decisions, without being explicitly programmed with every rule.
+
+We start by laying the groundwork with a formal definition of learning, as introduced by Tom Mitchell, which will serve as the backbone of all subsequent concepts
+
+#definition(title: "Machine Learning" )[
+A computer program is said to *learn* from experience $E$ with respect
 to some class of tasks $T$ and performance measure $P$, if its performance at tasks in
-$T$, as measured by $P$, improves with experience $E$."
+$T$, as measured by $P$, improves with experience $E$.
 
 Formally, we denote:
 - $E$: the experience or data that the system uses to learn;
 - $T$: the class of tasks the system is intended to perform;
 - $P$: the performance measure used to evaluate success on tasks in $T$.
-
-This definition highlights that learning is the process by which a system improves its ability to perform a task through exposure to data or experience.
 ] <def:ml-mitchell>
 
+This definition highlights that learning is the process by which a system improves its ability to perform a task through exposure to data or experience. Building on this notion of improvement through experience, machine learning algorithms can be broadly classified according to the nature of the experience they leverage.
 Machine learning algorithms are typically categorized into three main types: 
 *supervised learning*, *unsupervised learning*, and *reinforcement learning*. 
 Supervised learning involves learning a mapping from input data to known outputs, 
@@ -35,45 +57,73 @@ unsupervised learning aims to discover patterns or structure in data without lab
 and reinforcement learning focuses on learning optimal decision-making policies through repeated interaction with an environment, guided by a reward signal that evaluates the agent’s actions.
 
 In the context of this thesis, our primary focus is on *supervised learning*, 
-as it provides the foundation for the federated and decentralized learning approaches 
-studied in the following chapters.
+as it provides the foundation for the federated and decentralized learning approaches. 
+// studied in the following chapters.
 
+Supervised learning involves observing several examples of a random vector $x$ and an associated value or vector $y$, and learning to predict $y$ from $x$, usually by estimating the conditional probability $p(y | x)$.
 
 #definition(title: "Supervised Learning")[
-  We take the definition from the book "Deep Learning" @Goodfellow-et-al-2016:
 
-  Supervised learning involves observing several examples of a random vector 
-  $x$ and an associated value or vector $y$, and learning to predict $y$ from 
-  $x$, usually by estimating the conditional probability $p(y mid x)$.
-
-  Formally, given a dataset of $N$ examples:
+  Given a dataset of $N$ examples:
   $
     D = {(x_1, y_1), (x_2, y_2), dots, (x_N, y_N)},
   $
-  the goal of supervised learning is to find a function $f_theta(x)$ parameterized 
-  by $theta$ that approximates the mapping from $x$ to $y$, typically by minimizing 
-  a loss function $L(f_theta(x), y)$ over the dataset.
-] <def:supervized-ml>
+  the goal of a supervised learning algorithm is to find a function $f_theta (x)$ parameterized 
+  by $theta$ that approximates the mapping from $x$ to $y$.
+] <def:supervised-ml>
+
+// In typically by minimizing a loss function $L(f_theta(x), y)$ over the dataset
+
+In practice, this mapping is typically found by minimizing a loss function 
+$L(f_theta (x), y)$ over the dataset $D$, which measures the discrepancy 
+between the predicted outputs and the true labels, reflecting how well the 
+model performs on a given example or dataset.
+
+  // In supervised learning, a *loss function* (or cost function) 
+  // quantifies the difference between the predicted output of a model 
+  // $f_theta(x)$ and the true output $y$. It provides a measure of 
+  // how well the model performs on a given example or dataset.
 
 #definition(title: "Loss Function")[
-  In supervised learning, a *loss function* (or cost function) 
-  quantifies the difference between the predicted output of a model 
-  $f_theta(x)$ and the true output $y$. It provides a measure of 
-  how well the model performs on a given example or dataset.
-
-  Formally, for a single example $(x, y)$, the loss function $L$ is
+  A loss function $L$ takes a predicted output $f_theta (x)$ and a true 
+  label $y$ as inputs, and returns a non-negative real value measuring 
+  the discrepancy between the two:
   $
-    L(f_theta(x), y) in RR_{>= 0},
+    L(f_theta (x), y) in RR_(>= 0),
   $
-  where smaller values indicate better predictions.
-
-  Examples of loss functions:
-  - *Mean Squared Error (MSE)*: $L(f_theta(x), y) = ||f_theta(x) - y||^2$.
-  - *Cross-Entropy Loss*: $L(f_theta(x), y) = -sum_i y_i log f_theta(x)_i$.
-
-  The overall goal of supervised learning is to find parameters $theta$ 
-  that minimize the expected loss over the dataset.
+  where smaller values indicate better predictions. Given a dataset 
+  $D = {(x_1, y_1), dots, (x_N, y_N)}$, the overall loss is computed 
+  as the average over all examples:
+  $
+    cal(L)(theta) = 1/N sum_(i=1)^N L(f_theta (x_i), y_i).
+  $
 ] <def:loss-function>
+
+
+Common examples of loss functions include the *Mean Squared Error (MSE)*, 
+$L(f_theta (x), y) = ||f_theta (x) - y||^2$, widely used in regression tasks, 
+and the *Cross-Entropy Loss*, $L(f_theta (x), y) = -sum_i y_i log f_theta (x)_i$, 
+commonly used in classification tasks.
+
+// #example[Mean Squared Error (MSE): $L(f_theta (x), y) = ||f_theta (x) - y||^2$]
+
+// #example[Cross-Entropy Loss: $L(f_theta (x), y) = -sum_i y_i log f_theta (x)_i$]
+
+// #definition(title: "Loss Function")[
+
+//   Formally, for a single example $(x, y)$, the loss function $L$ is
+//   $
+//     L(f_theta(x), y) in RR_{>= 0},
+//   $
+//   where smaller values indicate better predictions.
+
+//   Examples of loss functions:
+//   - *Mean Squared Error (MSE)*: $L(f_theta(x), y) = ||f_theta(x) - y||^2$.
+//   - *Cross-Entropy Loss*: $L(f_theta(x), y) = -sum_i y_i log f_theta(x)_i$.
+
+//   The overall goal of supervised learning is to find parameters $theta$ 
+//   that minimize the expected loss over the dataset.
+// ] <def:loss-function>
 
 In supervised learning, prediction tasks can broadly be categorized into two types: *regression* and *classification*. 
 Regression problems aim to predict a continuous value, while classification problems aim to assign an input to one of a discrete set of classes. 
@@ -115,7 +165,9 @@ Gradient descent iteratively updates the parameters of the model in the directio
 Gradient descent is an iterative optimization algorithm used to minimize a differentiable function, such as a loss function in machine learning. 
 The idea is to update the model parameters $theta$ in the direction opposite to the gradient of the loss function with respect to these parameters:
 
-$theta_(t+1) = theta_t - eta * nabla_theta L(theta_t),$
+$
+theta_(t+1) = theta_t - eta * nabla_theta L(theta_t),
+$
 
 where:
 - $theta_t$ are the parameters at iteration $t$,
