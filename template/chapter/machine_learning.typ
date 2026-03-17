@@ -379,14 +379,26 @@ The algorithm is typically stopped when one of the following conditions is met:
 
     let c = green.darken(20%)
 
-    // ── Arrows between consecutive points ────────────────────
+// ── Arrows between consecutive points ────────────────────
+    let r = 0.1  // offset = radius + small margin
     for i in range(steps.len() - 1) {
       let (x0, y0) = steps.at(i)
       let (x1, y1) = steps.at(i + 1)
+      // Compute direction vector and normalize
+      let dx = x1 - x0
+      let dy = y1 - y0
+      let dist = calc.sqrt(dx * dx + dy * dy)
+      let nx = dx / dist
+      let ny = dy / dist
+      // Shorten both ends by r
+      let ax0 = x0 + nx * r
+      let ay0 = y0 + ny * r
+      let ax1 = x1 - nx * r
+      let ay1 = y1 - ny * r
       set-style(stroke: (paint: gray.darken(30%), thickness: 1.2pt), fill: none)
-      line((x0, y0), (x1, y1), mark: (end: ">", size: 0.22))
+      line((ax0, ay0), (ax1, ay1), mark: (end: ">", size: 0.22))
     }
-
+    
     // ── Dots on curve ────────────────────────────────────────
     for i in range(steps.len()) {
       let (x0, y0) = steps.at(i)
@@ -397,9 +409,7 @@ The algorithm is typically stopped when one of the following conditions is met:
     // ── Labels ───────────────────────────────────────────────
     // Random init
     let (x0, y0) = steps.at(0)
-    content((x0 - 1.2, y0 + 0.3), text(size: 8pt)[Random \ initialization])
-    set-style(stroke: (paint: gray.darken(20%), thickness: 0.7pt), fill: none)
-    line((x0 - 0.4, y0 + 0.15), (x0 - 0.1, y0 + 0.02))
+    content((x0 - 1, y0 + 0.3), text(size: 8pt)[Random \ initialization])
 
     // Minimum
     let (xm, ym) = steps.last()
@@ -508,116 +518,6 @@ The algorithm is typically stopped when one of the following conditions is met:
 //   content((5.6, -0.05), text(size: 7pt, fill: red.darken(30%))[direction de descente])
 // })
 
-#canvas({
-  import draw: *
-
-  let points = (
-    (0.5, 0.8),
-    (1.0, 1.9),
-    (1.5, 1.3),
-    (2.0, 2.8),
-    (2.5, 2.1),
-    (3.0, 3.5),
-    (3.5, 3.1),
-    (4.0, 4.6),
-    (4.5, 3.9),
-    (5.0, 5.2),
-    (5.5, 4.7),
-    (6.0, 5.9),
-    (6.5, 6.8),
-    (7.0, 6.2),
-    (7.5, 7.4),
-    (8.0, 7.1),
-    (8.5, 8.3),
-    (9.0, 8.0),
-  )
-
-  let a = 0.84
-  let b = 0.55
-  let reg(x) = a * x + b
-
-  // Axes
-  set-style(stroke: (paint: luma(80), thickness: 0.8pt))
-  line((-0.2, 0), (10.2, 0))
-  line((0, -0.2), (0, 9.5))
-
-  // Flèches
-  line((10.0, -0.15), (10.2, 0), (10.0, 0.15))
-  line((-0.15, 9.3), (0, 9.5), (0.15, 9.3))
-
-  // Labels
-  content((10.5, 0), text(size: 9pt)[$x$])
-  content((0.35, 9.6), text(size: 9pt)[$y$])
-
-  // Graduations axe x
-  for i in range(1, 10) {
-    let xi = float(i)
-    set-style(stroke: (paint: luma(80), thickness: 0.5pt))
-    line((xi, -0.1), (xi, 0.1))
-    content((xi, -0.35), text(size: 7pt)[#i])
-  }
-
-  // Graduations axe y
-  for i in range(1, 10) {
-    let yi = float(i)
-    set-style(stroke: (paint: luma(80), thickness: 0.5pt))
-    line((-0.1, yi), (0.1, yi))
-    content((-0.4, yi), text(size: 7pt)[#i])
-  }
-
-  // Résidus
-  for (px, py) in points {
-    let ry = reg(px)
-    let col = if py > ry { red.lighten(20%) } else { blue.lighten(20%) }
-    set-style(stroke: (paint: col, thickness: 1.0pt, dash: "dashed"), fill: none)
-    line((px, py), (px, ry))
-
-    // Petit carré symbolisant le résidu au carré
-    let s = 0.13
-    let y_low = calc.min(py, ry)
-    let y_high = calc.max(py, ry)
-    let sq_h = calc.min(s, y_high - y_low)
-    set-style(stroke: (paint: col, thickness: 0.6pt, dash: "solid"), fill: col.lighten(60%))
-    rect((px, y_low), (px + sq_h, y_low + sq_h))
-  }
-
-  // Droite de régression
-  set-style(stroke: (paint: green.darken(30%), thickness: 2pt, dash: "solid"), fill: none)
-  line((0.0, reg(0.0)), (9.5, reg(9.5)))
-
-  // Points de données
-  for (px, py) in points {
-    set-style(stroke: (paint: luma(30), thickness: 0.8pt), fill: white)
-    circle((px, py), radius: 0.15)
-    set-style(stroke: none, fill: luma(30))
-    circle((px, py), radius: 0.07)
-  }
-
-  // Équation de la droite
-  content((6.2, 1.8),
-    box(
-      fill: white,
-      stroke: green.darken(30%) + 0.7pt,
-      radius: 3pt,
-      inset: 5pt,
-      text(size: 9pt, fill: green.darken(40%))[
-        $hat(y) = 0.84 x + 0.55$
-      ]
-    )
-  )
-
-  // Légende résidus — utilisation de rect au lieu de line
-  let lx = 1.0
-  let ly = 9.0
-  set-style(stroke: (paint: red.lighten(20%), thickness: 1.0pt, dash: "dashed"), fill: none)
-  line((lx, ly), (lx + 0.6, ly))
-  content((lx + 1.8, ly), text(size: 7.5pt)[résidu positif])
-
-  set-style(stroke: (paint: blue.lighten(20%), thickness: 1.0pt, dash: "dashed"), fill: none)
-  line((lx, ly - 0.5), (lx + 0.6, ly - 0.5))
-  content((lx + 1.8, ly - 0.5), text(size: 7.5pt)[résidu négatif])
-})
-
 // In machine learning, it is common to divide the available dataset into a *training set* and a *test set* to prevent overfitting. 
 // The model is trained on the training set, which means that the parameters $theta$ of the function are updated to minimize the loss function $L(theta)$. 
 // The test set is used only to evaluate the model's performance on unseen data, which provides an estimate of its generalization ability. 
@@ -657,6 +557,91 @@ Linear regression is often used as a baseline model before trying more complex a
 and it also serves as a foundation for understanding more advanced models such as generalized 
 linear models and neural networks.
 
+#figure(
+  canvas({
+    import draw: *
+
+    let points = (
+      (0.5, 1.8),
+      (1.0, 0.6),
+      (1.5, 2.8),
+      (2.0, 1.2),
+      (2.5, 3.9),
+      (3.0, 1.8),
+      (3.5, 4.8),
+      (4.0, 2.5),
+      (4.5, 5.6),
+      (5.0, 3.1),
+      (5.5, 6.2),
+      (6.0, 4.3),
+      (6.5, 7.5),
+      (7.0, 5.2),
+      (7.5, 8.6),
+      (8.0, 6.1),
+      (8.5, 9.0),
+      (9.0, 7.3),
+    )
+
+    let a = 0.84
+    let b = 0.55
+    let reg(x) = a * x + b
+
+    // ── Axes ────────────────────────────────────────────────
+    set-style(stroke: (paint: luma(80), thickness: 0.8pt))
+    line((-0.2, 0), (10.2, 0))
+    line((0, -0.2), (0, 9.5))
+    line((10.0, -0.15), (10.2, 0), (10.0, 0.15))
+    line((-0.15, 9.3), (0, 9.5), (0.15, 9.3))
+    content((10.5, 0),  text(size: 9pt)[$x$])
+    content((0.35, 9.7), text(size: 9pt)[$y$])
+
+    // ── Residuals ───────────────────────────────────────────
+    for (px, py) in points {
+      let ry = reg(px)
+      let col = if py > ry { red.lighten(20%) } else { blue.lighten(20%) }
+      set-style(stroke: (paint: col, thickness: 1.0pt, dash: "dashed"), fill: none)
+      line((px, py), (px, ry))
+    }
+
+    // ── Regression line ──────────────────────────────────────
+    set-style(stroke: (paint: green.darken(30%), thickness: 2pt, dash: "solid"), fill: none)
+    line((0.0, reg(0.0)), (9.5, reg(9.5)))
+
+    // ── Data points ─────────────────────────────────────────
+    for (px, py) in points {
+      set-style(stroke: (paint: luma(30), thickness: 0.8pt), fill: white)
+      circle((px, py), radius: 0.15)
+      set-style(stroke: none, fill: luma(30))
+      circle((px, py), radius: 0.07)
+    }
+
+    // ── Equation box ─────────────────────────────────────────
+    content((7.2, 1.8),
+      box(
+        fill: white,
+        stroke: green.darken(30%) + 0.7pt,
+        radius: 3pt,
+        inset: 5pt,
+        text(size: 9pt, fill: green.darken(40%))[
+          $hat(y) = 0.84 x + 0.55$
+        ]
+      )
+    )
+
+    // ── Legend ───────────────────────────────────────────────
+    let lx = 0.6
+    let ly = 9.0
+    set-style(stroke: (paint: red.lighten(20%), thickness: 1.0pt, dash: "dashed"), fill: none)
+    line((lx, ly), (lx + 0.5, ly))
+    content((lx + 1.6, ly), text(size: 7.5pt)[positive residual])
+    set-style(stroke: (paint: blue.lighten(20%), thickness: 1.0pt, dash: "dashed"), fill: none)
+    line((lx, ly - 0.55), (lx + 0.5, ly - 0.55))
+    content((lx + 1.6, ly - 0.55), text(size: 7.5pt)[negative residual])
+  }),
+  caption: [Linear regression: the green line minimizes the sum of squared residuals between predicted and observed values.]
+) <fig-linear-regression>
+
+
 #definition(title: "Linear Regression")[
 A linear regression model predicts a continuous output $y in RR$ from an input 
 feature vector $x in RR^d$ using an affine function:
@@ -690,6 +675,92 @@ a probability value between 0 and 1, which can then be thresholded to assign a c
 
 The model is based on a linear combination of input features, transformed by 
 the logistic (sigmoid) function, allowing it to model the probability of class membership.
+
+#figure(
+  canvas({
+    import draw: *
+
+    // ── Data points — class 0 (blue) ─────────────────────────
+    let class0 = (
+      (1.0, 1.2),
+      (1.5, 3.1),
+      (2.0, 1.8),
+      (2.3, 4.2),
+      (2.8, 2.5),
+      (3.0, 5.0),
+      (3.2, 1.1),
+      (3.6, 3.8),
+      (1.8, 5.5),
+      (2.5, 0.8),
+      (6.5, 3.1),
+    )
+
+    // ── Data points — class 1 (red) ──────────────────────────
+    let class1 = (
+      (6.0, 4.8),
+      (6.8, 4.2),
+      (7.0, 5.5),
+      (7.6, 4.1),
+      (8.0, 2.8),
+      (8.3, 5.8),
+      (8.8, 1.8),
+    )
+
+    // ── Decision boundary: x = 4.8 (vertical line) ───────────
+    // boundary line: y = -1.5x + 12  (separates the two clouds)
+    let boundary-x1 = 0.5
+    let boundary-x2 = 9.5
+    let bound(x) = -1.2 * x + 11.5
+
+    // ── Axes ────────────────────────────────────────────────
+    set-style(stroke: (paint: luma(80), thickness: 0.8pt))
+    line((-0.2, 0), (10.2, 0))
+    line((0, -0.2), (0, 9.5))
+    line((10.0, -0.15), (10.2, 0), (10.0, 0.15))
+    line((-0.15, 9.3), (0, 9.5), (0.15, 9.3))
+    content((10.5, 0),   text(size: 9pt)[$x_1$])
+    content((0.35, 9.7), text(size: 9pt)[$x_2$])
+
+    // ── Decision boundary ────────────────────────────────────
+    set-style(stroke: (paint: green.darken(30%), thickness: 2pt, dash: "solid"), fill: none)
+    line((boundary-x1, bound(boundary-x1)), (boundary-x2, bound(boundary-x2)))
+
+    // ── Class 0 points ───────────────────────────────────────
+    for (px, py) in class0 {
+      set-style(stroke: (paint: blue.darken(20%), thickness: 1.2pt), fill: blue.lighten(40%))
+      circle((px, py), radius: 0.18)
+    }
+
+    // ── Class 1 points ───────────────────────────────────────
+    for (px, py) in class1 {
+      set-style(stroke: (paint: red.darken(20%), thickness: 1.2pt), fill: red.lighten(40%))
+      circle((px, py), radius: 0.18)
+    }
+
+    // ── Decision boundary label ───────────────────────────────
+    content((5.5, 7.0),
+      box(
+        fill: white,
+        stroke: green.darken(30%) + 0.7pt,
+        radius: 3pt,
+        inset: 4pt,
+        text(size: 8.5pt, fill: green.darken(40%))[decision boundary]
+      )
+    )
+
+    // ── Legend ───────────────────────────────────────────────
+    let lx = 4.4
+    let ly = 9.0
+    set-style(stroke: (paint: blue.darken(20%), thickness: 1.2pt), fill: blue.lighten(40%))
+    circle((lx + 0.2, ly), radius: 0.18)
+    content((lx + 1.4, ly), text(size: 7.5pt)[Class 0  $(y=0)$])
+
+    set-style(stroke: (paint: red.darken(20%), thickness: 1.2pt), fill: red.lighten(40%))
+    circle((lx + 0.2, ly - 0.65), radius: 0.18)
+    content((lx + 1.4, ly - 0.65), text(size: 7.5pt)[Class 1  $(y=1)$])
+  }),
+  caption: [Logistic regression: a linear decision boundary separates two classes in the feature space $(x_1, x_2)$.]
+) <fig-logistic-regression>
 
 #definition(title: "Logistic Regression")[
 Logistic regression is a supervised learning model for binary classification. 
