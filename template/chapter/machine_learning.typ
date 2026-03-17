@@ -56,13 +56,14 @@ Machine learning algorithms are typically categorized into three main types:
 *supervised learning*, *unsupervised learning*, and *reinforcement learning*. 
 Supervised learning involves learning a mapping from input data to known outputs, 
 unsupervised learning aims to discover patterns or structure in data without labeled outputs, 
-and reinforcement learning focuses on learning optimal decision-making policies through repeated interaction with an environment, guided by a reward signal that evaluates the agent’s actions.
-
+and reinforcement learning focuses on learning optimal decision-making policies through repeated interaction with an environment, guided by a reward signal that evaluates the agent's actions.
 In the context of this thesis, our primary focus is on *supervised learning*, 
 as it provides the foundation for the federated and decentralized learning approaches. 
 // studied in the following chapters.
 
-Supervised learning involves observing several examples of a random vector $x$ and an associated value or vector $y$, and learning to predict $y$ from $x$, usually by estimating the conditional probability $p(y | x)$.
+Supervised learning involves observing several examples of a random vector $x$ and an associated value or vector $y$, and learning to predict $y$ from $x$, usually by estimating the conditional probability $p(y | x)$. All supervised learning algorithms share a common two-phase structure.
+During the *training phase*, the algorithm is exposed to labeled data and adjusts its internal parameters to minimize a measure of prediction error.
+Once training is complete, the resulting model is deployed during the *inference phase* to make predictions on previously unseen data, without further parameter updates.
 
 #definition(title: "Supervised Learning")[
 
@@ -80,179 +81,143 @@ Supervised learning involves observing several examples of a random vector $x$ a
 //   caption: [Diagram of the Supervised Learning process, illustrating the Training Phase and the Inference Phase.],
 //   gap: 1.5em, // Espace entre le schéma et la légende
   
-//   canvas({
+// #figure(
+//   canvas(length: 1cm, {
 //     import draw: *
 
-//     // Définition des styles pour les nœuds
-//     let style-data = (stroke: 1pt, padding: 0.25, fill: rgb("#e1f5fe"), radius: 0.2)
-//     let style-process = (stroke: 1pt + rgb("#01579b"), padding: 0.3, fill: rgb("#b3e5fc"), radius: 0.1)
-//     let style-model = (stroke: 2pt + rgb("#d32f2f"), padding: 0.4, fill: rgb("#ffcdd2"), radius: 0.3)
-//     let style-label = (stroke: none, padding: 0.1, fill: none)
+//     // ── Styles ──────────────────────────────────────────────
+//     let box-fill   = rgb("#dbeafe")
+//     let box-stroke = rgb("#1d4ed8")
+//     let arr-stroke = (paint: rgb("#374151"), thickness: 1.5pt)
+//     let label-style = (size: 0.38cm, font: "New Computer Modern")
 
-//     // --- PHASE 1: TRAINING ---
+//     // ── Helper: rounded rectangle with centered text ─────────
+//     let rbox(pos, w, h, txt, fill: box-fill, stroke: box-stroke) = {
+//       rect(
+//         (pos.at(0) - w/2, pos.at(1) - h/2),
+//         (pos.at(0) + w/2, pos.at(1) + h/2),
+//         fill: fill,
+//         stroke: (paint: stroke, thickness: 1.2pt),
+//         radius: 0.15,
+//       )
+//       content(pos, text(size: 0.38cm, txt))
+//     }
 
-//     // Titre de la phase (décalé à gauche)
-//     content((-1.5, 7), [*1. TRAINING PHASE*], anchor: "west")
+//     // ── Nodes (x, y) ────────────────────────────────────────
+//     // Row 1 — inputs
+//     let p-data   = (0, 6)
+//     let p-labels = (4, 6)
 
-//     // Entrées Training Data (X, Y)
-//     rect((-1, 5.5), (1, 6.5), name: "train-x", ..style-data)
-//     content("train-x", [Training Inputs\ (*X*)])
-    
-//     rect((-1, 4), (1, 5), name: "train-y", ..style-data)
-//     content("train-y", [Training Labels\ (*Y*)])
+//     // Row 2 — model
+//     let p-model  = (2, 4)
 
-//     // Algorithme d'apprentissage
-//     rect((2.5, 4.75), (5.5, 5.75), name: "algo", ..style-process)
-//     content("algo", [*Learning\ Algorithm*])
+//     // Row 3 — outputs
+//     let p-pred   = (2, 2)
 
-//     // Modèle Appris
-//     rect((7, 4.75), (9, 5.75), name: "model", ..style-model)
-//     content("model", [*Learned\ Model* ($f$)], text-style: (weight: "bold", size: 1.1em))
+//     // Row 4 — loss + optimizer
+//     let p-loss   = (0, 0)
+//     let p-opt    = (4, 0)
 
-//     // Flèches Training
-//     line("train-x.east", "algo.west", mark: (end: "stealth"))
-//     line("train-y.east", "algo.west", mark: (end: "stealth"))
-//     line("algo.east", "model.west", mark: (end: "stealth"))
+//     // ── Draw boxes ──────────────────────────────────────────
+//     rbox(p-data,   2.6, 0.9, "Training Data\n" + $bold(X) = {bold(x)_i}_(i=1)^n$)
+//     rbox(p-labels, 2.6, 0.9, "Ground-truth Labels\n" + $bold(y) = {y_i}_(i=1)^n$)
+//     rbox(p-model,  2.6, 0.9, "Model  " + $f_theta$,
+//          fill: rgb("#fef9c3"), stroke: rgb("#ca8a04"))
+//     rbox(p-pred,   2.6, 0.9, "Predictions\n" + $hat(bold(y)) = f_theta (bold(X))$)
+//     rbox(p-loss,   2.6, 0.9, "Loss Function\n" + $cal(L)(hat(bold(y)), bold(y))$,
+//          fill: rgb("#fce7f3"), stroke: rgb("#be185d"))
+//     rbox(p-opt,    2.6, 0.9, "Optimizer\n" + $theta arrow.l theta - eta nabla_theta cal(L)$,
+//          fill: rgb("#dcfce7"), stroke: rgb("#15803d"))
 
-//     // Délimitation pointillée pour la phase d'entraînement
-//     rect((-1.5, 3.5), (9.5, 7.5), stroke: (dash: "dashed", paint: gray), name: "box-train")
-//     // Pas de label à l'intérieur, le titre suffit.
+//     // ── Arrows (forward pass) ────────────────────────────────
+//     // Data → Model
+//     line((p-data.at(0), p-data.at(1) - 0.45),
+//          (p-model.at(0) - 0.6, p-model.at(1) + 0.45),
+//          mark: (end: ">"), stroke: arr-stroke)
 
-//     // --- PHASE 2: INFERENCE (PREDICTION) ---
+//     // Labels → Model (just for context; also feeds Loss)
+//     line((p-labels.at(0), p-labels.at(1) - 0.45),
+//          (p-model.at(0) + 0.6, p-model.at(1) + 0.45),
+//          mark: (end: ">"), stroke: arr-stroke)
 
-//     // Titre de la phase (décalé à gauche)
-//     content((-1.5, 2), [*2. INFERENCE / PREDICTION PHASE*], anchor: "west")
+//     // Model → Predictions
+//     line((p-model.at(0), p-model.at(1) - 0.45),
+//          (p-pred.at(0),  p-pred.at(1)  + 0.45),
+//          mark: (end: ">"), stroke: arr-stroke)
 
-//     // Nouvelle donnée d'entrée (X_new)
-//     rect((-1, 0.5), (1, 1.5), name: "new-x", ..style-data)
-//     content("new-x", [New Input (*$X_"new"$*)])
+//     // Predictions → Loss
+//     line((p-pred.at(0) - 0.6, p-pred.at(1) - 0.45),
+//          (p-loss.at(0),        p-loss.at(1) + 0.45),
+//          mark: (end: ">"), stroke: arr-stroke)
 
-//     // Flèche vers le modèle
-//     line("new-x.east", (2.5, 1), mark: (end: "stealth"))
-//     line((2.5, 1), (7, 5), stroke: (dash: "dashed", paint: rgb("#d32f2f"))) // Ligne brisée vers le modèle
+//     // Labels → Loss (ground truth compared to predictions)
+//     line((p-labels.at(0), p-labels.at(1) - 0.45),
+//          (p-loss.at(0) + 0.6, p-loss.at(1) + 0.45),
+//          mark: (end: ">"), stroke: (paint: rgb("#374151"), thickness: 1.5pt, dash: "dashed"))
 
-//     // Le modèle est réutilisé ici. On peut faire une flèche directe :
-//     line("new-x.east", (7, 1), mark: (end: "stealth")) // Flèche provisoire
+//     // Loss → Optimizer
+//     line((p-loss.at(0) + 1.3, p-loss.at(1)),
+//          (p-opt.at(0)  - 1.3, p-opt.at(1)),
+//          mark: (end: ">"), stroke: arr-stroke)
 
-//     // Pour montrer l'utilisation du modèle sans le redessiner, 
-//     // on va le connecter visuellement à l'inférence.
-    
-//     // Processus de prédiction
-//     rect((7, 0.5), (9, 1.5), name: "prediction", ..style-process)
-//     content("prediction", [*Prediction\ Process*])
+//     // Optimizer → Model  (backward pass, curved via waypoint)
+//     line((p-opt.at(0), p-opt.at(1) + 0.45),
+//          (p-opt.at(0), p-model.at(1)),
+//          (p-model.at(0) + 1.3, p-model.at(1)),
+//          mark: (end: ">"),
+//          stroke: (paint: rgb("#15803d"), thickness: 1.5pt))
 
-//     // Sortie (Y_predicted)
-//     rect((10.5, 0.5), (12.5, 1.5), name: "y-pred", ..style-data)
-//     content("y-pred", [Predicted\ Output (*$\hat{Y}$*)])
-
-//     // Flèches Inférence
-//     line("new-x.east", "prediction.west", mark: (end: "stealth"))
-//     line("prediction.east", "y-pred.west", mark: (end: "stealth"))
-    
-//     // Flèche d'utilisation du modèle (importante pour le lien)
-//     line("model.south", "prediction.north", mark: (end: "stealth"), stroke: (paint: rgb("#d32f2f"), thickness: 1.5pt), name: "use-model")
-//     content("use-model", [apply model], anchor: "west", padding: 0.1, text-style: (fill: rgb("#d32f2f"), size: 0.9em))
-
-//     // Délimitation pointillée pour la phase d'inférence
-//     rect((-1.5, -0.5), (13, 2.5), stroke: (dash: "dashed", paint: gray), name: "box-inference")
-
-//   })
-// )
+//     // ── Annotations ─────────────────────────────────────────
+//     content((2, 3),   text(size: 0.32cm, fill: rgb("#6b7280"), "forward pass"),  anchor: "west")
+//     content((4.8, 2), text(size: 0.32cm, fill: rgb("#15803d"), "backward pass"), anchor: "west")
+//     content((1.0, 2.75), text(size: 0.32cm, fill: rgb("#6b7280"), "compare"))
+//   }),
+//   caption: [Overview of the supervised learning pipeline.]
+// ) <fig-supervised-learning>
 
 #figure(
-  canvas(length: 1cm, {
-    import draw: *
+  diagram(
+    spacing: (3.5cm, 2.2cm),
+    node-stroke: 1.2pt,
+    node-corner-radius: 4pt,
 
-    // ── Styles ──────────────────────────────────────────────
-    let box-fill   = rgb("#dbeafe")
-    let box-stroke = rgb("#1d4ed8")
-    let arr-stroke = (paint: rgb("#374151"), thickness: 1.5pt)
-    let label-style = (size: 0.38cm, font: "New Computer Modern")
+    // ── Nodes ────────────────────────────────────────────────
+    node((0,0), [Training Data \ $bold(X) = {bold(x)_i}_(i=1)^n$],
+         fill: rgb("#dbeafe"), stroke: rgb("#1d4ed8"), name: <data>),
 
-    // ── Helper: rounded rectangle with centered text ─────────
-    let rbox(pos, w, h, txt, fill: box-fill, stroke: box-stroke) = {
-      rect(
-        (pos.at(0) - w/2, pos.at(1) - h/2),
-        (pos.at(0) + w/2, pos.at(1) + h/2),
-        fill: fill,
-        stroke: (paint: stroke, thickness: 1.2pt),
-        radius: 0.15,
-      )
-      content(pos, text(size: 0.38cm, txt))
-    }
+    node((2,0), [Labels \ $bold(y) = {y_i}_(i=1)^n$],
+         fill: rgb("#dbeafe"), stroke: rgb("#1d4ed8"), name: <labels>),
 
-    // ── Nodes (x, y) ────────────────────────────────────────
-    // Row 1 — inputs
-    let p-data   = (0, 6)
-    let p-labels = (4, 6)
+    node((1,1), [Model $f_theta$],
+         fill: rgb("#fef9c3"), stroke: rgb("#ca8a04"), name: <model>),
 
-    // Row 2 — model
-    let p-model  = (2, 4)
+    node((1,2), [Predictions \ $hat(bold(y)) = f_theta (bold(X))$],
+         fill: rgb("#dbeafe"), stroke: rgb("#1d4ed8"), name: <pred>),
 
-    // Row 3 — outputs
-    let p-pred   = (2, 2)
+    node((0,3), [Loss Function \ $cal(L)(hat(bold(y)), bold(y))$],
+         fill: rgb("#fce7f3"), stroke: rgb("#be185d"), name: <loss>),
 
-    // Row 4 — loss + optimizer
-    let p-loss   = (0, 0)
-    let p-opt    = (4, 0)
+    node((2,3), [Optimizer \ $theta arrow.l theta - eta nabla_theta cal(L)$],
+         fill: rgb("#dcfce7"), stroke: rgb("#15803d"), name: <opt>),
 
-    // ── Draw boxes ──────────────────────────────────────────
-    rbox(p-data,   2.6, 0.9, "Training Data\n" + $bold(X) = {bold(x)_i}_(i=1)^n$)
-    rbox(p-labels, 2.6, 0.9, "Ground-truth Labels\n" + $bold(y) = {y_i}_(i=1)^n$)
-    rbox(p-model,  2.6, 0.9, "Model  " + $f_theta$,
-         fill: rgb("#fef9c3"), stroke: rgb("#ca8a04"))
-    rbox(p-pred,   2.6, 0.9, "Predictions\n" + $hat(bold(y)) = f_theta (bold(X))$)
-    rbox(p-loss,   2.6, 0.9, "Loss Function\n" + $cal(L)(hat(bold(y)), bold(y))$,
-         fill: rgb("#fce7f3"), stroke: rgb("#be185d"))
-    rbox(p-opt,    2.6, 0.9, "Optimizer\n" + $theta arrow.l theta - eta nabla_theta cal(L)$,
-         fill: rgb("#dcfce7"), stroke: rgb("#15803d"))
+    // ── Edges — forward pass ─────────────────────────────────
+    edge(<data>,   <model>, "->", stroke: 1.5pt, label: [features],     label-side: left),
+    edge(<labels>, <model>, "->", stroke: 1.5pt),
+    edge(<model>,  <pred>,  "->", stroke: 1.5pt, label: [forward pass],  label-side: left),
+    edge(<pred>,   <loss>,  "->", stroke: 1.5pt),
+    // edge(<labels>, <loss>,  "-->", label: [ground truth], label-side: right,
+    //      stroke: (dash: "dashed")),
+    edge(<loss>,   <opt>,   "->", stroke: 1.5pt),
 
-    // ── Arrows (forward pass) ────────────────────────────────
-    // Data → Model
-    line((p-data.at(0), p-data.at(1) - 0.45),
-         (p-model.at(0) - 0.6, p-model.at(1) + 0.45),
-         mark: (end: ">"), stroke: arr-stroke)
-
-    // Labels → Model (just for context; also feeds Loss)
-    line((p-labels.at(0), p-labels.at(1) - 0.45),
-         (p-model.at(0) + 0.6, p-model.at(1) + 0.45),
-         mark: (end: ">"), stroke: arr-stroke)
-
-    // Model → Predictions
-    line((p-model.at(0), p-model.at(1) - 0.45),
-         (p-pred.at(0),  p-pred.at(1)  + 0.45),
-         mark: (end: ">"), stroke: arr-stroke)
-
-    // Predictions → Loss
-    line((p-pred.at(0) - 0.6, p-pred.at(1) - 0.45),
-         (p-loss.at(0),        p-loss.at(1) + 0.45),
-         mark: (end: ">"), stroke: arr-stroke)
-
-    // Labels → Loss (ground truth compared to predictions)
-    line((p-labels.at(0), p-labels.at(1) - 0.45),
-         (p-loss.at(0) + 0.6, p-loss.at(1) + 0.45),
-         mark: (end: ">"), stroke: (paint: rgb("#374151"), thickness: 1.5pt, dash: "dashed"))
-
-    // Loss → Optimizer
-    line((p-loss.at(0) + 1.3, p-loss.at(1)),
-         (p-opt.at(0)  - 1.3, p-opt.at(1)),
-         mark: (end: ">"), stroke: arr-stroke)
-
-    // Optimizer → Model  (backward pass, curved via waypoint)
-    line((p-opt.at(0), p-opt.at(1) + 0.45),
-         (p-opt.at(0), p-model.at(1)),
-         (p-model.at(0) + 1.3, p-model.at(1)),
-         mark: (end: ">"),
-         stroke: (paint: rgb("#15803d"), thickness: 1.5pt))
-
-    // ── Annotations ─────────────────────────────────────────
-    content((2, 3),   text(size: 0.32cm, fill: rgb("#6b7280"), "forward pass"),  anchor: "west")
-    content((4.8, 2), text(size: 0.32cm, fill: rgb("#15803d"), "backward pass"), anchor: "west")
-    content((1.0, 2.75), text(size: 0.32cm, fill: rgb("#6b7280"), "compare"))
-  }),
-  caption: [Overview of the supervised learning pipeline.]
+    // ── Edge — backward pass ─────────────────────────────────
+    edge(<opt>, <model>, "->",
+         label: [backward pass],
+         label-side: right,
+         stroke: (paint: rgb("#15803d"), thickness: 1.5pt),
+         bend: -40deg),
+  ),
+  caption: [The supervised learning training loop.]
 ) <fig-supervised-learning>
-
 
 In practice, this mapping is typically found by minimizing a loss function 
 $L(f_theta (x), y)$ over the dataset $D$, which measures the discrepancy 
