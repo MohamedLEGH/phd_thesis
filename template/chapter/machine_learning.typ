@@ -75,106 +75,6 @@ Once training is complete, the resulting model is deployed during the *inference
   by $theta$ that approximates the mapping from $x$ to $y$.
 ] <def:supervised-ml>
 
-// In typically by minimizing a loss function $L(f_theta(x), y)$ over the dataset
-
-// #figure(
-//   caption: [Diagram of the Supervised Learning process, illustrating the Training Phase and the Inference Phase.],
-//   gap: 1.5em, // Espace entre le schéma et la légende
-  
-// #figure(
-//   canvas(length: 1cm, {
-//     import draw: *
-
-//     // ── Styles ──────────────────────────────────────────────
-//     let box-fill   = rgb("#dbeafe")
-//     let box-stroke = rgb("#1d4ed8")
-//     let arr-stroke = (paint: rgb("#374151"), thickness: 1.5pt)
-//     let label-style = (size: 0.38cm, font: "New Computer Modern")
-
-//     // ── Helper: rounded rectangle with centered text ─────────
-//     let rbox(pos, w, h, txt, fill: box-fill, stroke: box-stroke) = {
-//       rect(
-//         (pos.at(0) - w/2, pos.at(1) - h/2),
-//         (pos.at(0) + w/2, pos.at(1) + h/2),
-//         fill: fill,
-//         stroke: (paint: stroke, thickness: 1.2pt),
-//         radius: 0.15,
-//       )
-//       content(pos, text(size: 0.38cm, txt))
-//     }
-
-//     // ── Nodes (x, y) ────────────────────────────────────────
-//     // Row 1 — inputs
-//     let p-data   = (0, 6)
-//     let p-labels = (4, 6)
-
-//     // Row 2 — model
-//     let p-model  = (2, 4)
-
-//     // Row 3 — outputs
-//     let p-pred   = (2, 2)
-
-//     // Row 4 — loss + optimizer
-//     let p-loss   = (0, 0)
-//     let p-opt    = (4, 0)
-
-//     // ── Draw boxes ──────────────────────────────────────────
-//     rbox(p-data,   2.6, 0.9, "Training Data\n" + $bold(X) = {bold(x)_i}_(i=1)^n$)
-//     rbox(p-labels, 2.6, 0.9, "Ground-truth Labels\n" + $bold(y) = {y_i}_(i=1)^n$)
-//     rbox(p-model,  2.6, 0.9, "Model  " + $f_theta$,
-//          fill: rgb("#fef9c3"), stroke: rgb("#ca8a04"))
-//     rbox(p-pred,   2.6, 0.9, "Predictions\n" + $hat(bold(y)) = f_theta (bold(X))$)
-//     rbox(p-loss,   2.6, 0.9, "Loss Function\n" + $cal(L)(hat(bold(y)), bold(y))$,
-//          fill: rgb("#fce7f3"), stroke: rgb("#be185d"))
-//     rbox(p-opt,    2.6, 0.9, "Optimizer\n" + $theta arrow.l theta - eta nabla_theta cal(L)$,
-//          fill: rgb("#dcfce7"), stroke: rgb("#15803d"))
-
-//     // ── Arrows (forward pass) ────────────────────────────────
-//     // Data → Model
-//     line((p-data.at(0), p-data.at(1) - 0.45),
-//          (p-model.at(0) - 0.6, p-model.at(1) + 0.45),
-//          mark: (end: ">"), stroke: arr-stroke)
-
-//     // Labels → Model (just for context; also feeds Loss)
-//     line((p-labels.at(0), p-labels.at(1) - 0.45),
-//          (p-model.at(0) + 0.6, p-model.at(1) + 0.45),
-//          mark: (end: ">"), stroke: arr-stroke)
-
-//     // Model → Predictions
-//     line((p-model.at(0), p-model.at(1) - 0.45),
-//          (p-pred.at(0),  p-pred.at(1)  + 0.45),
-//          mark: (end: ">"), stroke: arr-stroke)
-
-//     // Predictions → Loss
-//     line((p-pred.at(0) - 0.6, p-pred.at(1) - 0.45),
-//          (p-loss.at(0),        p-loss.at(1) + 0.45),
-//          mark: (end: ">"), stroke: arr-stroke)
-
-//     // Labels → Loss (ground truth compared to predictions)
-//     line((p-labels.at(0), p-labels.at(1) - 0.45),
-//          (p-loss.at(0) + 0.6, p-loss.at(1) + 0.45),
-//          mark: (end: ">"), stroke: (paint: rgb("#374151"), thickness: 1.5pt, dash: "dashed"))
-
-//     // Loss → Optimizer
-//     line((p-loss.at(0) + 1.3, p-loss.at(1)),
-//          (p-opt.at(0)  - 1.3, p-opt.at(1)),
-//          mark: (end: ">"), stroke: arr-stroke)
-
-//     // Optimizer → Model  (backward pass, curved via waypoint)
-//     line((p-opt.at(0), p-opt.at(1) + 0.45),
-//          (p-opt.at(0), p-model.at(1)),
-//          (p-model.at(0) + 1.3, p-model.at(1)),
-//          mark: (end: ">"),
-//          stroke: (paint: rgb("#15803d"), thickness: 1.5pt))
-
-//     // ── Annotations ─────────────────────────────────────────
-//     content((2, 3),   text(size: 0.32cm, fill: rgb("#6b7280"), "forward pass"),  anchor: "west")
-//     content((4.8, 2), text(size: 0.32cm, fill: rgb("#15803d"), "backward pass"), anchor: "west")
-//     content((1.0, 2.75), text(size: 0.32cm, fill: rgb("#6b7280"), "compare"))
-//   }),
-//   caption: [Overview of the supervised learning pipeline.]
-// ) <fig-supervised-learning>
-
 #figure(
   diagram(
     spacing: (3.5cm, 2.2cm),
@@ -218,6 +118,29 @@ Once training is complete, the resulting model is deployed during the *inference
   ),
   caption: [The supervised learning training loop.]
 ) <fig-supervised-learning>
+
+#figure(
+  diagram(
+    spacing: (3.5cm, 2.2cm),
+    node-stroke: 1.2pt,
+    node-corner-radius: 4pt,
+
+    // ── Nodes ────────────────────────────────────────────────
+    node((0,0), [Unseen Data \ $bold(x)_"new" in RR^d$],
+         fill: rgb("#dbeafe"), stroke: rgb("#1d4ed8"), name: <input>),
+
+    node((1,0), [Trained Model \ $f_(theta^*)$],
+         fill: rgb("#fef9c3"), stroke: rgb("#ca8a04"), name: <model>),
+
+    node((2,0), [Prediction \ $hat(y) = f_(theta^*)(bold(x)_"new")$],
+         fill: rgb("#dcfce7"), stroke: rgb("#15803d"), name: <output>),
+
+    // ── Edges ─────────────────────────────────────────────────
+    edge(<input>, <model>,  "->", stroke: 1.5pt),
+    edge(<model>, <output>, "->", stroke: 1.5pt),
+  ),
+  caption: [The supervised learning inference phase.]
+) <fig-supervised-inference>
 
 In practice, this mapping is typically found by minimizing a loss function 
 $L(f_theta (x), y)$ over the dataset $D$, which measures the discrepancy 
@@ -321,105 +244,269 @@ The algorithm is typically stopped when one of the following conditions is met:
 
 ] <def:gradient-descent>
 
+// #figure(
+//   canvas({
+//     import draw: *
 
-#canvas({
-  import draw: *
+//     // ── Axes ────────────────────────────────────────────────
+//     set-style(stroke: (paint: gray.darken(20%), thickness: 0.8pt))
+//     line((-0.3, 0), (10.3, 0))
+//     line((0, -0.3), (0, 5.5))
+//     line((10.1, -0.15), (10.3, 0), (10.1, 0.15))
+//     line((-0.15, 5.3), (0, 5.5), (0.15, 5.3))
+//     content((10.6, 0),   text(size: 9pt)[$theta$])
+//     content((0.3, 5.7),  text(size: 9pt)[$J(theta)$])
 
-  // Axes
-  set-style(stroke: (paint: gray.darken(20%), thickness: 0.8pt))
-  line((-0.3, 0), (10.3, 0))  // axe x
-  line((0, -0.3), (0, 5.5))   // axe y
+//     // ── Loss curve : U-shape, J(x) = 0.45*(x-5)^2 + 0.4 ────
+//     let f(x) = 0.45 * (x - 5) * (x - 5) + 0.4
 
-  // Flèches des axes
-  line((10.1, -0.15), (10.3, 0), (10.1, 0.15))
-  line((-0.15, 5.3), (0, 5.5), (0.15, 5.3))
+//     let pts = range(0, 101).map(i => {
+//       let x = i * 9.5 / 100.0 + 0.3
+//       (x, f(x))
+//     })
+//     set-style(stroke: (paint: blue.darken(10%), thickness: 2pt))
+//     hobby(..pts)
 
-  // Labels axes
-  content((10.5, 0), text(size: 9pt)[$θ$])
-  content((0.3, 5.6), text(size: 9pt)[$J(θ)$])
+//     // ── Gradient descent steps (oscillating left/right) ─────
+//     // Simulates overshooting around the minimum at x=5
+//     let steps = (
+//       (1.0,  f(1.0)),   // far left
+//       (8.5,  f(8.5)),   // overshoot right
+//       (2.2,  f(2.2)),   // back left
+//       (7.5,  f(7.5)),   // overshoot right
+//       (3.2,  f(3.2)),   // closer left
+//       (6.7,  f(6.7)),   // overshoot right
+//       (4.0,  f(4.0)),   // near left
+//       (6.1,  f(6.1)),   // small overshoot
+//       (4.6,  f(4.6)),   // very close left
+//       (5.5,  f(5.5)),   // tiny overshoot
+//       (5.0,  f(5.0)),   // minimum
+//     )
 
-  // Courbe : parabole décalée  J(x) = 0.18*(x-3)^2 + 0.5
-  // Points de la courbe
-  let f(x) = 0.18 * (x - 3) * (x - 3) + 0.5
+//     let colors = (
+//       red.darken(10%),
+//       red,
+//       orange.darken(10%),
+//       orange,
+//       yellow.darken(25%),
+//       yellow.darken(10%),
+//       green.darken(20%),
+//       teal.darken(10%),
+//       blue.darken(10%),
+//       blue.darken(25%),
+//       purple,
+//     )
 
-  // Tracé de la courbe en segments
-  let pts = range(0, 101).map(i => {
-    let x = i * 9.0 / 100.0 + 0.5
-    (x, f(x))
-  })
+//     for i in range(steps.len() - 1) {
+//       let (x0, y0) = steps.at(i)
+//       let (x1, y1) = steps.at(i + 1)
+//       let c  = colors.at(i)
+//       let c1 = colors.at(i + 1)
 
-  set-style(stroke: (paint: blue.darken(10%), thickness: 2pt))
-  hobby(..pts)
+//       // Dashed vertical drop to x-axis
+//       set-style(stroke: (paint: c, thickness: 1pt, dash: "dashed"), fill: none)
+//       line((x0, 0), (x0, y0))
 
-  // Points de descente de gradient (de droite à gauche)
-  let steps = (
-    (9.0,  f(9.0)),
-    (7.8,  f(7.8)),
-    (6.8,  f(6.8)),
-    (5.9,  f(5.9)),
-    (5.1,  f(5.1)),
-    (4.4,  f(4.4)),
-    (3.8,  f(3.8)),
-    (3.3,  f(3.3)),
-    (3.0,  f(3.0)),
-  )
+//       // Horizontal arrow to next x position (at current y)
+//       set-style(stroke: (paint: c, thickness: 1.5pt, dash: "solid"))
+//       line((x0, y0), (x1, y0), mark: (end: ">", size: 0.22))
 
-  // Traits verticaux (gradient steps) + points
-  let colors = (
-    red.darken(10%),
-    orange.darken(10%),
-    orange,
-    yellow.darken(20%),
-    green.darken(20%),
-    teal.darken(10%),
-    blue.darken(20%),
-    blue.darken(30%),
-    purple,
-  )
+//       // Dashed vertical to next curve point
+//       set-style(stroke: (paint: c1, thickness: 1pt, dash: "dashed"), fill: none)
+//       line((x1, y0), (x1, y1))
 
-  for i in range(steps.len() - 1) {
-    let (x0, y0) = steps.at(i)
-    let (x1, y1) = steps.at(i + 1)
-    let c = colors.at(i)
+//       // Dot on curve
+//       set-style(stroke: none, fill: c)
+//       circle((x0, y0), radius: 0.12)
+//     }
 
-    // Trait vertical depuis la courbe jusqu'à l'axe x
-    set-style(stroke: (paint: c, thickness: 1.2pt, dash: "dashed"))
-    line((x0, 0), (x0, y0))
+//     // ── Minimum point ────────────────────────────────────────
+//     let (xm, ym) = steps.last()
+//     set-style(stroke: none, fill: purple)
+//     circle((xm, ym), radius: 0.15)
+//     set-style(stroke: (paint: purple.darken(20%), thickness: 1pt, dash: "dotted"), fill: none)
+//     line((xm, 0), (xm, ym))
+//     content((xm, -0.45), text(size: 8pt, fill: purple.darken(20%))[*minimum*])
 
-    // Flèche horizontale vers le prochain point
-    set-style(stroke: (paint: c, thickness: 1.5pt, dash: "solid"))
-    line((x0, y0), (x1, y0), mark: (end: ">", size: 0.25))
+//     // ── Annotations ──────────────────────────────────────────
+//     // Large steps (early, left side)
+//     content((1.5, 4.6), text(size: 7.5pt, fill: gray.darken(40%))[large steps])
+//     // Small steps (late, near minimum)
+//     content((7.5, 1.4), text(size: 7.5pt, fill: gray.darken(40%))[small steps])
 
-    // Trait vertical du prochain point
-    set-style(stroke: (paint: colors.at(i+1), thickness: 1.2pt, dash: "dashed"))
-    line((x1, y0), (x1, y1))
+//     // Oscillation arrow + label
+//     set-style(stroke: (paint: red.darken(20%), thickness: 1pt, dash: "solid"),
+//               fill: red.darken(20%))
+//     line((2.0, 0.18), (8.0, 0.18),
+//          mark: (start: ">", end: ">", size: 0.18))
+//     content((5.0, -0.42), text(size: 7.5pt, fill: red.darken(30%))[oscillation around minimum])
+//   }),
+//   caption: [Gradient descent trajectory on a convex loss surface $J(theta)$: the optimizer oscillates around the minimum with decreasing step size until convergence.]
+// ) <fig-gradient-descent>
+#figure(
+  canvas({
+    import draw: *
 
-    // Point sur la courbe
-    set-style(stroke: none, fill: c)
-    circle((x0, y0), radius: 0.12)
-  }
+    // ── Axes ────────────────────────────────────────────────
+    set-style(stroke: (paint: gray.darken(20%), thickness: 0.8pt))
+    line((-0.3, 0), (10.3, 0))
+    line((0, -0.3), (0, 5.8))
+    line((10.1, -0.15), (10.3, 0), (10.1, 0.15))
+    line((-0.15, 5.6), (0, 5.8), (0.15, 5.6))
+    content((10.6, 0),  text(size: 9pt)[$theta$])
+    content((0.4, 5.9), text(size: 9pt)[$cal(L)(theta)$])
 
-  // Dernier point (minimum)
-  let (xm, ym) = steps.last()
-  set-style(stroke: (paint: purple, thickness: 2pt), fill: purple)
-  circle((xm, ym), radius: 0.15)
+    // ── Loss curve : U-shape ─────────────────────────────────
+    let f(x) = 0.45 * (x - 5) * (x - 5) + 0.4
 
-  // Étoile / marqueur minimum
-  set-style(stroke: (paint: purple.darken(20%), thickness: 1pt, dash: "dotted"), fill: none)
-  line((xm, 0), (xm, ym))
+    let pts = range(0, 101).map(i => {
+      let x = i * 9.5 / 100.0 + 0.3
+      (x, f(x))
+    })
+    set-style(stroke: (paint: blue.darken(10%), thickness: 2pt))
+    hobby(..pts)
 
-  // Label minimum
-  content((xm, -0.4), text(size: 8pt, fill: purple.darken(20%))[*minimum*])
+    // ── Steps on the curve (oscillating, converging) ─────────
+    let steps = (
+      (1.2,  f(1.2)),
+      (8.2,  f(8.2)),
+      (2.5,  f(2.5)),
+      (7.2,  f(7.2)),
+      (3.8,  f(3.8)),
+      (6.2,  f(6.2)),
+      (5.0,  f(5.0)),
+    )
 
-  // Annotation "grand pas"
-  content((8.0, 3.8), text(size: 7.5pt, fill: gray.darken(30%))[grands pas])
-  content((4.0, 2.8), text(size: 7.5pt, fill: gray.darken(30%))[petits pas])
+    let c = green.darken(20%)
 
-  // Flèche annotation direction
-  set-style(stroke: (paint: red.darken(20%), thickness: 1pt), fill: red.darken(20%))
-  line((7.2, 0.2), (4.0, 0.2), mark: (end: ">", size: 0.2))
-  content((5.6, -0.05), text(size: 7pt, fill: red.darken(30%))[direction de descente])
-})
+    // ── Arrows between consecutive points ────────────────────
+    for i in range(steps.len() - 1) {
+      let (x0, y0) = steps.at(i)
+      let (x1, y1) = steps.at(i + 1)
+      set-style(stroke: (paint: gray.darken(30%), thickness: 1.2pt), fill: none)
+      line((x0, y0), (x1, y1), mark: (end: ">", size: 0.22))
+    }
+
+    // ── Dots on curve ────────────────────────────────────────
+    for i in range(steps.len()) {
+      let (x0, y0) = steps.at(i)
+      set-style(stroke: (paint: c.darken(10%), thickness: 1.2pt), fill: c)
+      circle((x0, y0), radius: 0.18)
+    }
+
+    // ── Labels ───────────────────────────────────────────────
+    // Random init
+    let (x0, y0) = steps.at(0)
+    content((x0 - 1.2, y0 + 0.3), text(size: 8pt)[Random \ initialization])
+    set-style(stroke: (paint: gray.darken(20%), thickness: 0.7pt), fill: none)
+    line((x0 - 0.4, y0 + 0.15), (x0 - 0.1, y0 + 0.02))
+
+    // Minimum
+    let (xm, ym) = steps.last()
+    content((xm + 1.2, ym - 0.2), text(size: 8pt)[$theta^* ("minimum")$])
+
+  }),
+  caption: [Gradient descent on a convex loss surface $cal(L)(theta)$: starting from a random initialization, the parameters $theta$ are iteratively updated in the direction opposite to the gradient until convergence to the minimum $theta^*$.]
+) <fig-gradient-descent>
+
+// #canvas({
+//   import draw: *
+
+//   // Axes
+//   set-style(stroke: (paint: gray.darken(20%), thickness: 0.8pt))
+//   line((-0.3, 0), (10.3, 0))  // axe x
+//   line((0, -0.3), (0, 5.5))   // axe y
+
+//   // Flèches des axes
+//   line((10.1, -0.15), (10.3, 0), (10.1, 0.15))
+//   line((-0.15, 5.3), (0, 5.5), (0.15, 5.3))
+
+//   // Labels axes
+//   content((10.5, 0), text(size: 9pt)[$θ$])
+//   content((0.3, 5.6), text(size: 9pt)[$J(θ)$])
+
+//   // Courbe : parabole décalée  J(x) = 0.18*(x-3)^2 + 0.5
+//   // Points de la courbe
+//   let f(x) = 0.18 * (x - 3) * (x - 3) + 0.5
+
+//   // Tracé de la courbe en segments
+//   let pts = range(0, 101).map(i => {
+//     let x = i * 9.0 / 100.0 + 0.5
+//     (x, f(x))
+//   })
+
+//   set-style(stroke: (paint: blue.darken(10%), thickness: 2pt))
+//   hobby(..pts)
+
+//   // Points de descente de gradient (de droite à gauche)
+//   let steps = (
+//     (9.0,  f(9.0)),
+//     (7.8,  f(7.8)),
+//     (6.8,  f(6.8)),
+//     (5.9,  f(5.9)),
+//     (5.1,  f(5.1)),
+//     (4.4,  f(4.4)),
+//     (3.8,  f(3.8)),
+//     (3.3,  f(3.3)),
+//     (3.0,  f(3.0)),
+//   )
+
+//   // Traits verticaux (gradient steps) + points
+//   let colors = (
+//     red.darken(10%),
+//     orange.darken(10%),
+//     orange,
+//     yellow.darken(20%),
+//     green.darken(20%),
+//     teal.darken(10%),
+//     blue.darken(20%),
+//     blue.darken(30%),
+//     purple,
+//   )
+
+//   for i in range(steps.len() - 1) {
+//     let (x0, y0) = steps.at(i)
+//     let (x1, y1) = steps.at(i + 1)
+//     let c = colors.at(i)
+
+//     // Trait vertical depuis la courbe jusqu'à l'axe x
+//     set-style(stroke: (paint: c, thickness: 1.2pt, dash: "dashed"))
+//     line((x0, 0), (x0, y0))
+
+//     // Flèche horizontale vers le prochain point
+//     set-style(stroke: (paint: c, thickness: 1.5pt, dash: "solid"))
+//     line((x0, y0), (x1, y0), mark: (end: ">", size: 0.25))
+
+//     // Trait vertical du prochain point
+//     set-style(stroke: (paint: colors.at(i+1), thickness: 1.2pt, dash: "dashed"))
+//     line((x1, y0), (x1, y1))
+
+//     // Point sur la courbe
+//     set-style(stroke: none, fill: c)
+//     circle((x0, y0), radius: 0.12)
+//   }
+
+//   // Dernier point (minimum)
+//   let (xm, ym) = steps.last()
+//   set-style(stroke: (paint: purple, thickness: 2pt), fill: purple)
+//   circle((xm, ym), radius: 0.15)
+
+//   // Étoile / marqueur minimum
+//   set-style(stroke: (paint: purple.darken(20%), thickness: 1pt, dash: "dotted"), fill: none)
+//   line((xm, 0), (xm, ym))
+
+//   // Label minimum
+//   content((xm, -0.4), text(size: 8pt, fill: purple.darken(20%))[*minimum*])
+
+//   // Annotation "grand pas"
+//   content((8.0, 3.8), text(size: 7.5pt, fill: gray.darken(30%))[grands pas])
+//   content((4.0, 2.8), text(size: 7.5pt, fill: gray.darken(30%))[petits pas])
+
+//   // Flèche annotation direction
+//   set-style(stroke: (paint: red.darken(20%), thickness: 1pt), fill: red.darken(20%))
+//   line((7.2, 0.2), (4.0, 0.2), mark: (end: ">", size: 0.2))
+//   content((5.6, -0.05), text(size: 7pt, fill: red.darken(30%))[direction de descente])
+// })
 
 #canvas({
   import draw: *
