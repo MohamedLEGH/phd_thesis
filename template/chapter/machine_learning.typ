@@ -1,3 +1,5 @@
+#import "@preview/cetz:0.3.4": canvas, draw
+
 #import "@preview/fletcher:0.5.8" as fletcher: diagram, node, edge
 
 #import "@preview/lovelace:0.3.0": *
@@ -74,6 +76,184 @@ Supervised learning involves observing several examples of a random vector $x$ a
 
 // In typically by minimizing a loss function $L(f_theta(x), y)$ over the dataset
 
+// #figure(
+//   caption: [Diagram of the Supervised Learning process, illustrating the Training Phase and the Inference Phase.],
+//   gap: 1.5em, // Espace entre le schéma et la légende
+  
+//   canvas({
+//     import draw: *
+
+//     // Définition des styles pour les nœuds
+//     let style-data = (stroke: 1pt, padding: 0.25, fill: rgb("#e1f5fe"), radius: 0.2)
+//     let style-process = (stroke: 1pt + rgb("#01579b"), padding: 0.3, fill: rgb("#b3e5fc"), radius: 0.1)
+//     let style-model = (stroke: 2pt + rgb("#d32f2f"), padding: 0.4, fill: rgb("#ffcdd2"), radius: 0.3)
+//     let style-label = (stroke: none, padding: 0.1, fill: none)
+
+//     // --- PHASE 1: TRAINING ---
+
+//     // Titre de la phase (décalé à gauche)
+//     content((-1.5, 7), [*1. TRAINING PHASE*], anchor: "west")
+
+//     // Entrées Training Data (X, Y)
+//     rect((-1, 5.5), (1, 6.5), name: "train-x", ..style-data)
+//     content("train-x", [Training Inputs\ (*X*)])
+    
+//     rect((-1, 4), (1, 5), name: "train-y", ..style-data)
+//     content("train-y", [Training Labels\ (*Y*)])
+
+//     // Algorithme d'apprentissage
+//     rect((2.5, 4.75), (5.5, 5.75), name: "algo", ..style-process)
+//     content("algo", [*Learning\ Algorithm*])
+
+//     // Modèle Appris
+//     rect((7, 4.75), (9, 5.75), name: "model", ..style-model)
+//     content("model", [*Learned\ Model* ($f$)], text-style: (weight: "bold", size: 1.1em))
+
+//     // Flèches Training
+//     line("train-x.east", "algo.west", mark: (end: "stealth"))
+//     line("train-y.east", "algo.west", mark: (end: "stealth"))
+//     line("algo.east", "model.west", mark: (end: "stealth"))
+
+//     // Délimitation pointillée pour la phase d'entraînement
+//     rect((-1.5, 3.5), (9.5, 7.5), stroke: (dash: "dashed", paint: gray), name: "box-train")
+//     // Pas de label à l'intérieur, le titre suffit.
+
+//     // --- PHASE 2: INFERENCE (PREDICTION) ---
+
+//     // Titre de la phase (décalé à gauche)
+//     content((-1.5, 2), [*2. INFERENCE / PREDICTION PHASE*], anchor: "west")
+
+//     // Nouvelle donnée d'entrée (X_new)
+//     rect((-1, 0.5), (1, 1.5), name: "new-x", ..style-data)
+//     content("new-x", [New Input (*$X_"new"$*)])
+
+//     // Flèche vers le modèle
+//     line("new-x.east", (2.5, 1), mark: (end: "stealth"))
+//     line((2.5, 1), (7, 5), stroke: (dash: "dashed", paint: rgb("#d32f2f"))) // Ligne brisée vers le modèle
+
+//     // Le modèle est réutilisé ici. On peut faire une flèche directe :
+//     line("new-x.east", (7, 1), mark: (end: "stealth")) // Flèche provisoire
+
+//     // Pour montrer l'utilisation du modèle sans le redessiner, 
+//     // on va le connecter visuellement à l'inférence.
+    
+//     // Processus de prédiction
+//     rect((7, 0.5), (9, 1.5), name: "prediction", ..style-process)
+//     content("prediction", [*Prediction\ Process*])
+
+//     // Sortie (Y_predicted)
+//     rect((10.5, 0.5), (12.5, 1.5), name: "y-pred", ..style-data)
+//     content("y-pred", [Predicted\ Output (*$\hat{Y}$*)])
+
+//     // Flèches Inférence
+//     line("new-x.east", "prediction.west", mark: (end: "stealth"))
+//     line("prediction.east", "y-pred.west", mark: (end: "stealth"))
+    
+//     // Flèche d'utilisation du modèle (importante pour le lien)
+//     line("model.south", "prediction.north", mark: (end: "stealth"), stroke: (paint: rgb("#d32f2f"), thickness: 1.5pt), name: "use-model")
+//     content("use-model", [apply model], anchor: "west", padding: 0.1, text-style: (fill: rgb("#d32f2f"), size: 0.9em))
+
+//     // Délimitation pointillée pour la phase d'inférence
+//     rect((-1.5, -0.5), (13, 2.5), stroke: (dash: "dashed", paint: gray), name: "box-inference")
+
+//   })
+// )
+
+#figure(
+  canvas(length: 1cm, {
+    import draw: *
+
+    // ── Styles ──────────────────────────────────────────────
+    let box-fill   = rgb("#dbeafe")
+    let box-stroke = rgb("#1d4ed8")
+    let arr-stroke = (paint: rgb("#374151"), thickness: 1.5pt)
+    let label-style = (size: 0.38cm, font: "New Computer Modern")
+
+    // ── Helper: rounded rectangle with centered text ─────────
+    let rbox(pos, w, h, txt, fill: box-fill, stroke: box-stroke) = {
+      rect(
+        (pos.at(0) - w/2, pos.at(1) - h/2),
+        (pos.at(0) + w/2, pos.at(1) + h/2),
+        fill: fill,
+        stroke: (paint: stroke, thickness: 1.2pt),
+        radius: 0.15,
+      )
+      content(pos, text(size: 0.38cm, txt))
+    }
+
+    // ── Nodes (x, y) ────────────────────────────────────────
+    // Row 1 — inputs
+    let p-data   = (0, 6)
+    let p-labels = (4, 6)
+
+    // Row 2 — model
+    let p-model  = (2, 4)
+
+    // Row 3 — outputs
+    let p-pred   = (2, 2)
+
+    // Row 4 — loss + optimizer
+    let p-loss   = (0, 0)
+    let p-opt    = (4, 0)
+
+    // ── Draw boxes ──────────────────────────────────────────
+    rbox(p-data,   2.6, 0.9, "Training Data\n" + $bold(X) = {bold(x)_i}_(i=1)^n$)
+    rbox(p-labels, 2.6, 0.9, "Ground-truth Labels\n" + $bold(y) = {y_i}_(i=1)^n$)
+    rbox(p-model,  2.6, 0.9, "Model  " + $f_theta$,
+         fill: rgb("#fef9c3"), stroke: rgb("#ca8a04"))
+    rbox(p-pred,   2.6, 0.9, "Predictions\n" + $hat(bold(y)) = f_theta (bold(X))$)
+    rbox(p-loss,   2.6, 0.9, "Loss Function\n" + $cal(L)(hat(bold(y)), bold(y))$,
+         fill: rgb("#fce7f3"), stroke: rgb("#be185d"))
+    rbox(p-opt,    2.6, 0.9, "Optimizer\n" + $theta arrow.l theta - eta nabla_theta cal(L)$,
+         fill: rgb("#dcfce7"), stroke: rgb("#15803d"))
+
+    // ── Arrows (forward pass) ────────────────────────────────
+    // Data → Model
+    line((p-data.at(0), p-data.at(1) - 0.45),
+         (p-model.at(0) - 0.6, p-model.at(1) + 0.45),
+         mark: (end: ">"), stroke: arr-stroke)
+
+    // Labels → Model (just for context; also feeds Loss)
+    line((p-labels.at(0), p-labels.at(1) - 0.45),
+         (p-model.at(0) + 0.6, p-model.at(1) + 0.45),
+         mark: (end: ">"), stroke: arr-stroke)
+
+    // Model → Predictions
+    line((p-model.at(0), p-model.at(1) - 0.45),
+         (p-pred.at(0),  p-pred.at(1)  + 0.45),
+         mark: (end: ">"), stroke: arr-stroke)
+
+    // Predictions → Loss
+    line((p-pred.at(0) - 0.6, p-pred.at(1) - 0.45),
+         (p-loss.at(0),        p-loss.at(1) + 0.45),
+         mark: (end: ">"), stroke: arr-stroke)
+
+    // Labels → Loss (ground truth compared to predictions)
+    line((p-labels.at(0), p-labels.at(1) - 0.45),
+         (p-loss.at(0) + 0.6, p-loss.at(1) + 0.45),
+         mark: (end: ">"), stroke: (paint: rgb("#374151"), thickness: 1.5pt, dash: "dashed"))
+
+    // Loss → Optimizer
+    line((p-loss.at(0) + 1.3, p-loss.at(1)),
+         (p-opt.at(0)  - 1.3, p-opt.at(1)),
+         mark: (end: ">"), stroke: arr-stroke)
+
+    // Optimizer → Model  (backward pass, curved via waypoint)
+    line((p-opt.at(0), p-opt.at(1) + 0.45),
+         (p-opt.at(0), p-model.at(1)),
+         (p-model.at(0) + 1.3, p-model.at(1)),
+         mark: (end: ">"),
+         stroke: (paint: rgb("#15803d"), thickness: 1.5pt))
+
+    // ── Annotations ─────────────────────────────────────────
+    content((2, 3),   text(size: 0.32cm, fill: rgb("#6b7280"), "forward pass"),  anchor: "west")
+    content((4.8, 2), text(size: 0.32cm, fill: rgb("#15803d"), "backward pass"), anchor: "west")
+    content((1.0, 2.75), text(size: 0.32cm, fill: rgb("#6b7280"), "compare"))
+  }),
+  caption: [Overview of the supervised learning pipeline.]
+) <fig-supervised-learning>
+
+
 In practice, this mapping is typically found by minimizing a loss function 
 $L(f_theta (x), y)$ over the dataset $D$, which measures the discrepancy 
 between the predicted outputs and the true labels, reflecting how well the 
@@ -99,59 +279,51 @@ model performs on a given example or dataset.
   $
 ] <def:loss-function>
 
-
 Common examples of loss functions include the *Mean Squared Error (MSE)*, 
 $L(f_theta (x), y) = ||f_theta (x) - y||^2$, widely used in regression tasks, 
 and the *Cross-Entropy Loss*, $L(f_theta (x), y) = -sum_i y_i log f_theta (x)_i$, 
 commonly used in classification tasks.
 
-// #example[Mean Squared Error (MSE): $L(f_theta (x), y) = ||f_theta (x) - y||^2$]
+These two loss functions naturally reflect the two main types of prediction 
+tasks encountered in supervised learning: *regression* and *classification*. 
+Regression problems aim to predict a continuous value, while classification 
+problems aim to assign an input to one of a discrete set of classes. 
+In this thesis, we focus on *classification problems*, specifically 
+*binary classification* (two possible classes) and *multinomial classification* 
+(more than two classes).
 
-// #example[Cross-Entropy Loss: $L(f_theta (x), y) = -sum_i y_i log f_theta (x)_i$]
 
-// #definition(title: "Loss Function")[
-
-//   Formally, for a single example $(x, y)$, the loss function $L$ is
-//   $
-//     L(f_theta(x), y) in RR_{>= 0},
-//   $
-//   where smaller values indicate better predictions.
-
-//   Examples of loss functions:
-//   - *Mean Squared Error (MSE)*: $L(f_theta(x), y) = ||f_theta(x) - y||^2$.
-//   - *Cross-Entropy Loss*: $L(f_theta(x), y) = -sum_i y_i log f_theta(x)_i$.
-
-//   The overall goal of supervised learning is to find parameters $theta$ 
-//   that minimize the expected loss over the dataset.
-// ] <def:loss-function>
-
-In supervised learning, prediction tasks can broadly be categorized into two types: *regression* and *classification*. 
-Regression problems aim to predict a continuous value, while classification problems aim to assign an input to one of a discrete set of classes. 
-In this thesis, we focus on *classification problems*, specifically *binary classification* (two possible classes) 
-and *multinomial classification* (more than two classes).
-
-#definition(title: "Binary Classification")[
 Binary classification refers to the supervised learning task where each input $x$ is associated with a label $y$ 
 that can take only two possible values, typically denoted $y in {0,1}$. 
-The goal is to learn a function $f_theta(x)$ that outputs a predicted label $hat(y)$ that approximates the true label $y$. 
+The goal is to learn a function $f_theta (x)$ that outputs a predicted label $hat(y)$ that approximates the true label $y$. 
 
-Formally, given a dataset:
-$D = {(x_1, y_1), (x_2, y_2), ..., (x_N, y_N)},$
-where $y_i in {0,1}$, the objective is to find 
-$theta^* = "argmin"_theta sum_(i=1)^N L(f_theta(x_i), y_i),$ 
-where $L$ is a loss function measuring the discrepancy between predicted and true labels.
+#definition(title: "Binary Classification")[
+  Given a dataset $D = {(x_i, y_i)}_(i=1)^N$ where $x_i in RR^d$ and 
+  $y_i in {0, 1}$, binary classification aims to find a function 
+  $f_theta : RR^d -> [0,1]$ that estimates the probability 
+  $p(y = 1 | x)$, by solving:
+  $
+    theta^* = "argmin"_theta 1/N sum_(i=1)^N L(f_theta (x_i), y_i),
+  $
+  where $L$ is a loss function measuring the discrepancy between 
+  predicted and true labels.
 ] <def:binary-classification>
 
-#definition(title: "Multinomial Classification")[
 Multinomial classification generalizes binary classification to the case where each label $y$ 
 can take one of $K > 2$ possible classes: $y in {1,2,...,K}$. 
-The goal is to learn a function $f_theta(x)$ that outputs either a class label $hat(y)$ or a probability distribution over the $K$ classes.
+The goal is to learn a function $f_theta (x)$ that outputs either a class label $hat(y)$ or a probability distribution over the $K$ classes.
 
-Formally, given a dataset:
-$D = {(x_1, y_1), (x_2, y_2), ..., (x_N, y_N)},$
-where $y_i in {1,...,K}$, the objective is to find 
-$theta^* = "argmin"_theta sum_(i=1)^(N) L(f_theta(x_i), y_i),$
-with $L$ a suitable loss function for multi-class prediction.
+
+#definition(title: "Multinomial Classification")[
+  Given a dataset $D = {(x_i, y_i)}_(i=1)^N$ where $x_i in RR^d$ and 
+  $y_i in {1, dots, K}$, multinomial classification aims to find a function 
+  $f_theta : RR^d -> [0, 1]^K$ that estimates the probability distribution 
+  $p(y = k | x)$ over all $K$ classes, by solving:
+  $
+    theta^* = "argmin"_theta 1/N sum_(i=1)^N L(f_theta (x_i), y_i),
+  $
+  where $L$ is a loss function measuring the discrepancy between 
+  predicted and true labels.
 ] <def:multinomial-classification>
 
 In supervised learning, once a loss function $L(f_theta(x), y)$ has been defined, the next step is to find a way to minimize this loss. 
@@ -184,14 +356,243 @@ The algorithm is typically stopped when one of the following conditions is met:
 
 ] <def:gradient-descent>
 
-In machine learning, it is common to divide the available dataset into a *training set* and a *test set* to prevent overfitting. 
-The model is trained on the training set, which means that the parameters $theta$ of the function are updated to minimize the loss function $L(theta)$. 
-The test set is used only to evaluate the model's performance on unseen data, which provides an estimate of its generalization ability. 
 
-During training, the loss on the training set should decrease. However, if the loss on the test set starts to increase while the training loss continues to decrease, it indicates that the model is overfitting: it has learned to memorize the training data rather than capturing general patterns. 
-This methodology ensures that the model achieves good predictive performance not only on the data it has seen but also on new, unseen data.
+#canvas({
+  import draw: *
+
+  // Axes
+  set-style(stroke: (paint: gray.darken(20%), thickness: 0.8pt))
+  line((-0.3, 0), (10.3, 0))  // axe x
+  line((0, -0.3), (0, 5.5))   // axe y
+
+  // Flèches des axes
+  line((10.1, -0.15), (10.3, 0), (10.1, 0.15))
+  line((-0.15, 5.3), (0, 5.5), (0.15, 5.3))
+
+  // Labels axes
+  content((10.5, 0), text(size: 9pt)[$θ$])
+  content((0.3, 5.6), text(size: 9pt)[$J(θ)$])
+
+  // Courbe : parabole décalée  J(x) = 0.18*(x-3)^2 + 0.5
+  // Points de la courbe
+  let f(x) = 0.18 * (x - 3) * (x - 3) + 0.5
+
+  // Tracé de la courbe en segments
+  let pts = range(0, 101).map(i => {
+    let x = i * 9.0 / 100.0 + 0.5
+    (x, f(x))
+  })
+
+  set-style(stroke: (paint: blue.darken(10%), thickness: 2pt))
+  hobby(..pts)
+
+  // Points de descente de gradient (de droite à gauche)
+  let steps = (
+    (9.0,  f(9.0)),
+    (7.8,  f(7.8)),
+    (6.8,  f(6.8)),
+    (5.9,  f(5.9)),
+    (5.1,  f(5.1)),
+    (4.4,  f(4.4)),
+    (3.8,  f(3.8)),
+    (3.3,  f(3.3)),
+    (3.0,  f(3.0)),
+  )
+
+  // Traits verticaux (gradient steps) + points
+  let colors = (
+    red.darken(10%),
+    orange.darken(10%),
+    orange,
+    yellow.darken(20%),
+    green.darken(20%),
+    teal.darken(10%),
+    blue.darken(20%),
+    blue.darken(30%),
+    purple,
+  )
+
+  for i in range(steps.len() - 1) {
+    let (x0, y0) = steps.at(i)
+    let (x1, y1) = steps.at(i + 1)
+    let c = colors.at(i)
+
+    // Trait vertical depuis la courbe jusqu'à l'axe x
+    set-style(stroke: (paint: c, thickness: 1.2pt, dash: "dashed"))
+    line((x0, 0), (x0, y0))
+
+    // Flèche horizontale vers le prochain point
+    set-style(stroke: (paint: c, thickness: 1.5pt, dash: "solid"))
+    line((x0, y0), (x1, y0), mark: (end: ">", size: 0.25))
+
+    // Trait vertical du prochain point
+    set-style(stroke: (paint: colors.at(i+1), thickness: 1.2pt, dash: "dashed"))
+    line((x1, y0), (x1, y1))
+
+    // Point sur la courbe
+    set-style(stroke: none, fill: c)
+    circle((x0, y0), radius: 0.12)
+  }
+
+  // Dernier point (minimum)
+  let (xm, ym) = steps.last()
+  set-style(stroke: (paint: purple, thickness: 2pt), fill: purple)
+  circle((xm, ym), radius: 0.15)
+
+  // Étoile / marqueur minimum
+  set-style(stroke: (paint: purple.darken(20%), thickness: 1pt, dash: "dotted"), fill: none)
+  line((xm, 0), (xm, ym))
+
+  // Label minimum
+  content((xm, -0.4), text(size: 8pt, fill: purple.darken(20%))[*minimum*])
+
+  // Annotation "grand pas"
+  content((8.0, 3.8), text(size: 7.5pt, fill: gray.darken(30%))[grands pas])
+  content((4.0, 2.8), text(size: 7.5pt, fill: gray.darken(30%))[petits pas])
+
+  // Flèche annotation direction
+  set-style(stroke: (paint: red.darken(20%), thickness: 1pt), fill: red.darken(20%))
+  line((7.2, 0.2), (4.0, 0.2), mark: (end: ">", size: 0.2))
+  content((5.6, -0.05), text(size: 7pt, fill: red.darken(30%))[direction de descente])
+})
+
+#canvas({
+  import draw: *
+
+  let points = (
+    (0.5, 0.8),
+    (1.0, 1.9),
+    (1.5, 1.3),
+    (2.0, 2.8),
+    (2.5, 2.1),
+    (3.0, 3.5),
+    (3.5, 3.1),
+    (4.0, 4.6),
+    (4.5, 3.9),
+    (5.0, 5.2),
+    (5.5, 4.7),
+    (6.0, 5.9),
+    (6.5, 6.8),
+    (7.0, 6.2),
+    (7.5, 7.4),
+    (8.0, 7.1),
+    (8.5, 8.3),
+    (9.0, 8.0),
+  )
+
+  let a = 0.84
+  let b = 0.55
+  let reg(x) = a * x + b
+
+  // Axes
+  set-style(stroke: (paint: luma(80), thickness: 0.8pt))
+  line((-0.2, 0), (10.2, 0))
+  line((0, -0.2), (0, 9.5))
+
+  // Flèches
+  line((10.0, -0.15), (10.2, 0), (10.0, 0.15))
+  line((-0.15, 9.3), (0, 9.5), (0.15, 9.3))
+
+  // Labels
+  content((10.5, 0), text(size: 9pt)[$x$])
+  content((0.35, 9.6), text(size: 9pt)[$y$])
+
+  // Graduations axe x
+  for i in range(1, 10) {
+    let xi = float(i)
+    set-style(stroke: (paint: luma(80), thickness: 0.5pt))
+    line((xi, -0.1), (xi, 0.1))
+    content((xi, -0.35), text(size: 7pt)[#i])
+  }
+
+  // Graduations axe y
+  for i in range(1, 10) {
+    let yi = float(i)
+    set-style(stroke: (paint: luma(80), thickness: 0.5pt))
+    line((-0.1, yi), (0.1, yi))
+    content((-0.4, yi), text(size: 7pt)[#i])
+  }
+
+  // Résidus
+  for (px, py) in points {
+    let ry = reg(px)
+    let col = if py > ry { red.lighten(20%) } else { blue.lighten(20%) }
+    set-style(stroke: (paint: col, thickness: 1.0pt, dash: "dashed"), fill: none)
+    line((px, py), (px, ry))
+
+    // Petit carré symbolisant le résidu au carré
+    let s = 0.13
+    let y_low = calc.min(py, ry)
+    let y_high = calc.max(py, ry)
+    let sq_h = calc.min(s, y_high - y_low)
+    set-style(stroke: (paint: col, thickness: 0.6pt, dash: "solid"), fill: col.lighten(60%))
+    rect((px, y_low), (px + sq_h, y_low + sq_h))
+  }
+
+  // Droite de régression
+  set-style(stroke: (paint: green.darken(30%), thickness: 2pt, dash: "solid"), fill: none)
+  line((0.0, reg(0.0)), (9.5, reg(9.5)))
+
+  // Points de données
+  for (px, py) in points {
+    set-style(stroke: (paint: luma(30), thickness: 0.8pt), fill: white)
+    circle((px, py), radius: 0.15)
+    set-style(stroke: none, fill: luma(30))
+    circle((px, py), radius: 0.07)
+  }
+
+  // Équation de la droite
+  content((6.2, 1.8),
+    box(
+      fill: white,
+      stroke: green.darken(30%) + 0.7pt,
+      radius: 3pt,
+      inset: 5pt,
+      text(size: 9pt, fill: green.darken(40%))[
+        $hat(y) = 0.84 x + 0.55$
+      ]
+    )
+  )
+
+  // Légende résidus — utilisation de rect au lieu de line
+  let lx = 1.0
+  let ly = 9.0
+  set-style(stroke: (paint: red.lighten(20%), thickness: 1.0pt, dash: "dashed"), fill: none)
+  line((lx, ly), (lx + 0.6, ly))
+  content((lx + 1.8, ly), text(size: 7.5pt)[résidu positif])
+
+  set-style(stroke: (paint: blue.lighten(20%), thickness: 1.0pt, dash: "dashed"), fill: none)
+  line((lx, ly - 0.5), (lx + 0.6, ly - 0.5))
+  content((lx + 1.8, ly - 0.5), text(size: 7.5pt)[résidu négatif])
+})
+
+// In machine learning, it is common to divide the available dataset into a *training set* and a *test set* to prevent overfitting. 
+// The model is trained on the training set, which means that the parameters $theta$ of the function are updated to minimize the loss function $L(theta)$. 
+// The test set is used only to evaluate the model's performance on unseen data, which provides an estimate of its generalization ability. 
+In its basic form, gradient descent is applied to the entire dataset at once, meaning that the gradient is computed over all available samples before each parameter update.
+
+In practice, the available dataset is divided into a *training set* and a *test set*. The model's parameters $theta$ are updated via gradient descent to minimize the loss function $L(theta)$ on the training set, while the test set is held out entirely and used only to evaluate the model's performance on unseen data, providing an estimate of its generalization ability.
+
+This separation is essential to detect *overfitting*, a phenomenon that occurs when the model memorizes the training data rather than capturing general patterns. A key indicator of overfitting is a divergence between the two losses: while the training loss continues to decrease, the test loss starts to increase. By monitoring both losses throughout training, one can assess whether the model generalizes well to unseen data or merely fits the training set.
+
+#remark[In the sense of @def:ml-mitchell, the task $T$ corresponds to binary or multinomial classification, the experience $E$ to the labeled dataset $D = {(x_i, y_i)}_(i=1)^N$ from which the model learns, and the performance measure $P$ to the loss function $cal(L)(theta)$ that quantifies how well the model performs on this task.]
 
 === Machine Learning Models
+The machine learning literature offers a wide variety of models, each with its own inductive bias, assumptions, and computational properties. The choice of model is therefore not trivial: different models exhibit different performance profiles and are better suited to different types of data and tasks.
+
+#definition(title: "Machine Learning Model")[
+  A machine learning model is defined by:
+  - A *hypothesis class* $cal(F) = {f_theta : cal(X) -> cal(Y) | theta in Theta}$, that is, a parametrized family of functions mapping inputs $x in cal(X)$ to outputs $y in cal(Y)$,
+  - A *parameter space* $Theta$, which is the set of all admissible values for the parameters $theta$,
+  - A *loss function* $L : cal(Y) times cal(Y) -> RR_(>=0)$, chosen to reflect the assumptions of the model and the nature of the task.
+
+  Training the model consists in finding the optimal parameters:
+  $
+    theta^* = "argmin"_(theta in Theta) 1/N sum_(i=1)^N L(f_theta (x_i), y_i).
+  $
+] <def:ml-model>
+
+In what follows, we introduce several machine learning models that are widely used in practice and that serve as building blocks for the federated and decentralized learning frameworks studied in this thesis. Specifically, we cover *linear regression*, *logistic regression*, and *multilayer perceptrons (MLPs)*, each representing a different level of complexity and expressiveness in the hypothesis class $cal(F)$.
 
 ==== Linear Regression
 
@@ -209,7 +610,7 @@ A linear regression model predicts a continuous output $y in RR$ from an input
 feature vector $x in RR^d$ using an affine function:
 
 $
-hat(y) = f_theta(x) = w^T x + b,
+hat(y) = f_theta (x) = w^T x + b,
 $
 
 where:
@@ -224,12 +625,11 @@ $
 the parameters $theta$ are learned by minimizing the mean squared error (MSE):
 
 $
-L(theta) = 1/N sum_(n=1)^N (y_n - f_theta(x_n))^2.
+L(theta) = 1/N sum_(n=1)^N (y_n - f_theta (x_n))^2.
 $
 ] <def:linear-regression>
 
 ==== Logistic Regression
-
 Logistic regression is a supervised learning model used for classification tasks, 
 rather than predicting continuous values. It is particularly suited for binary 
 classification problems, where the goal is to predict whether an instance belongs 
@@ -242,19 +642,17 @@ the logistic (sigmoid) function, allowing it to model the probability of class m
 #definition(title: "Logistic Regression")[
 Logistic regression is a supervised learning model for binary classification. 
 It estimates the probability that an input $x in RR^d$ belongs to the positive class:
-
 $
 p(y = 1 | x; theta) = sigma(w^T x + b),
 $
-
 where:
 - $sigma(z) = 1 / (1 + exp(-z))$ is the sigmoid function,
-- $theta = (w, b)$ are the model parameters.
+- $theta = (w, b)$ are the model parameters,
+- $hat(y)_n = sigma(w^T x_n + b)$ denotes the predicted probability for the $n$-th sample.
 
 The parameters are learned by minimizing the binary cross-entropy loss:
-
 $
-L(theta) = - 1/N sum_(n=1)^N [y_n log(hat(y_n)) + (1 - y_n) log(1 - hat(y_n))].
+L(theta) = - 1/N sum_(n=1)^N [y_n log(hat(y)_n) + (1 - y_n) log(1 - hat(y)_n)].
 $
 ] <def:logistic-regression>
 
@@ -273,36 +671,34 @@ tasks such as handwritten digit recognition, text categorization, or image label
 #definition(title: "Multinomial Logistic Regression")[
 For a classification problem with $K$ classes, multinomial logistic regression 
 models the conditional class probabilities using the softmax function.
-
 Let:
 - $x in RR^d$ be an input vector,
 - $W in RR^(K times d)$ be the weight matrix,
 - $b in RR^K$ be the bias vector.
-
 The probability of class $k$ is given by:
-
 $
 p(y = k | x; theta) =
 (exp((W x + b)_k))/(
 sum_(j=1)^K exp((W x + b)_j)
 ),
 $
-
 where:
 - $(W x + b)_k$ denotes the $k$-th component of the score vector,
 - $theta = (W, b)$ are the model parameters.
 
 The model is trained by minimizing the categorical cross-entropy loss:
-
 $
 L(theta) =
-- 1/N sum_(n=1)^N sum_(k=1)^K y_("nk") log(p(y_n = k | x_n; theta)).
+- 1/N sum_(n=1)^N sum_(k=1)^K y_(n k) log(p(y_n = k | x_n; theta)),
 $
+where $y_(n k) in {0, 1}$ indicates whether the $n$-th example belongs to class $k$, following a one-hot encoding of the true labels.
 ] <def:multinomial-logistic>
+
+#remark[For $K = 2$, this formulation reduces to binary logistic regression.]
 
 ==== Neural Networks and Multi-Layer Perceptrons
 
-The models introduced so far, such as linear and logistic regression, rely on a linear decision function of the form $f_theta(x) = theta^T x + b$. 
+The models introduced so far rely on a linear mapping of the form $W^T x + b$ applied to the input features. 
 While these models are simple, efficient, and well understood, their expressive power is fundamentally limited: they can only represent linear decision boundaries in the input space.
 
 Artificial neural networks extend these models by composing multiple linear transformations with nonlinear activation functions. 
@@ -317,49 +713,48 @@ This layered structure allows neural networks to progressively transform the inp
 
 #definition(title: "Multi-Layer Perceptron (MLP)")[
 A Multi-Layer Perceptron (MLP) is a feedforward neural network composed of a finite sequence of layers, where each layer applies an affine transformation followed by a nonlinear activation function.
-
-Let $x in R^{d_0}$ be an input vector. An MLP with $L$ layers defines a sequence of hidden representations $(h^(1), h^(2), ..., h^(L))$ as follows:
-
+Let $x in RR^(d_0)$ be an input vector. An MLP with $L$ layers defines a sequence of hidden representations $(h^(1), h^(2), dots, h^(L))$ as follows:
 $
 h^(0) = x,
 $
-
 $
-h^(l) = phi^(l)(W^(l) h^(l-1) + b^(l)), quad l = 1, dots, L,
+h^(l) = phi(W^(l) h^(l-1) + b^(l)), quad l = 1, dots, L-1,
 $
-
 where:
-- $W^(l) in R^{d_l times d_(l-1)}$ is the weight matrix of layer $l$,
-- $b^(l) in R^{d_l}$ is the bias vector of layer $l$,
-- $phi^(l): R^{d_l} -> R^{d_l}$ is a (possibly nonlinear) activation function applied element-wise,
-- $h^(l) in R^{d_l}$ is the output of layer $l$.
+- $W^(l) in RR^(d_l times d_(l-1))$ is the weight matrix of layer $l$,
+- $b^(l) in RR^(d_l)$ is the bias vector of layer $l$,
+- $phi: RR -> RR$ is a nonlinear activation function applied element-wise (e.g. ReLU, sigmoid),
+- $h^(l) in RR^(d_l)$ is the output of layer $l$.
 
-The final output of the network is given by:
-
+The output layer applies a task-specific transformation:
 $
-f_theta(x) = h^(L),
+f_theta (x) = phi^(L)(W^(L) h^(L-1) + b^(L)),
 $
+where $phi^(L)$ is chosen according to the task: the identity function for regression, the sigmoid for binary classification, or the softmax for multinomial classification.
 
-where $theta = {W^(1), b^(1), dots, W^(L), b^(L)}$ denotes the set of all trainable parameters of the network.
-
-Depending on the learning task, the output layer may use a specific activation function, such as the identity function for regression or the softmax function for multi-class classification.
+The full set of trainable parameters is $theta = {W^(1), b^(1), dots, W^(L), b^(L)}$.
 ] <def:mlp>
 
-=== Online Learning
-In the previous sections, we described supervised learning models under the 
-classical assumption that the entire training dataset is available in advance 
-and that model parameters are optimized offline, what is commonly referred to as centralised learning, see @def:centralizedl-learning. However, in many real-world 
-settings, data is generated sequentially over time, possibly in large volumes 
-or under resource constraints, making repeated retraining impractical.
+== Learning Paradigms
+Machine learning models can be trained under very different assumptions regarding data availability, computational resources, and the organization of the learning process. These assumptions define what is called a *learning paradigm*, which specifies how data is accessed, how computation is distributed, and how the model is updated during training.
 
-#definition(title: "Centralized Learning")[
+=== Centralized Learning
 Centralized learning refers to a learning paradigm in which all training data are 
 collected and stored at a single location, and the learning process is performed 
 using the complete dataset.
 
-Formally, given a dataset $D = {(x_1, y_1), dots, (x_N, y_N)}$, a centralized learning 
-algorithm assumes full access to all samples in $D$ during training and optimizes 
-a model $f_theta$ by minimizing a loss function over the entire dataset.
+#definition(title: "Centralized Learning")[
+Centralized learning is a learning paradigm in which a single learner has full access to a dataset $D = {(x_1, y_1), dots, (x_N, y_N)}$ and trains a model $f_theta$ by solving:
+$
+theta^* = "argmin"_(theta in Theta) 1/N sum_(i=1)^N L(f_theta (x_i), y_i),
+$
+where $L$ is a loss function chosen according to the task, and $Theta$ is the parameter space.
+
+This setting assumes that all data are available to a single computing entity throughout training, which enables exact gradient computation over the full dataset at each iteration of gradient descent:
+$
+theta_(t+1) = theta_t - eta nabla_theta 1/N sum_(i=1)^N L(f_theta (x_i), y_i).
+$
+] <def:centralized-learning>
 
 In practice, training is often carried out using mini-batches for computational 
 efficiency, particularly to leverage GPU or accelerator architectures. However, 
@@ -368,17 +763,27 @@ requires that all data be available to the learner, either in advance or on dema
 
 As a consequence, centralized learning typically relies on a single machine or a 
 tightly coupled computing cluster with sufficient computational and memory 
-resources to process the full dataset. This paradigm therefore imposes strong 
-constraints on data availability, scalability, and data locality.
-] <def:centralizedl-learning>
+resources to process the full dataset. 
 
-Online learning addresses this limitation by allowing a model to be updated 
+// This paradigm therefore imposes strong constraints on data availability, scalability, and data locality.
+
+While computationally straightforward, this paradigm imposes strong assumptions: all data must be collected, stored, and processed at a single location, raising fundamental challenges in terms of scalability, data privacy, and data locality.
+
+// === Online Learning
+// In the previous sections, we described supervised learning models under the 
+// classical assumption that the entire training dataset is available in advance 
+// and that model parameters are optimized offline, what is commonly referred to as centralised learning, see @def:centralized-learning. However, in many real-world 
+// settings, data is generated sequentially over time, possibly in large volumes 
+// or under resource constraints, making repeated retraining impractical.
+
+=== Online Learning
+Centralized learning, as introduced in @def:centralized-learning, assumes that the entire dataset $D$ is available before training begins. However, in many real-world settings, data is generated sequentially over time, possibly in large volumes or under resource constraints, making this assumption impractical.
+
+Online learning @shalev2025online addresses this limitation by allowing a model to be updated 
 incrementally as new data becomes available. Instead of learning from a fixed 
 dataset, the model continuously adapts to a stream of observations, enabling 
 learning in dynamic, non-stationary, or distributed environments. This paradigm 
-is particularly relevant in decentralized systems, streaming applications, 
-and large-scale learning scenarios, which are central to the context of this 
-thesis.
+is particularly relevant in decentralized systems, which are central to the context of this thesis.
 
 #definition(title: "Online Learning")[
 Online learning is a learning paradigm in which model parameters are updated 
@@ -412,7 +817,7 @@ distribution.
 === Ensemble Learning
 Beyond individual learning models, an important paradigm in machine learning 
 consists in combining multiple models in order to improve predictive performance. 
-This approach, known as ensemble learning, is based on the observation that 
+This approach, known as ensemble learning @dietterich2000ensemble, is based on the observation that 
 multiple imperfect or weak models can collectively yield a more accurate and 
 robust predictor than any single model alone.
 
@@ -435,6 +840,7 @@ $
 where:
 - $f_m$ denotes the prediction of model $m$,
 - $alpha_m in R$ is a weight associated with model $m$.
+] <def:ensemble-learning>
 
 For linear models, such as linear or logistic regression, this aggregation is 
 equivalent to a single model of the same class, with parameters equal to the 
@@ -450,7 +856,6 @@ model.
 Despite the lack of general theoretical guarantees for nonlinear ensembles, 
 ensemble learning has been shown empirically to significantly improve predictive 
 performance in a wide range of applications.
-] <def:ensemble-learning>
 
 === Distributed Learning
 While ensemble learning focuses on combining multiple models to improve predictive 
