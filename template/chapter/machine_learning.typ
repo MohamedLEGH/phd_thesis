@@ -1,4 +1,6 @@
-#import "@preview/cetz:0.3.4": canvas, draw
+#import "@preview/cetz:0.4.0": canvas, draw
+
+#import "@preview/cetz-venn:0.1.4": venn2
 
 #import "@preview/fletcher:0.5.8" as fletcher: diagram, node, edge
 
@@ -988,128 +990,531 @@ constraints.
 
 ==== Data parallelism
 
-Data parallelism is one of the most common forms of distributed learning and aims 
-at accelerating training by distributing the data across multiple computing nodes. 
-In this paradigm, the training dataset is partitioned into disjoint subsets, each 
-assigned to a different worker, while all workers maintain a replica of the same 
-model.
+As deep neural networks have grown in size and complexity, training them on a
+single device has become increasingly time-consuming. Modern architectures may
+require days or even weeks of computation on a single processor, which makes
+reducing training time a central concern in distributed learning @dean2012large.
+A natural response to this challenge is to exploit the parallel computing
+capabilities of modern hardware: GPUs expose hundreds to thousands of cores that
+can perform floating-point operations simultaneously, making them well-suited for
+the kind of matrix computations that dominate neural network training.
 
-During training, each worker performs local updates of the model parameters using 
-its own data partition, typically by computing gradients on mini-batches. These 
-local updates are then aggregated, for instance by averaging the gradients or the 
-model parameters, to produce a global model that is shared among all workers. This 
-process is repeated iteratively until convergence.
+Data parallelism is one of the most common strategies for distributed training and
+leverages this hardware parallelism by distributing the training data across
+multiple workers. The training dataset is partitioned into disjoint subsets, each
+assigned to a different worker, while all workers maintain a replica of the same
+model. Neural networks are particularly amenable to this form of parallelism:
+because the gradient of the loss with respect to the parameters decomposes
+additively over individual samples, the full gradient can be approximated by
+aggregating local gradients computed independently on each worker. This property
+makes distributed SGD a natural fit for data parallelism @dean2012large.
 
-Data parallelism preserves the centralized learning objective, as the model is 
-effectively trained on the entire dataset, but distributes the computational load 
-across multiple nodes. While this approach improves scalability and training speed, 
-it still relies on frequent synchronization and communication between workers, and 
-assumes a coordinated training process under a common optimization objective.
+During training, each worker computes gradients on its local data partition using
+mini-batch SGD. These gradients are then aggregated across workers --- typically
+by averaging --- to produce a global gradient estimate, which is used to update
+the shared model parameters. This process is repeated iteratively until a
+convergence criterion is met.
+
+Data parallelism preserves the centralized learning objective, as the model is
+effectively trained on the full dataset, while distributing the computational
+load. In its synchronous form, it ensures that each parameter update is consistent
+with the global gradient. However, this approach still relies on frequent
+synchronization and communication between workers, and assumes a coordinated
+training process under a common optimization objective.
+
+#figure(
+  diagram(
+    spacing: (20mm, 8mm),
+    node-stroke: 0.8pt,
+    node-fill: white,
+
+    // --- Parameter server ---
+    node((1, 0),
+      [*Parameter server*\ global model $theta$],
+      shape: rect, name: <server>),
+
+    // --- GPU 1 ---
+    node((0, 2),
+      [*GPU 1*\ model replica $theta$\ mini-batch $cal(B)_1$],
+      shape: rect, name: <gpu1>),
+
+    // --- GPU 2 ---
+    node((1, 2),
+      [*GPU 2*\ model replica $theta$\ mini-batch $cal(B)_2$],
+      shape: rect, name: <gpu2>),
+
+    // --- GPU 3 ---
+    node((2, 2),
+      [*GPU 3*\ model replica $theta$\ mini-batch $cal(B)_3$],
+      shape: rect, name: <gpu3>),
+
+    // --- Broadcast: server → GPUs ---
+    edge(<server>, <gpu1>,
+      marks: "->",
+      label: $theta$,
+      bend: -15deg),
+    edge(<server>, <gpu2>,
+      marks: "->",
+      label: $theta$),
+    edge(<server>, <gpu3>,
+      marks: "->",
+      label: $theta$,
+      bend: 15deg),
+
+    // --- Gradient push: GPUs → server ---
+    edge(<gpu1>, <server>,
+      marks: "->",
+      label: $nabla ell_1$,
+      label-side: left,
+      bend: -15deg),
+    edge(<gpu2>, <server>,
+      marks: "->",
+      label: $nabla ell_2$),
+    edge(<gpu3>, <server>,
+      marks: "->",
+      label-side: right,
+      label: $nabla ell_3$,
+      bend: 15deg),
+  ),
+  caption: [
+    Data parallelism: each GPU holds a replica of
+    the model and processes a distinct mini-batch.
+  ],
+)
 
 ==== Model parallelism
 
-Model parallelism is a form of distributed learning in which the model itself, rather 
-than the data, is partitioned across multiple computing nodes. This approach is 
-particularly useful when the model is too large to fit into the memory of a single 
-device, as is often the case for deep neural networks with a large number of 
-parameters.
+As neural networks have grown to billions of parameters, storing and training
+them on a single device has become infeasible: the model simply does not fit
+within the memory of a single CPU or GPU @dean2012large. Model parallelism
+addresses this constraint by partitioning the model itself across multiple
+devices, rather than replicating it as in data parallelism.
 
-In a model-parallel setting, each worker is responsible for computing and storing 
-only a subset of the model parameters. During training, forward and backward passes 
-are executed collaboratively: intermediate activations and gradients must be 
-communicated between workers to propagate information through the model. As a 
-result, model parallelism introduces fine-grained dependencies and requires careful 
-coordination and synchronization among nodes.
+The most straightforward form of model parallelism is *pipeline parallelism*,
+in which the layers of the network are divided into sequential stages, each
+assigned to a dedicated device. Neural networks are well suited to this form
+of parallelism: because computation flows naturally from one layer to the next,
+the model can be split along layer boundaries without altering the learning
+objective. During the forward pass, each device computes its stage and
+transmits the resulting activations to the next; during the backward pass,
+gradients flow in the reverse direction. A practical limitation of this
+approach is the *pipeline bubble*: when a device is waiting for the output of
+the preceding stage, it remains idle, reducing overall hardware utilization.
 
-While model parallelism enables the training of very large models that would be 
-infeasible on a single machine, it typically incurs higher communication overhead 
-than data parallelism and is more sensitive to latency. In practice, large-scale 
-systems often combine model parallelism and data parallelism to balance memory 
-constraints, computational efficiency, and communication costs.
+#figure(
+  diagram(
+    spacing: (18mm, 12mm),
+    node-stroke: 0.8pt,
+    node-fill: white,
 
+    // --- Input ---
+    node((1, 1), [*Input* $x$], shape: rect, name: <input>),
+
+    // --- GPU 1 ---
+    node((1, 0),
+      [*GPU 1*\ layers $1 dots l_1$],
+      shape: rect, name: <gpu1>),
+
+    // --- GPU 2 ---
+    node((2, 0),
+      [*GPU 2*\ layers $l_1+1 dots l_2$],
+      shape: rect, name: <gpu2>),
+
+    // --- GPU 3 ---
+    node((3, 0),
+      [*GPU 3*\ layers $l_2+1 dots L$],
+      shape: rect, name: <gpu3>),
+
+    // --- Output ---
+    node((4, 1), [*Output*\ $f_theta (x)$], shape: rect, name: <output>),
+
+    // --- Loss ---
+    node((3, 1), [*Loss*\ $ell(f_theta (x), y)$], shape: rect, name: <loss>),
+
+    // --- Forward pass ---
+    edge(<input>, <gpu1>,
+      marks: "->",
+      label: [forward],
+      label-side: left),
+    edge(<gpu1>, <gpu2>,
+      marks: "->",
+      label: $h^((l_1))$,
+      label-side: left),
+    edge(<gpu2>, <gpu3>,
+      marks: "->",
+      label: $h^((l_2))$,
+      label-side: left),
+    edge(<gpu3>, <output>,
+      marks: "->",
+      label: [forward],
+      label-side: left),
+    edge(<output>, <loss>,
+      marks: "->"),
+
+    // --- Backward pass ---
+    edge(<loss>, <gpu3>,
+      marks: "->",
+      label: $nabla ell$,
+      label-side: left,
+      bend: 30deg),
+    edge(<gpu3>, <gpu2>,
+      marks: "->",
+      label: $delta^((l_2))$,
+      label-side: right,
+      bend: 30deg),
+    edge(<gpu2>, <gpu1>,
+      marks: "->",
+      label: $delta^((l_1))$,
+      label-side: right,
+      bend: 30deg),
+  ),
+  caption: [
+    Pipeline parallelism: the layers of the network are partitioned into
+    three stages, each assigned to a dedicated GPU.
+  ],
+)
+
+
+A more advanced form is *tensor parallelism*, in which individual operations
+--- such as matrix multiplications within a single layer --- are themselves
+distributed across devices @shoeybi2019megatron. This approach can be more
+efficient than pipeline parallelism, as it reduces inter-stage dependencies
+and better utilises available compute. However, it requires the model
+architecture to be explicitly designed or adapted for distributed tensor
+operations, making it harder to implement in practice and not universally
+applicable.
+
+At the hardware level, Tensor Processing Units (TPUs) embody a related
+philosophy: they are specialised accelerators built around a systolic array
+architecture optimised for large-scale matrix and tensor computations, and are
+designed to efficiently distribute such operations across a large number of
+processing elements. In this sense, tensor parallelism and TPU-based
+computation share the same foundational idea of exploiting the structure of
+tensor operations to achieve scalable parallelism.
+
+While model parallelism enables the training of models that would be
+infeasible on a single device, it typically incurs higher communication
+overhead than data parallelism and is more sensitive to latency. In practice,
+large-scale systems often combine model parallelism and data parallelism to
+balance memory constraints, computational efficiency, and communication costs @dean2012large.
+
+#figure(
+  diagram(
+    spacing: (18mm, 12mm),
+    node-stroke: 0.8pt,
+    node-fill: white,
+
+    // --- Input ---
+    node((0.3, 1), [*Input*\ $h^((l-1))$], shape: rect, name: <input>),
+
+    // --- GPU 1 ---
+    node((1, 0),
+      [*GPU 1*\ $W_1^((l)) h^((l-1))$\ shard 1],
+      shape: rect, name: <gpu1>),
+
+    // --- GPU 2 ---
+    node((1, 1),
+      [*GPU 2*\ $W_2^((l)) h^((l-1))$\ shard 2],
+      shape: rect, name: <gpu2>),
+
+    // --- GPU 3 ---
+    node((1, 2),
+      [*GPU 3*\ $W_3^((l)) h^((l-1))$\ shard 3],
+      shape: rect, name: <gpu3>),
+
+    // --- All-reduce ---
+    node((1.8, 1),
+      [Concatenate shards],
+      shape: rect, name: <allreduce>),
+
+    // --- Output ---
+    node((2.8, 1),
+      [*Output*\ $h^((l)) = phi(W^((l)) h^((l-1)) + b^((l)))$],
+      shape: rect, name: <output>),
+
+    // --- Broadcast input to all GPUs ---
+    edge(<input>, <gpu1>, marks: "->"),
+    edge(<input>, <gpu2>, marks: "->"),
+    edge(<input>, <gpu3>, marks: "->"),
+
+    // --- Partial results to all-reduce ---
+    edge(<gpu1>, <allreduce>, marks: "->"),
+    edge(<gpu2>, <allreduce>, marks: "->"),
+    edge(<gpu3>, <allreduce>, marks: "->"),
+
+    // --- Output ---
+    edge(<allreduce>, <output>, marks: "->"),
+  ),
+  caption: [
+    Tensor parallelism: the weight matrix $W^((l))$ of a single layer is
+    partitioned into shards, each stored
+    and computed on a dedicated GPU.
+  ],
+)
 ==== Multi-agent reinforcement learning
 
-Multi-Agent Reinforcement Learning (MARL) extends the reinforcement learning framework 
-to settings involving multiple agents that learn and act simultaneously within a 
-shared environment. In this paradigm, each agent aims to learn a policy that maximizes 
-its expected cumulative reward, while the dynamics of the environment are influenced 
-by the actions of all agents.
+Multi-Agent Reinforcement Learning (MARL) extends the reinforcement learning
+framework to settings involving multiple agents that learn and act simultaneously
+within a shared environment @albrecht2024multi. Unlike supervised learning, which
+is driven by labeled datasets and a fixed optimization objective, MARL relies on
+interaction, exploration, and reward signals: each agent aims to learn a policy
+that maximises its expected cumulative reward, while the dynamics of the
+environment are jointly shaped by the actions of all agents.
 
-Unlike supervised learning, where learning is driven by labeled datasets, MARL relies 
-on interaction, exploration, and reward signals. As a result, it falls outside the 
-scope of this thesis, which primarily focuses on supervised learning and its 
-distributed variants. Nevertheless, MARL is closely related to distributed learning 
-in that it involves multiple autonomous learners whose behaviors jointly shape the 
-learning process.
+Agents in MARL may be cooperative, competitive, or operate in mixed settings,
+depending on whether their reward structures are aligned or opposed
+@albrecht2024multi. In most formulations, agents observe either the same global
+state or partial views of that state, and must act without full knowledge of the
+other agents' policies or intentions.
 
-In most MARL formulations, agents are assumed to operate within a common environment 
-and to observe either the same global state or partial views of that state. The 
-presence of multiple learning agents introduces additional challenges, such as 
-non-stationarity of the environment from the perspective of each agent, coordination 
-and competition among agents, and the need for scalable learning algorithms.
+#figure(
+  diagram(
+    spacing: (20mm, 14mm),
+    node-stroke: 0.8pt,
+    node-fill: white,
 
-Despite these challenges, MARL has proven effective in a variety of domains, including 
-robotics, game theory, and distributed control, and remains an active area of research 
-in distributed and decentralized learning systems.
+    // --- Environment ---
+    node((1, 0),
+      [*Environment*\ shared state $s_t$],
+      shape: rect, name: <env>),
 
-==== Transfer Learning & Fine-Tuning
+    // --- Agents ---
+    node((0, 2),
+      [*Agent 1*\ policy $pi_1$],
+      shape: rect, name: <a1>),
+    node((1, 2),
+      [*Agent 2*\ policy $pi_2$],
+      shape: rect, name: <a2>),
+    node((2, 2),
+      [*Agent 3*\ policy $pi_3$],
+      shape: rect, name: <a3>),
 
-Transfer learning refers to a learning paradigm in which knowledge acquired from one 
-task or domain is reused to improve learning performance on a different, but related, 
-task or domain. Unlike distributed learning, transfer learning does not primarily aim 
-at scaling computation or data across multiple machines. Instead, it focuses on 
-reusing previously learned representations to reduce training cost, improve 
-generalization, or enable learning when labeled data is scarce.
+    // --- Observations: environment → agents ---
+    edge(<env>, <a1>,
+      marks: "<->"),
+    edge(<env>, <a2>,
+      marks: "<->"),
+    edge(<env>, <a3>,
+      marks: "<->"),
+  ),
+  caption: [
+    Multi-agent reinforcement learning: three agents interact simultaneously
+    within a shared environment.
+  ],
+)
 
-In a typical transfer learning setup, a model is first trained on a source dataset, 
-often large and generic, to solve a source task. This pretraining phase allows the 
-model to learn general-purpose representations. The pretrained model is then reused 
-for a target task, which may involve a dataset that is smaller, noisier, or drawn from 
-a different distribution. The source and target tasks may differ in terms of data 
-modalities, label spaces, or objectives, but are assumed to share some underlying 
-structure.
+This thesis focuses on supervised learning and its distributed variants; MARL
+therefore falls outside its primary scope. Nevertheless, it is relevant to
+mention here because it shares structural similarities with decentralized
+learning: in both paradigms, multiple autonomous learners operate locally,
+without centralized coordination, and their individual behaviors collectively
+determine the outcome of the learning process. The key distinction is that MARL
+agents optimize reward signals through interaction with an environment, whereas
+decentralized learning nodes optimize a supervised loss over local datasets.
 
-Fine-tuning is a specific instantiation of transfer learning. In fine-tuning, the 
-pretrained model is further trained on the target dataset by continuing the 
-optimization process, typically with a smaller learning rate. Depending on the 
-application, fine-tuning may involve updating all model parameters or only a subset 
-of them, such as the final layers of a neural network.
+==== Transfer learning and fine-tuning
 
-The key difference between transfer learning and fine-tuning lies in their scope. 
-Transfer learning is a broad concept that encompasses any strategy that leverages 
-knowledge from a source task, including feature extraction, representation reuse, and 
-model initialization. Fine-tuning, by contrast, refers specifically to the adaptation 
-of model parameters through additional training on the target task.
+Transfer learning refers to a learning paradigm in which knowledge acquired
+from one task or domain is reused to improve learning performance on a
+different, but related, task or domain @pan2009survey. A central motivation
+is the scarcity of labeled data: when a target task does not have sufficient
+training examples, leveraging representations learned on a larger source
+dataset can substantially reduce training cost and improve generalisation.
 
-While transfer learning and fine-tuning are not distributed learning techniques per 
-se, they are often complementary to distributed and federated learning systems. For 
-instance, a global model may be pretrained in a centralized manner and later adapted 
-locally on different nodes using fine-tuning, thereby combining representation reuse 
-with decentralized data.
+In a typical transfer learning setup, a model is first pretrained on a large
+source dataset to solve a source task, allowing it to acquire general-purpose
+representations. The pretrained model is then reused for a target task, which
+may involve a smaller, noisier, or differently distributed dataset. The source
+and target tasks may differ in label spaces or objectives, but are assumed to
+share some underlying structure @pan2009survey. A special case of this
+setting is domain adaptation, in which the task remains the same but the
+distribution of the data shifts between source and target.
+
+This paradigm has become dominant in modern deep learning: large neural
+networks pretrained on massive datasets --- such as language models or vision
+transformers --- are routinely adapted to downstream tasks, often with limited
+additional data.
+
+Fine-tuning is a specific instantiation of transfer learning in which the
+pretrained model is further trained on the target dataset by continuing the
+optimisation process, typically with a smaller learning rate. Depending on
+the application, fine-tuning may involve updating all model parameters or
+only a subset of them, such as the final layers of the network.
+
+#figure(
+  diagram(
+    spacing: (22mm, 10mm),
+    node-stroke: 0.8pt,
+    node-fill: white,
+
+    // --- Source dataset ---
+    node((0.4, 0),
+      [*Source dataset*\ $cal(D)_S$ (large, generic)],
+      shape: rect, name: <ds>),
+
+    // --- Pretraining ---
+    node((1.2, 0),
+      [*Pretraining*\ source task $cal(T)_S$],
+      shape: rect, name: <pretrain>),
+
+    // --- Pretrained model ---
+    node((2, 0),
+      [*Pretrained model*\ $f_(theta_S)$\ general representations],
+      shape: rect, name: <pretrained>),
+
+    // --- Target dataset ---
+    node((0.4, 1.3),
+      [*Target dataset*\ $cal(D)_T$ (small, specific)],
+      shape: rect, name: <dt>),
+
+    // --- Fine-tuning ---
+    node((2, 1.3),
+      [*Fine-tuning*\ target task $cal(T)_T$\ $cal(T)_T approx cal(T)_S$],
+      shape: rect, name: <finetune>),
+
+    // --- Fine-tuned model ---
+    node((2.7, 1.3),
+      [*Fine-tuned model*\ $f_(theta_T)$\ adapted representations],
+      shape: rect, name: <finetuned>),
+
+    // --- Source pipeline ---
+    edge(<ds>, <pretrain>, marks: "->"),
+    edge(<pretrain>, <pretrained>, marks: "->"),
+
+    // --- Transfer ---
+    edge(<pretrained>, <finetune>,
+      marks: "->",
+      label: [transfer $theta_S$],
+      label-side: right),
+
+    // --- Target pipeline ---
+    edge(<dt>, <finetune>, marks: "->"),
+    edge(<finetune>, <finetuned>, marks: "->"),
+  ),
+  caption: [
+    Transfer learning: a model $f_(theta_S)$ is first pretrained on a large
+    source dataset $cal(D)_S$ for a source task $cal(T)_S$. Its parameters
+    $theta_S$ are then transferred to a fine-tuning stage on a smaller target
+    dataset $cal(D)_T$, yielding an adapted model $f_(theta_T)$ suited to the
+    target task $cal(T)_T$. Transfer is effective when $cal(T)_S$ and
+    $cal(T)_T$ share underlying structure.
+  ],
+)
+
+While transfer learning and fine-tuning are not distributed learning
+techniques per se, they are often complementary to federated and decentralised
+learning systems. A common pattern, known as personalised federated learning, is to train a
+global model in a federated manner and subsequently fine-tune it locally on
+each node using its private data, thereby adapting the shared representations
+to each node's local data distribution @fallah2020personalized.
+
+=== Towards decentralisation
+
+The paradigms surveyed in this section --- ensemble learning, data parallelism, model parallelism, multi-agent reinforcement learning, and transfer learning ---
+each offer distinct strategies for improving the efficiency, scalability, or
+generalisation of learned models. However, they all retain, in one form or
+another, a fundamentally centralised assumption: ensemble methods aggregate models trained
+using a common dataset; data parallelism and model
+parallelism presuppose that the full training dataset is available and can be
+freely distributed across workers; MARL agents evolve within a shared
+environment governed by a single dynamics model; and transfer learning relies
+on a globally pretrained model whose representations are assumed to be
+transferable. In all these settings, centralised control --- over the data,
+the environment, or the model --- remains implicit.
+
+Decentralised learning departs from this assumption along a fundamentally
+different dimension. Rather than distributing computation over centrally
+held data, it considers settings in which each node or agent holds its own
+private dataset, which is never shared or aggregated at a central location.
+The learning problem must therefore be solved collaboratively across nodes
+whose data may be heterogeneous, whose communication is constrained, and
+whose privacy must be preserved. This shift from centralised to decentralised
+data ownership defines the core challenge addressed in the remainder of this
+chapter.
 
 == Decentralized Learning
 
-Decentralized learning naturally emerges at the intersection of peer-to-peer systems 
-and machine learning. From a distributed systems perspective, it can be seen as a 
-direct extension of decentralized computation: instead of collaboratively computing 
-a single numerical value or global statistic, each node maintains a local machine 
-learning model and a local dataset, and participates in the learning process through 
-peer-to-peer interactions.
+Decentralized learning naturally emerges at the intersection of peer-to-peer
+systems and machine learning. From a distributed systems perspective, it can
+be seen as a direct extension of decentralized computation: instead of
+collaboratively computing a single numerical value or global statistic, each
+node maintains a local model and a local dataset, and participates in the
+learning process exclusively through peer-to-peer interactions, without
+relying on any central coordinator or shared memory.
 
-From a machine learning perspective, decentralized learning can be viewed as a 
-generalization of distributed learning. Unlike classical distributed learning settings, 
-where data are moved or aggregated to enable centralized computation, decentralized 
-learning operates under the constraint that data remain local to each node. Learning 
-is therefore achieved by moving models—or model updates—across nodes, rather than 
-moving the data themselves.
+From a machine learning perspective, decentralized learning can be viewed as
+a relaxation of the centralisation assumption that underlies most classical
+learning paradigms. Rather than moving data to a central location where
+computation is performed, decentralized learning operates under the constraint
+that data remain local to each node. Learning is therefore achieved by moving
+models --- or model updates --- across nodes, rather than moving the data
+themselves. In this sense, it inverts the classical data parallelism paradigm:
+instead of distributing centrally held data across workers, it distributes
+computation across nodes whose data are inherently local and never aggregated.
 
-Decentralized learning also shares strong conceptual links with online learning and 
-ensemble learning. It resembles online learning in the sense that model updates are 
-often performed sequentially, based on data from one node at a time. At the same time, 
-it relates to ensemble learning, as multiple locally trained models are repeatedly 
-combined or aggregated to form improved models. Through this iterative exchange and 
-fusion of models, decentralized learning enables a collection of autonomous nodes to 
-collectively optimize a learning objective.
+#figure(
+  canvas({
+    import draw: *
+
+    venn2(
+      name: "venn",
+      a-fill:  rgb("#1D9E75").lighten(70%),
+      b-fill:  rgb("#7F77DD").lighten(70%),
+      ab-fill: rgb("#4DB89A").lighten(60%),
+    )
+
+    // --- Left: Machine learning ---
+    content("venn.a", align(center,
+      text[
+        *Machine learning* \
+        #text[
+          Supervised learning \
+          Optimization \
+          Model training \
+          Generalization
+        ]
+      ]
+    ))
+
+    // --- Right: Peer-to-peer systems ---
+    content("venn.b", align(center,
+      text[
+        *Peer-to-peer systems* \
+        #text[
+          Distributed computation \
+          No central coordinator \
+          Local interactions \
+          Fault tolerance
+        ]
+      ]
+    ))
+
+    // --- Intersection: Decentralized learning ---
+    content("venn.ab", align(center,
+      text[
+        *Decentralized* \
+        *learning* \
+        #text[
+          Local data \
+          Model exchange \
+          Collaborative \
+          optimization
+        ]
+      ]
+    ))
+  }),
+  caption: [
+    Decentralized learning at the intersection of machine learning and
+    peer-to-peer systems.
+  ],
+)
+
+This framework also bears a conceptual resemblance to ensemble learning: just
+as ensemble methods combine the predictions of multiple locally trained models
+to form a stronger predictor (see @def:ensemble-learning), decentralized learning
+repeatedly exchanges and aggregates local model updates across nodes, enabling
+a collection of autonomous agents to collectively optimize a shared learning
+objective without any node having access to the full dataset.
 
 ==== Horizontal vs Vertical Learning
 
