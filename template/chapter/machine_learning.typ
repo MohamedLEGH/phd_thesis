@@ -1,7 +1,5 @@
 #import "@preview/cetz:0.4.0": canvas, draw
 
-#import "@preview/cetz-venn:0.1.4": venn2
-
 #import "@preview/fletcher:0.5.8" as fletcher: diagram, node, edge
 
 #import "@preview/lovelace:0.3.0": *
@@ -1453,55 +1451,35 @@ instead of distributing centrally held data across workers, it distributes
 computation across nodes whose data are inherently local and never aggregated.
 
 #figure(
-  canvas({
+  canvas(length: 1.2cm, {
     import draw: *
 
-    venn2(
-      name: "venn",
-      a-fill:  rgb("#1D9E75").lighten(70%),
-      b-fill:  rgb("#7F77DD").lighten(70%),
-      ab-fill: rgb("#4DB89A").lighten(60%),
-    )
-
+    // --- Circles ---
+circle((2.8, 0), radius: 3.8,
+  fill: rgb("#1D9E75").lighten(75%).transparentize(30%),
+  stroke: rgb("#1D9E75") + 0.5pt)
+circle((6.2, 0), radius: 3.8,
+  fill: rgb("#7F77DD").lighten(75%).transparentize(30%),
+  stroke: rgb("#7F77DD") + 0.5pt)
+  
     // --- Left: Machine learning ---
-    content("venn.a", align(center,
-      text[
-        *Machine learning* \
-        #text[
-          Supervised learning \
-          Optimization \
-          Model training \
-          Generalization
-        ]
-      ]
-    ))
+    content((1.0, 1.4), text(size: 10pt, weight: "bold")[Machine learning])
+    content((1.0, 0.7), text(size: 8.5pt)[Supervised learning])
+    content((1.0, 0.1), text(size: 8.5pt)[Optimization])
+    content((1.0, -0.5), text(size: 8.5pt)[Model training])
 
     // --- Right: Peer-to-peer systems ---
-    content("venn.b", align(center,
-      text[
-        *Peer-to-peer systems* \
-        #text[
-          Distributed computation \
-          No central coordinator \
-          Local interactions \
-          Fault tolerance
-        ]
-      ]
-    ))
+    content((8.0, 1.4), text(size: 10pt, weight: "bold")[Peer-to-peer systems])
+    content((8.0, 0.7), text(size: 8.5pt)[Distributed computation])
+    content((8.0, 0.1), text(size: 8.5pt)[No central coordinator])
+    content((8.0, -0.5), text(size: 8.5pt)[Local interactions])
+    content((8.0, -1.1), text(size: 8.5pt)[Fault tolerance])
 
     // --- Intersection: Decentralized learning ---
-    content("venn.ab", align(center,
-      text[
-        *Decentralized* \
-        *learning* \
-        #text[
-          Local data \
-          Model exchange \
-          Collaborative \
-          optimization
-        ]
-      ]
-    ))
+    content((4.5, 1.4), text(size: 10pt, weight: "bold")[Decentralized])
+    content((4.5, 0.7), text(size: 10pt, weight: "bold")[learning])
+    content((4.5, 0.0), text(size: 8.5pt)[Local data])
+    content((4.5, -0.6), text(size: 8.5pt)[Model exchange])
   }),
   caption: [
     Decentralized learning at the intersection of machine learning and
@@ -1516,29 +1494,134 @@ repeatedly exchanges and aggregates local model updates across nodes, enabling
 a collection of autonomous agents to collectively optimize a shared learning
 objective without any node having access to the full dataset.
 
-==== Horizontal vs Vertical Learning
+==== Horizontal and vertical decentralized learning
 
-Decentralized learning approaches can be broadly categorized into two main settings, 
-commonly referred to as horizontal and vertical learning, depending on how data are 
-partitioned across nodes.
+Decentralized learning approaches can be broadly categorized into two
+settings, commonly referred to as horizontal and vertical, depending on
+how data are partitioned across nodes @zhang2021survey.
 
-In horizontal decentralized learning, all nodes share the same feature space but 
-operate on different subsets of data instances. Each node trains a local model on its 
-own dataset, and learning proceeds by combining these local models. Model aggregation 
-is typically performed parameter-wise, for example by averaging or weighted averaging 
-corresponding parameters across nodes. This setting is particularly well suited to 
-peer-to-peer and federated environments, where data are naturally distributed across 
-participants but follow a common schema.
+In horizontal decentralized learning, all nodes share the same feature
+space but hold different subsets of data instances. Each node trains a
+local model on its own dataset, and learning proceeds by combining these
+local models through parameter-wise aggregation --- for instance by
+averaging corresponding parameters across nodes. This setting is
+particularly well suited to peer-to-peer and federated environments,
+where data are naturally distributed across participants but follow a
+common schema.
 
-In contrast, vertical decentralized learning assumes that nodes observe the same set 
-of data instances but with different feature subsets. In this case, no single node has 
-access to the full feature vector of an instance. Learning therefore requires combining 
-partial models or representations, often through the concatenation of parameters or 
-intermediate feature embeddings. Vertical learning generally involves stronger 
-coordination constraints and more complex communication patterns.
+In vertical decentralized learning, nodes observe the same set of data
+instances but with disjoint feature subsets. No single node has access
+to the full feature vector of an instance; learning therefore requires
+exchanging intermediate representations or partial gradients computed
+on complementary feature subsets. This setting involves stronger
+coordination constraints and more complex communication patterns than
+the horizontal case.
 
-In this thesis, we focus on *horizontal decentralized learning*, which is by far the most common setting in the literature and aligns naturally with peer-to-peer systems where nodes independently collect data but operate under a shared model structure.
+In this thesis, we focus exclusively on *horizontal decentralized
+learning*, which is by far the most prevalent setting in the literature
+and aligns naturally with peer-to-peer systems where nodes independently
+collect data instances under a shared feature schema.
 
+#figure(
+  canvas(length: 1.0cm, {
+    import draw: *
+
+    // --- Parameters ---
+    let cell-w = 1.6
+    let cell-h = 0.9
+    let n-feat = 5
+    let n-inst = 3
+
+    // ================================================================
+    // HORIZONTAL FEDERATED LEARNING (left)
+    // ================================================================
+
+    // Title
+    content((3.5, 1.5), text(size: 10pt, weight: "bold")[Horizontal federated learning])
+
+    // Column headers: features
+    for j in range(n-feat) {
+      content((j * cell-w + 0.8, 0.7),
+        text(size: 7.5pt)[$x^((#(j+1)))$])
+    }
+
+    // Row labels + cells
+    let h-colors = (
+      rgb("#1D9E75").lighten(70%),
+      rgb("#1D9E75").lighten(55%),
+      rgb("#1D9E75").lighten(40%),
+    )
+    let node-labels = ("Node 1", "Node 2", "Node 3")
+
+    for i in range(n-inst) {
+      let col = h-colors.at(i)
+
+      // Node label on first row of each node
+        content((-0.5, -i * cell-h),
+          text(size: 7pt)[#node-labels.at(i)])
+
+      for j in range(n-feat) {
+        rect(
+          (j * cell-w, -i * cell-h - cell-h * 0.5),
+          (j * cell-w + cell-w - 0.1, -i * cell-h + cell-h * 0.5 - 0.05),
+          fill: col,
+          stroke: white + 1pt,
+          radius: 0.05,
+        )
+      }
+    }
+
+    // ================================================================
+    // VERTICAL FEDERATED LEARNING (right, offset)
+    // ================================================================
+
+    let x-off = n-feat * cell-w + 2.0
+    let n-feat-v = 3
+    let n-inst-v = 4
+
+    content((x-off + n-feat-v * cell-w * 0.5, 1.5),
+      text(size: 10pt, weight: "bold")[Vertical federated learning])
+
+    // Node color per feature column
+    let v-colors = (
+      rgb("#7F77DD").lighten(60%),
+      rgb("#7F77DD").lighten(40%),
+      rgb("#7F77DD").lighten(20%),
+    )
+    let v-node-labels = ("Node 1", "Node 2", "Node 3")
+
+    // Column headers with node labels
+    for j in range(n-feat-v) {
+      content((x-off + j * cell-w + 0.8, 0.7),
+        text(size: 7.5pt)[#v-node-labels.at(j)])
+    }
+
+    // Row labels: instances
+    for i in range(n-inst-v) {
+      content((x-off - 0.7, -i * cell-h),
+        text(size: 7pt)[$z^((#(i+1)))$])
+    }
+
+    for i in range(n-inst-v) {
+      for j in range(n-feat-v) {
+        rect(
+          (x-off + j * cell-w, -i * cell-h - cell-h * 0.5),
+          (x-off + j * cell-w + cell-w - 0.1, -i * cell-h + cell-h * 0.5 - 0.05),
+          fill: v-colors.at(j),
+          stroke: white + 1pt,
+          radius: 0.05,
+        )
+      }
+    }
+
+
+  }),
+  caption: [
+    Horizontal federated learning (left): nodes share the same feature
+    space but hold disjoint sets of instances. Vertical federated learning (right):
+    nodes observe the same instances but hold disjoint feature subsets.
+  ],
+)
 === Assumptions
 
 In order to focus on the algorithmic and theoretical aspects of decentralized learning, 
