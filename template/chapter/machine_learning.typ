@@ -244,105 +244,6 @@ The algorithm is typically stopped when one of the following conditions is met:
 
 ] <def:gradient-descent>
 
-// #figure(
-//   canvas({
-//     import draw: *
-
-//     // ── Axes ────────────────────────────────────────────────
-//     set-style(stroke: (paint: gray.darken(20%), thickness: 0.8pt))
-//     line((-0.3, 0), (10.3, 0))
-//     line((0, -0.3), (0, 5.5))
-//     line((10.1, -0.15), (10.3, 0), (10.1, 0.15))
-//     line((-0.15, 5.3), (0, 5.5), (0.15, 5.3))
-//     content((10.6, 0),   text(size: 9pt)[$theta$])
-//     content((0.3, 5.7),  text(size: 9pt)[$J(theta)$])
-
-//     // ── Loss curve : U-shape, J(x) = 0.45*(x-5)^2 + 0.4 ────
-//     let f(x) = 0.45 * (x - 5) * (x - 5) + 0.4
-
-//     let pts = range(0, 101).map(i => {
-//       let x = i * 9.5 / 100.0 + 0.3
-//       (x, f(x))
-//     })
-//     set-style(stroke: (paint: blue.darken(10%), thickness: 2pt))
-//     hobby(..pts)
-
-//     // ── Gradient descent steps (oscillating left/right) ─────
-//     // Simulates overshooting around the minimum at x=5
-//     let steps = (
-//       (1.0,  f(1.0)),   // far left
-//       (8.5,  f(8.5)),   // overshoot right
-//       (2.2,  f(2.2)),   // back left
-//       (7.5,  f(7.5)),   // overshoot right
-//       (3.2,  f(3.2)),   // closer left
-//       (6.7,  f(6.7)),   // overshoot right
-//       (4.0,  f(4.0)),   // near left
-//       (6.1,  f(6.1)),   // small overshoot
-//       (4.6,  f(4.6)),   // very close left
-//       (5.5,  f(5.5)),   // tiny overshoot
-//       (5.0,  f(5.0)),   // minimum
-//     )
-
-//     let colors = (
-//       red.darken(10%),
-//       red,
-//       orange.darken(10%),
-//       orange,
-//       yellow.darken(25%),
-//       yellow.darken(10%),
-//       green.darken(20%),
-//       teal.darken(10%),
-//       blue.darken(10%),
-//       blue.darken(25%),
-//       purple,
-//     )
-
-//     for i in range(steps.len() - 1) {
-//       let (x0, y0) = steps.at(i)
-//       let (x1, y1) = steps.at(i + 1)
-//       let c  = colors.at(i)
-//       let c1 = colors.at(i + 1)
-
-//       // Dashed vertical drop to x-axis
-//       set-style(stroke: (paint: c, thickness: 1pt, dash: "dashed"), fill: none)
-//       line((x0, 0), (x0, y0))
-
-//       // Horizontal arrow to next x position (at current y)
-//       set-style(stroke: (paint: c, thickness: 1.5pt, dash: "solid"))
-//       line((x0, y0), (x1, y0), mark: (end: ">", size: 0.22))
-
-//       // Dashed vertical to next curve point
-//       set-style(stroke: (paint: c1, thickness: 1pt, dash: "dashed"), fill: none)
-//       line((x1, y0), (x1, y1))
-
-//       // Dot on curve
-//       set-style(stroke: none, fill: c)
-//       circle((x0, y0), radius: 0.12)
-//     }
-
-//     // ── Minimum point ────────────────────────────────────────
-//     let (xm, ym) = steps.last()
-//     set-style(stroke: none, fill: purple)
-//     circle((xm, ym), radius: 0.15)
-//     set-style(stroke: (paint: purple.darken(20%), thickness: 1pt, dash: "dotted"), fill: none)
-//     line((xm, 0), (xm, ym))
-//     content((xm, -0.45), text(size: 8pt, fill: purple.darken(20%))[*minimum*])
-
-//     // ── Annotations ──────────────────────────────────────────
-//     // Large steps (early, left side)
-//     content((1.5, 4.6), text(size: 7.5pt, fill: gray.darken(40%))[large steps])
-//     // Small steps (late, near minimum)
-//     content((7.5, 1.4), text(size: 7.5pt, fill: gray.darken(40%))[small steps])
-
-//     // Oscillation arrow + label
-//     set-style(stroke: (paint: red.darken(20%), thickness: 1pt, dash: "solid"),
-//               fill: red.darken(20%))
-//     line((2.0, 0.18), (8.0, 0.18),
-//          mark: (start: ">", end: ">", size: 0.18))
-//     content((5.0, -0.42), text(size: 7.5pt, fill: red.darken(30%))[oscillation around minimum])
-//   }),
-//   caption: [Gradient descent trajectory on a convex loss surface $J(theta)$: the optimizer oscillates around the minimum with decreasing step size until convergence.]
-// ) <fig-gradient-descent>
 #figure(
   canvas({
     import draw: *
@@ -419,108 +320,6 @@ The algorithm is typically stopped when one of the following conditions is met:
   caption: [Gradient descent on a convex loss surface $cal(L)(theta)$: starting from a random initialization, the parameters $theta$ are iteratively updated in the direction opposite to the gradient until convergence to the minimum $theta^*$.]
 ) <fig-gradient-descent>
 
-// #canvas({
-//   import draw: *
-
-//   // Axes
-//   set-style(stroke: (paint: gray.darken(20%), thickness: 0.8pt))
-//   line((-0.3, 0), (10.3, 0))  // axe x
-//   line((0, -0.3), (0, 5.5))   // axe y
-
-//   // Flèches des axes
-//   line((10.1, -0.15), (10.3, 0), (10.1, 0.15))
-//   line((-0.15, 5.3), (0, 5.5), (0.15, 5.3))
-
-//   // Labels axes
-//   content((10.5, 0), text(size: 9pt)[$θ$])
-//   content((0.3, 5.6), text(size: 9pt)[$J(θ)$])
-
-//   // Courbe : parabole décalée  J(x) = 0.18*(x-3)^2 + 0.5
-//   // Points de la courbe
-//   let f(x) = 0.18 * (x - 3) * (x - 3) + 0.5
-
-//   // Tracé de la courbe en segments
-//   let pts = range(0, 101).map(i => {
-//     let x = i * 9.0 / 100.0 + 0.5
-//     (x, f(x))
-//   })
-
-//   set-style(stroke: (paint: blue.darken(10%), thickness: 2pt))
-//   hobby(..pts)
-
-//   // Points de descente de gradient (de droite à gauche)
-//   let steps = (
-//     (9.0,  f(9.0)),
-//     (7.8,  f(7.8)),
-//     (6.8,  f(6.8)),
-//     (5.9,  f(5.9)),
-//     (5.1,  f(5.1)),
-//     (4.4,  f(4.4)),
-//     (3.8,  f(3.8)),
-//     (3.3,  f(3.3)),
-//     (3.0,  f(3.0)),
-//   )
-
-//   // Traits verticaux (gradient steps) + points
-//   let colors = (
-//     red.darken(10%),
-//     orange.darken(10%),
-//     orange,
-//     yellow.darken(20%),
-//     green.darken(20%),
-//     teal.darken(10%),
-//     blue.darken(20%),
-//     blue.darken(30%),
-//     purple,
-//   )
-
-//   for i in range(steps.len() - 1) {
-//     let (x0, y0) = steps.at(i)
-//     let (x1, y1) = steps.at(i + 1)
-//     let c = colors.at(i)
-
-//     // Trait vertical depuis la courbe jusqu'à l'axe x
-//     set-style(stroke: (paint: c, thickness: 1.2pt, dash: "dashed"))
-//     line((x0, 0), (x0, y0))
-
-//     // Flèche horizontale vers le prochain point
-//     set-style(stroke: (paint: c, thickness: 1.5pt, dash: "solid"))
-//     line((x0, y0), (x1, y0), mark: (end: ">", size: 0.25))
-
-//     // Trait vertical du prochain point
-//     set-style(stroke: (paint: colors.at(i+1), thickness: 1.2pt, dash: "dashed"))
-//     line((x1, y0), (x1, y1))
-
-//     // Point sur la courbe
-//     set-style(stroke: none, fill: c)
-//     circle((x0, y0), radius: 0.12)
-//   }
-
-//   // Dernier point (minimum)
-//   let (xm, ym) = steps.last()
-//   set-style(stroke: (paint: purple, thickness: 2pt), fill: purple)
-//   circle((xm, ym), radius: 0.15)
-
-//   // Étoile / marqueur minimum
-//   set-style(stroke: (paint: purple.darken(20%), thickness: 1pt, dash: "dotted"), fill: none)
-//   line((xm, 0), (xm, ym))
-
-//   // Label minimum
-//   content((xm, -0.4), text(size: 8pt, fill: purple.darken(20%))[*minimum*])
-
-//   // Annotation "grand pas"
-//   content((8.0, 3.8), text(size: 7.5pt, fill: gray.darken(30%))[grands pas])
-//   content((4.0, 2.8), text(size: 7.5pt, fill: gray.darken(30%))[petits pas])
-
-//   // Flèche annotation direction
-//   set-style(stroke: (paint: red.darken(20%), thickness: 1pt), fill: red.darken(20%))
-//   line((7.2, 0.2), (4.0, 0.2), mark: (end: ">", size: 0.2))
-//   content((5.6, -0.05), text(size: 7pt, fill: red.darken(30%))[direction de descente])
-// })
-
-// In machine learning, it is common to divide the available dataset into a *training set* and a *test set* to prevent overfitting. 
-// The model is trained on the training set, which means that the parameters $theta$ of the function are updated to minimize the loss function $L(theta)$. 
-// The test set is used only to evaluate the model's performance on unseen data, which provides an estimate of its generalization ability. 
 In its basic form, gradient descent is applied to the entire dataset at once, meaning that the gradient is computed over all available samples before each parameter update.
 
 In practice, the available dataset is divided into a *training set* and a *test set*. The model's parameters $theta$ are updated via gradient descent to minimize the loss function $L(theta)$ on the training set, while the test set is held out entirely and used only to evaluate the model's performance on unseen data, providing an estimate of its generalization ability.
@@ -530,21 +329,53 @@ This separation is essential to detect *overfitting*, a phenomenon that occurs w
 #remark[In the sense of @def:ml-mitchell, the task $T$ corresponds to binary or multinomial classification, the experience $E$ to the labeled dataset $D = {(x_i, y_i)}_(i=1)^N$ from which the model learns, and the performance measure $P$ to the loss function $cal(L)(theta)$ that quantifies how well the model performs on this task.]
 
 === Machine Learning Models
-The machine learning literature offers a wide variety of models, each with its own inductive bias, assumptions, and computational properties. The choice of model is therefore not trivial: different models exhibit different performance profiles and are better suited to different types of data and tasks.
+Having introduced the key components of supervised learning, we now have all the ingredients to formally define a supervised learning model as a mathematical tool for solving the supervised learning problem.
+
+// #definition(title: "Machine Learning Model")[
+//   A machine learning model is defined by:
+//   - A *hypothesis class* $cal(F) = {f_theta : cal(X) -> cal(Y) | theta in Theta}$, that is, a parametrized family of functions mapping inputs $x in cal(X)$ to outputs $y in cal(Y)$,
+//   - A *parameter space* $Theta$, which is the set of all admissible values for the parameters $theta$,
+//   - A *loss function* $L : cal(Y) times cal(Y) -> RR_(>=0)$, chosen to reflect the assumptions of the model and the nature of the task.
+
+//   Training the model consists in finding the optimal parameters:
+//   $
+//     theta^* = "argmin"_(theta in Theta) 1/N sum_(i=1)^N L(f_theta (x_i), y_i).
+//   $
+// ] <def:ml-model>
 
 #definition(title: "Machine Learning Model")[
-  A machine learning model is defined by:
-  - A *hypothesis class* $cal(F) = {f_theta : cal(X) -> cal(Y) | theta in Theta}$, that is, a parametrized family of functions mapping inputs $x in cal(X)$ to outputs $y in cal(Y)$,
-  - A *parameter space* $Theta$, which is the set of all admissible values for the parameters $theta$,
-  - A *loss function* $L : cal(Y) times cal(Y) -> RR_(>=0)$, chosen to reflect the assumptions of the model and the nature of the task.
+  A supervised learning model is defined by:
+  - A *hypothesis class* $cal(F) = {f_theta : cal(X) -> cal(Y) | theta in Theta}$,
+    that is, a parametrized family of functions mapping inputs $x in cal(X)$ to 
+    outputs $y in cal(Y)$ (see @def:supervised-ml),
+  - A *parameter space* $Theta$, which is the set of all admissible values for 
+    the parameters $theta$,
+  - A *loss function* $L : cal(Y) times cal(Y) -> RR_(>=0)$, chosen to reflect 
+    the assumptions of the model and the nature of the task (see @def:loss-function).
 
-  Training the model consists in finding the optimal parameters:
+  Training the model consists in finding the optimal parameters $theta^*$ via 
+  gradient descent (@def:gradient-descent):
   $
-    theta^* = "argmin"_(theta in Theta) 1/N sum_(i=1)^N L(f_theta (x_i), y_i).
+    theta^* = op("argmin", limits: #true)_(theta in Theta) cal(L)(theta) 
+    = op("argmin", limits: #true)_(theta in Theta) 1/N sum_(i=1)^N L(f_theta (x_i), y_i).
   $
 ] <def:ml-model>
 
-In what follows, we introduce several machine learning models that are widely used in practice and that serve as building blocks for the federated and decentralized learning frameworks studied in this thesis. Specifically, we cover *linear regression*, *logistic regression*, and *multilayer perceptrons (MLPs)*, each representing a different level of complexity and expressiveness in the hypothesis class $cal(F)$.
+In supervised learning, there is no single universal model: infinitely many 
+hypothesis classes $cal(F)$ can in principle be considered, each encoding 
+different assumptions about the structure of the mapping $f_theta$. The choice 
+of model is therefore guided by the nature of the task, the structure of the 
+data, and practical constraints such as computational efficiency and 
+interpretability. In what follows, we introduce three widely used supervised 
+learning models that serve as building blocks for the federated and 
+decentralized learning frameworks studied in this thesis: *linear regression*, 
+suited to regression problems; *logistic regression*, suited to binary 
+classification problems; and *multilayer perceptrons (MLPs)*, suited to tasks 
+where the relationship between inputs and outputs is too complex to be captured 
+by a linear model. These three models also represent increasing levels of 
+complexity and expressiveness in the hypothesis class $cal(F)$.
+
+// In what follows, we introduce several machine learning models that are widely used in practice and that serve as building blocks for the federated and decentralized learning frameworks studied in this thesis. Specifically, we cover *linear regression*, *logistic regression*, and *multilayer perceptrons (MLPs)*, each representing a different level of complexity and expressiveness in the hypothesis class $cal(F)$.
 
 ==== Linear Regression
 
@@ -821,6 +652,61 @@ where $y_(n k) in {0, 1}$ indicates whether the $n$-th example belongs to class 
 
 ==== Neural Networks and Multi-Layer Perceptrons
 
+#figure(
+  diagram(
+    spacing: (20mm, 8mm),
+    node-stroke: 0.8pt,
+    node-fill: white,
+
+    // --- Input layer ---
+    node((0, 0), $x_1$, shape: circle, name: <i1>),
+    node((0, 1), $x_2$, shape: circle, name: <i2>),
+    node((0, 2), $x_3$, shape: circle, name: <i3>),
+
+    // --- Hidden layer 1 ---
+    node((1, 0), $h_1^((1))$, shape: circle, name: <h11>),
+    node((1, 1), $h_2^((1))$, shape: circle, name: <h12>),
+    node((1, 2), $h_3^((1))$, shape: circle, name: <h13>),
+    node((1, 3), $h_4^((1))$, shape: circle, name: <h14>),
+
+    // --- Hidden layer 2 ---
+    node((2, 0.5), $h_1^((2))$, shape: circle, name: <h21>),
+    node((2, 1.5), $h_2^((2))$, shape: circle, name: <h22>),
+    node((2, 2.5), $h_3^((2))$, shape: circle, name: <h23>),
+
+    // --- Output layer ---
+    node((3, 0.75), $f_1$, shape: circle, name: <o1>),
+    node((3, 1.75), $f_2$, shape: circle, name: <o2>),
+
+    // --- Connections: input → hidden 1 ---
+    for i in (<i1>, <i2>, <i3>) {
+      for j in (<h11>, <h12>, <h13>, <h14>) {
+        edge(i, j, stroke: gray.lighten(30%))
+      }
+    },
+
+    // --- Connections: hidden 1 → hidden 2 ---
+    for i in (<h11>, <h12>, <h13>, <h14>) {
+      for j in (<h21>, <h22>, <h23>) {
+        edge(i, j, stroke: gray.lighten(30%))
+      }
+    },
+
+    // --- Connections: hidden 2 → output ---
+    for i in (<h21>, <h22>, <h23>) {
+      for j in (<o1>, <o2>) {
+        edge(i, j, stroke: gray.lighten(30%))
+      }
+    },
+
+    // --- Layer labels ---
+    node((0, 3.3),  text(size: 8pt)[Input],          stroke: none, fill: none),
+    node((1, 4.3),  text(size: 8pt)[Hidden Layer 1], stroke: none, fill: none),
+    node((2, 3.8),  text(size: 8pt)[Hidden Layer 2], stroke: none, fill: none),
+    node((3, 2.75), text(size: 8pt)[Output],          stroke: none, fill: none),
+  ),
+  caption: [A fully connected neural network with two hidden layers ($L = 3$).],
+)
 The models introduced so far rely on a linear mapping of the form $W^T x + b$ applied to the input features. 
 While these models are simple, efficient, and well understood, their expressive power is fundamentally limited: they can only represent linear decision boundaries in the input space.
 
@@ -888,18 +774,48 @@ As a consequence, centralized learning typically relies on a single machine or a
 tightly coupled computing cluster with sufficient computational and memory 
 resources to process the full dataset. 
 
-// This paradigm therefore imposes strong constraints on data availability, scalability, and data locality.
-
 While computationally straightforward, this paradigm imposes strong assumptions: all data must be collected, stored, and processed at a single location, raising fundamental challenges in terms of scalability, data privacy, and data locality.
 
-// === Online Learning
-// In the previous sections, we described supervised learning models under the 
-// classical assumption that the entire training dataset is available in advance 
-// and that model parameters are optimized offline, what is commonly referred to as centralised learning, see @def:centralized-learning. However, in many real-world 
-// settings, data is generated sequentially over time, possibly in large volumes 
-// or under resource constraints, making repeated retraining impractical.
-
 === Online Learning
+
+#figure(
+  diagram(
+    spacing: (22mm, 12mm),
+    node-stroke: 0.8pt,
+    node-fill: white,
+
+    // --- Data stream ---
+    node((0, 0), [Sample $t-1$\ $(x_(t-1), y_(t-1))$],
+      shape: rect, name: <prev>, stroke: gray.lighten(50%)),
+    node((0, 1), [*Sample $t$*\ $(x_t, y_t)$],
+      shape: rect, name: <cur>),
+    node((0, 2), [Sample $t+1$\ $(x_(t+1), y_(t+1))$],
+      shape: rect, name: <next>, stroke: gray.lighten(50%)),
+
+    // --- Model ---
+    node((1, 1), [*Model*\ $f(x ; theta_t)$],
+      shape: rect, name: <model>),
+
+    // --- Loss ---
+    node((2, 1), [*Loss*\ $ell(f(x_t ; theta_t), y_t)$],
+      shape: rect, name: <loss>),
+
+    // --- Update ---
+    node((1, 2.5), [$theta_(t+1) = theta_t - eta nabla ell$],
+      shape: rect, name: <update>),
+
+    // --- Edges ---
+    edge(<cur>,    <model>,  marks: "->", label: "(1) forward"),
+    edge(<model>,  <loss>,   marks: "->", label: "(2) loss"),
+    edge(<loss>,   <update>, marks: "->", label: "(3) backward"),
+    edge(<update>, <model>,  marks: "->", label: "(4) update θ"),
+  ),
+  caption: [
+    Online learning: the model receives one sample $(x_t, y_t)$ at a time,
+    computes the loss, and updates its parameters $theta$ before processing
+    the next sample.
+  ],
+)
 Centralized learning, as introduced in @def:centralized-learning, assumes that the entire dataset $D$ is available before training begins. However, in many real-world settings, data is generated sequentially over time, possibly in large volumes or under resource constraints, making this assumption impractical.
 
 Online learning @shalev2025online addresses this limitation by allowing a model to be updated 
@@ -938,6 +854,61 @@ distribution.
 ] <def:online-learning>
 
 === Ensemble Learning
+
+#figure(
+  diagram(
+    spacing: (18mm, 10mm),
+    node-stroke: 0.8pt,
+    node-fill: white,
+
+    // --- Input ---
+    node((0, 2), [*Input* $x$], shape: rect, name: <input>),
+
+    // --- Weak learners ---
+    node((1, 0), [Weak learner $f_1$\ $hat(y)_1 = f_1(x)$],
+      shape: rect, name: <f1>),
+    node((1, 1), [Weak learner $f_2$\ $hat(y)_2 = f_2(x)$],
+      shape: rect, name: <f2>),
+    node((1, 2), [Weak learner $f_3$\ $hat(y)_3 = f_3(x)$],
+      shape: rect, name: <f3>),
+    node((1, 3), [Weak learner $f_4$\ $hat(y)_4 = f_4(x)$],
+      shape: rect, name: <f4>),
+    node((1, 4), [Weak learner $f_5$\ $hat(y)_5 = f_5(x)$],
+      shape: rect, name: <f5>),
+
+    // --- Aggregation ---
+    node((2, 2),
+      [*Aggregation*\ $sum_(m=1)^M alpha_m f_m(x)$],
+      shape: rect, name: <agg>),
+
+    // --- Strong learner ---
+    node((3, 2),
+      [*Strong learner*\ $f_"ens"(x)$],
+      shape: rect, name: <strong>),
+
+    // --- Edges: input → weak learners ---
+    edge(<input>, <f1>, marks: "->"),
+    edge(<input>, <f2>, marks: "->"),
+    edge(<input>, <f3>, marks: "->"),
+    edge(<input>, <f4>, marks: "->"),
+    edge(<input>, <f5>, marks: "->"),
+
+    // --- Edges: weak learners → aggregation ---
+    edge(<f1>, <agg>, marks: "->"),
+    edge(<f2>, <agg>, marks: "->"),
+    edge(<f3>, <agg>, marks: "->"),
+    edge(<f4>, <agg>, marks: "->"),
+    edge(<f5>, <agg>, marks: "->"),
+
+    // --- Edge: aggregation → strong learner ---
+    edge(<agg>, <strong>, marks: "->"),
+  ),
+  caption: [
+    Ensemble learning: an input $x$ is fed to $M$ weak learners
+    $f_1, dots, f_M$. An aggregation step combines their predictions
+    via a weighted sum $sum_(m=1)^M alpha_m f_m(x)$
+  ],
+)
 Beyond individual learning models, an important paradigm in machine learning 
 consists in combining multiple models in order to improve predictive performance. 
 This approach, known as ensemble learning @dietterich2000ensemble, is based on the observation that 
@@ -949,10 +920,12 @@ generalization, and increasing robustness to noise or model misspecification.
 They play a central role in modern machine learning and are especially relevant 
 in distributed and decentralized settings, where multiple models may be trained 
 independently and later combined.
+
 #definition(title: "Ensemble Learning")[
 Ensemble learning is a learning paradigm in which a set of models 
 ${f_1, f_2, dots, f_M}$, often referred to as weak learners, are combined to form 
 a single predictor $f_"ens"$ with improved performance.
+] <def:ensemble-learning>
 
 A common form of ensemble model is a weighted aggregation of individual predictors:
 
@@ -963,7 +936,26 @@ $
 where:
 - $f_m$ denotes the prediction of model $m$,
 - $alpha_m in R$ is a weight associated with model $m$.
-] <def:ensemble-learning>
+
+#remark[
+  When all weights are equal, i.e. $alpha_m = 1 slash M$ for all $m$,
+  the weighted aggregation ensemble model reduces to a simple average:
+  $
+  f_"ens"(x) = 1/M sum_(m=1)^M f_m(x).
+  $
+  In classification settings, this corresponds to a majority vote:
+  each weak learner $f_m$ casts a vote for a class, and $f_"ens"(x)$
+  returns the class receiving the most votes.
+]
+
+#remark[
+  The weights $alpha_m$ in the ensemble formulation should not be
+  confused with the weight matrices $W^(l)$ introduced in
+  @def:mlp. Here, $alpha_m in RR$ is a scalar coefficient
+  assigned to each model $f_m$, reflecting its relative contribution
+  to the ensemble prediction. It bears no relation to the learnable
+  parameters internal to any individual model.
+]
 
 For linear models, such as linear or logistic regression, this aggregation is 
 equivalent to a single model of the same class, with parameters equal to the 
