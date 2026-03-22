@@ -1517,10 +1517,6 @@ on complementary feature subsets. This setting involves stronger
 coordination constraints and more complex communication patterns than
 the horizontal case.
 
-In this thesis, we focus exclusively on *horizontal decentralized
-learning*, which is by far the most prevalent setting in the literature
-and aligns naturally with peer-to-peer systems where nodes independently
-collect data instances under a shared feature schema.
 
 #figure(
   canvas(length: 1.0cm, {
@@ -1622,210 +1618,297 @@ collect data instances under a shared feature schema.
     nodes observe the same instances but hold disjoint feature subsets.
   ],
 )
-=== Assumptions
 
-In order to focus on the algorithmic and theoretical aspects of decentralized learning, 
-we make the following simplifying assumptions throughout this work.
 
-- *Computational capabilities*:  
-  Each node has sufficient computational resources to train its local machine learning model.  
-  Moreover, all nodes are assumed to have identical computing power.
+In this thesis, we focus exclusively on *horizontal decentralized
+learning*, which is by far the most prevalent setting in the literature
+and aligns naturally with peer-to-peer systems where nodes independently
+collect data instances under a shared feature schema.
 
-- *Storage capacity*:  
-  Each node has enough local storage to hold its entire local dataset as well as any auxiliary 
-  information required by the learning and communication protocols.
+=== Model
 
-- *Computation time*:  
-  The time required to perform local model updates (e.g., training or aggregation) is assumed 
-  to be negligible. Local computations are therefore considered instantaneous.
+Having established the conceptual foundations of decentralized learning ---
+its position at the intersection of machine learning and peer-to-peer systems,
+its distinction from centralized and distributed paradigms, and its primary
+setting of interest --- we now turn to a formal treatment of the problem.
 
-- *Communication latency*:  
-  The time required to transmit a model or model parameters between nodes is assumed to be 
-  instantaneous.
+==== Assumptions
 
-- *Network bandwidth*:  
-  Network bandwidth limitations are not considered. We assume an infinite bandwidth, such that 
-  model transmissions do not incur congestion or queuing delays.
+The decentralized learning system inherits the assumptions established in
+the peer-to-peer model of @chap:model. In particular, we assume that all
+nodes are identical in terms of computational capabilities and memory
+(see @chap:model), that communication channels are reliable and
+instantaneous, and that message transmission incurs no latency or
+bandwidth constraints.
 
-These assumptions allow us to abstract away system-level constraints and isolate the behavior 
-of decentralized learning protocols from hardware and network effects.
+These assumptions extend naturally to the machine learning components
+introduced in @def:dl-node. Specifically:
 
-=== Model of the learning system
+- *Model size*: the size of the local model $f_(theta_i)$ — that is,
+  the number of parameters $p = |theta_i|$ — is assumed to be identical
+  across all nodes and imposes no memory or transmission constraint.
+  Model exchanges between nodes are therefore treated as instantaneous,
+  regardless of the number of parameters.
 
-To formally horizontal decentralized learning, we introduce the following notation. 
-Let there be $N$ nodes in the network, each holding a local dataset $D_i$, where all datasets 
-share the same feature space but contain different data instances. Each node trains a local 
-model parameterized by $theta_i$ on its dataset $D_i$. 
+- *Training time*: the time required to perform a local model update,
+  such as computing a gradient step or aggregating received parameters,
+  is assumed to be negligible. Local learning computations are therefore
+  considered instantaneous, consistently with the abstract execution
+  model of @def:node-system.
 
-The goal of horizontal decentralized learning is to obtain a global model that leverages 
-all the distributed datasets without centralizing the raw data. This is typically achieved 
-by aggregating the local models across nodes.
+These assumptions allow us to isolate the algorithmic and theoretical
+properties of decentralized learning protocols from hardware and network
+effects, and to focus on the convergence and communication behavior of
+the system.
 
-#definition(title: "Decentralized Learning System (Global View)")[
-A horizontal decentralized learning system is modeled as a distributed dynamical system evolving 
-over a time-varying directed graph $G = (V, E, T)$, where each node $v in V(t)$ corresponds to a computational 
-agent holding a local dataset and a machine learning model.
+==== Decentralized learning node
 
-Each node $v$ is modeled as a state machine with the following components:
+Building on the abstract node model introduced in @def:node-entity and
+@def:node-system, we now define the notion of a *decentralized learning
+node* by enriching the general peer-to-peer node with machine learning
+components.
 
-- *Local state space* $S_v$ containing:
-  - Local machine learning parameters $theta_v$,
-  - Local machine learning dataset $D_v$, divided between a train set and a test set,
-  - Cache containing the list of neighbors in the network,
-  - Any local protocol state for P2P communication.
+#definition(title: "Decentralized Learning Node")[
+A *decentralized learning node* is a peer-to-peer node (see @def:node-entity)
+whose local state $s_i$ is extended with two additional components:
 
-- *Initial state* $s_v^0$ representing the node's state at joining the system.
+1. a *local dataset* $cal(D)_i = {(x_j, y_j)}_(j=1)^(n_i)$, where
+   $x_j in RR^d$ are feature vectors and $y_j$ are labels. The dataset
+   is private: it is stored exclusively on node $i$ and is never
+   transmitted to other nodes.
 
-- *Transition function* mapping the current local state and incoming events 
-  (messages or internal updates) to a new local state and a set of outgoing messages. 
-  This function may involve:
-  - Local model training on the node's dataset,
-  - Aggregation of models received from neighbors,
-  - Updates to the node's local P2P protocol state.
+2. a *local model* $f_(theta_i) : RR^d -> cal(Y)$, parameterized by
+   $theta_i in RR^p$, which represents the current state of the model
+   maintained by node $i$.
 
-The *global state* of the system at time $t$ is:
+The local state of node $i$ is thus $s_i = (cal(D)_i, theta_i, P(i))$,
+where $P(i)$ denotes its partial view of the network (see @def:partial-view).
 
+The dataset $cal(D)_i$ is a static component of the local state: it does
+not change across protocol cycles. The model parameters $theta_i$, by
+contrast, constitute the dynamic component of the state and are updated
+at each protocol step.
+] <def:dl-node>
+
+// #remark[
+// The local dataset $cal(D)_i$ can be seen as a global parameter of the
+// node in the sense of @def:node-system: it is fixed at initialization
+// and conditions all subsequent computations, but does not itself evolve
+// as a result of protocol execution.
+// ]
+
+==== Decentralized learning objective
+
+Having defined the decentralized learning node, we can now state the
+global learning objective. Each node $i$ defines a local empirical loss:
 $
-S(t) = (s_v(t))_(v in V(t))
+cal(L)_i (theta) = 1/n_i sum_(j=1)^(n_i) ell(f(x_j ; theta), y_j),
 $
+where $ell$ is a task-specific loss function (see @def:loss-function).
 
-aggregating the local states of all nodes present in the network.
-
-The *global parameters* of the system include:
-- The machine learning algorithm and its hyperparameters,
-- The aggregation model (e.g., weighted averaging, local vs global aggregation),
-- P2P protocol parameters (e.g., neighbor selection, message scheduling),
-- Any global objective or convergence criteria.
-
-The *evolution* of the system results from the composition of all local state machines 
-and the temporal evolution of the underlying time-varying graph, which constrains the 
-possible communications between nodes. The P2P layer may operate independently of the ML layer, 
-or it may be coupled such that the network topology depends on local ML parameters (e.g., nodes with similar models 
-tend to communicate more frequently).
-
-From this perspective, the decentralized learning system can be viewed as a large, 
-distributed state machine whose global behavior emerges from the interaction of local 
-ML updates and P2P communication between nodes.
-] <def:decentralized-global>
-
-While the decentralized learning system described above specifies the structural and dynamical 
-organization of the network, it does not by itself characterize the quality of the learning 
-process it induces. In contrast to purely topological protocols, whose objective is to reach 
-a target overlay structure, decentralized learning protocols aim at collectively optimizing 
-a machine learning objective through local computations and peer-to-peer interactions.
-
-Since no central entity has access to all data or model parameters, the notion of convergence 
-must be defined at the level of the system as a whole, based on the aggregate performance of 
-the local models. This requires introducing a global performance criterion that reflects the 
-learning quality achieved by the network, such as the average loss or prediction accuracy 
-across nodes, and comparing it to a suitable reference, e.g., centralized training or an 
-idealized optimum.
-
-We therefore define machine learning convergence in decentralized networks as the ability of 
-the protocol to drive the collection of local models, starting from arbitrary initializations, 
-toward a regime where their collective performance satisfies a prescribed global criterion.
-
-
-#definition(title: "Machine Learning Convergence in Decentralized Networks")[
-A decentralized learning protocol is said to achieve *machine learning convergence* if, 
-starting from any initial set of local models ${M_v(0)}_(v in V)$ with randomly initialized parameters, 
-the sequence of local models ${M_v(t)}_(v in V, t >= 0)$ produced by the protocol satisfies a global performance criterion.
-
-Formally, let $L_v(t)$ denote the loss of node $v$ at time $t$ evaluated on its local dataset, 
-and define the average loss across all nodes as:
+The global objective of the decentralized learning system is to
+collectively minimise the aggregate loss over all nodes, in the sense
+of @def:global-objective:
 $
-macron(L)(t) = 1/(|V|) sum_(v in V) L_v(t).
+min_(theta in RR^p) cal(L)(theta), quad
+cal(L)(theta) = sum_(i=1)^N alpha_i cal(L)_i (theta),
 $
+where $alpha_i > 0$ are aggregation weights satisfying
+$sum_(i=1)^N alpha_i = 1$, typically set to
+$alpha_i = n_i \/ sum_j n_j$.
 
-The protocol is said to converge if there exists a time $T >= 0$ such that:
+#remark[
+No single node has access to the full loss $cal(L)(theta)$, since
+$cal(D)_i$ is local to node $i$. The minimisation must therefore be
+achieved collaboratively, through the exchange of model parameters
+$theta_i$ or gradients $nabla cal(L)_i (theta_i)$ between
+neighbouring nodes, without any node ever observing the data of another.
+]
+
+Building on the notion of convergence introduced in @def:convergence,
+we say that a decentralized learning system has converged if the global
+loss falls below a prescribed threshold $epsilon > 0$.
+
+#definition(title: "Convergence of Decentralized Learning")[
+A decentralized learning system is said to have *converged* if there
+exists a time $T >= 0$ such that for all $t >= T$:
 $
-forall t >= T, quad macron(L)(t) <= L^* + epsilon,
+cal(L)(S(t)) = sum_(i=1)^N alpha_i cal(L)_i (theta_i (t)) <= epsilon,
 $
-where $L^*$ is a reference loss, e.g., the loss obtained by centralized training on all data, 
-and $epsilon > 0$ is a small tolerance parameter.
+where $S(t) = (theta_i (t))_(i in V)$ is the global state of the system
+at time $t$ (see @def:global-system), and $epsilon > 0$ is a
+convergence threshold fixed a priori.
+] <def:dl-convergence>
 
-Alternatively, convergence can be defined in terms of other global performance metrics 
-(e.g., accuracy, F1-score, or AUC) by replacing the average loss with the corresponding metric 
-evaluated across all nodes.
+#remark[
+In practice, exact convergence in the sense of @def:dl-convergence is
+rarely studied directly. Instead, one typically fixes a time horizon
+$T$ and evaluates the global loss $cal(L)(S(T))$ achieved after $T$
+protocol cycles. This allows one to compare decentralized learning
+protocols in terms of their convergence speed: a protocol that reaches
+a lower loss within the same number of cycles is considered more
+efficient.
+]
 
-Convergence may hold deterministically or in expectation, depending on the assumptions 
-made on the protocol execution, the learning algorithm, and the statistical properties 
-of the local datasets.
-] <def:ml-convergence>
+// === Model of the learning system
+
+// To formally horizontal decentralized learning, we introduce the following notation. 
+// Let there be $N$ nodes in the network, each holding a local dataset $D_i$, where all datasets 
+// share the same feature space but contain different data instances. Each node trains a local 
+// model parameterized by $theta_i$ on its dataset $D_i$. 
+
+// The goal of horizontal decentralized learning is to obtain a global model that leverages 
+// all the distributed datasets without centralizing the raw data. This is typically achieved 
+// by aggregating the local models across nodes.
+
+// #definition(title: "Decentralized Learning System (Global View)")[
+// A horizontal decentralized learning system is modeled as a distributed dynamical system evolving 
+// over a time-varying directed graph $G = (V, E, T)$, where each node $v in V(t)$ corresponds to a computational 
+// agent holding a local dataset and a machine learning model.
+
+// Each node $v$ is modeled as a state machine with the following components:
+
+// - *Local state space* $S_v$ containing:
+//   - Local machine learning parameters $theta_v$,
+//   - Local machine learning dataset $D_v$, divided between a train set and a test set,
+//   - Cache containing the list of neighbors in the network,
+//   - Any local protocol state for P2P communication.
+
+// - *Initial state* $s_v^0$ representing the node's state at joining the system.
+
+// - *Transition function* mapping the current local state and incoming events 
+//   (messages or internal updates) to a new local state and a set of outgoing messages. 
+//   This function may involve:
+//   - Local model training on the node's dataset,
+//   - Aggregation of models received from neighbors,
+//   - Updates to the node's local P2P protocol state.
+
+// The *global state* of the system at time $t$ is:
+
+// $
+// S(t) = (s_v(t))_(v in V(t))
+// $
+
+// aggregating the local states of all nodes present in the network.
+
+// The *global parameters* of the system include:
+// - The machine learning algorithm and its hyperparameters,
+// - The aggregation model (e.g., weighted averaging, local vs global aggregation),
+// - P2P protocol parameters (e.g., neighbor selection, message scheduling),
+// - Any global objective or convergence criteria.
+
+// The *evolution* of the system results from the composition of all local state machines 
+// and the temporal evolution of the underlying time-varying graph, which constrains the 
+// possible communications between nodes. The P2P layer may operate independently of the ML layer, 
+// or it may be coupled such that the network topology depends on local ML parameters (e.g., nodes with similar models 
+// tend to communicate more frequently).
+
+// From this perspective, the decentralized learning system can be viewed as a large, 
+// distributed state machine whose global behavior emerges from the interaction of local 
+// ML updates and P2P communication between nodes.
+// ] <def:decentralized-global>
+
+// While the decentralized learning system described above specifies the structural and dynamical 
+// organization of the network, it does not by itself characterize the quality of the learning 
+// process it induces. In contrast to purely topological protocols, whose objective is to reach 
+// a target overlay structure, decentralized learning protocols aim at collectively optimizing 
+// a machine learning objective through local computations and peer-to-peer interactions.
+
+// Since no central entity has access to all data or model parameters, the notion of convergence 
+// must be defined at the level of the system as a whole, based on the aggregate performance of 
+// the local models. This requires introducing a global performance criterion that reflects the 
+// learning quality achieved by the network, such as the average loss or prediction accuracy 
+// across nodes, and comparing it to a suitable reference, e.g., centralized training or an 
+// idealized optimum.
+
+// We therefore define machine learning convergence in decentralized networks as the ability of 
+// the protocol to drive the collection of local models, starting from arbitrary initializations, 
+// toward a regime where their collective performance satisfies a prescribed global criterion.
+
+
+// #definition(title: "Machine Learning Convergence in Decentralized Networks")[
+// A decentralized learning protocol is said to achieve *machine learning convergence* if, 
+// starting from any initial set of local models ${M_v(0)}_(v in V)$ with randomly initialized parameters, 
+// the sequence of local models ${M_v(t)}_(v in V, t >= 0)$ produced by the protocol satisfies a global performance criterion.
+
+// Formally, let $L_v(t)$ denote the loss of node $v$ at time $t$ evaluated on its local dataset, 
+// and define the average loss across all nodes as:
+// $
+// macron(L)(t) = 1/(|V|) sum_(v in V) L_v(t).
+// $
+
+// The protocol is said to converge if there exists a time $T >= 0$ such that:
+// $
+// forall t >= T, quad macron(L)(t) <= L^* + epsilon,
+// $
+// where $L^*$ is a reference loss, e.g., the loss obtained by centralized training on all data, 
+// and $epsilon > 0$ is a small tolerance parameter.
+
+// Alternatively, convergence can be defined in terms of other global performance metrics 
+// (e.g., accuracy, F1-score, or AUC) by replacing the average loss with the corresponding metric 
+// evaluated across all nodes.
+
+// Convergence may hold deterministically or in expectation, depending on the assumptions 
+// made on the protocol execution, the learning algorithm, and the statistical properties 
+// of the local datasets.
+// ] <def:ml-convergence>
 
 === Aggregation
-// Formally, given a set of models 
-// $\{theta_v\}_(v in V)$, aggregation produces an updated model:
+
+As established in @def:dl-node, each node $i$ maintains a local model
+$f_(theta_i)$ trained exclusively on its private dataset $cal(D)_i$.
+Since the amount of data available at a single node is generally
+insufficient to achieve low loss, collaboration between nodes is
+required to leverage the information distributed across the network.
+
+Aggregation is the mechanism by which nodes combine their locally
+learned parameters into improved models, without exchanging raw data.
+In horizontal decentralized learning (see @def:dl-node), all nodes
+share the same feature space and parameter space $RR^p$, which makes
+parameter-wise aggregation well-defined.
+
+We focus on the simplest and most widely used aggregation strategy:
+*model averaging*, based on distributed SGD @dean2012large, in which nodes exchange model parameters and compute
+their arithmetic mean.
+
+#definition(title: "Average SGD")[
+At each iteration $t$, every node $i$ performs a local stochastic
+gradient descent step on its local objective $cal(L)_i$ (see
+@def:loss-function):
 // $
-// theta = 1/(|V|) sum_(v in V) theta_v
+// theta_i (t+1) = theta_i (t) - eta_t nabla cal(L)_i (theta_i (t) ; xi_i (t)),
 // $
-As introduced in the previous section, decentralized learning protocols aim to achieve 
-machine learning convergence through purely local computations and peer-to-peer interactions. 
-However, in most practical settings, the amount of data available at a single node is not 
-sufficient to train a model that achieves a low loss or high predictive performance. 
-Consequently, collaboration between nodes is required in order to leverage the information 
-contained in the distributed datasets.
-
-Aggregation plays a central role in horizontal decentralized learning by enabling nodes to 
-combine information learned locally into a shared representation. Rather than exchanging raw 
-data, nodes periodically exchange model-related information and aggregate it to improve their 
-local models.
-
-Several aggregation strategies have been proposed in the literature. In this work, we focus on 
-the simplest and most widely used approach: *Average SGD*, which consists in computing the 
-arithmetic mean of the model parameters across multiple nodes.
-
-#definition(title: "Average Stochastic Gradient Descent (Average SGD)")[
-Let $N$ nodes participate in a decentralized learning process. Each node $i in {1, dots, N}$ 
-holds a local dataset $D_i$ and maintains a local model parameterized by 
-$theta_i(t) in RR^d$ at iteration $t$.
-
-At each local iteration, node $i$ performs a stochastic gradient descent update on its 
-local objective function $L_i(theta)$:
-
 $
-theta_i(t+1) = theta_i(t) - eta_t nabla L_i(theta_i(t); xi_i(t)),
+theta_(t+1/2) = theta_t - eta * nabla_theta L(theta_t),
 $
 
-where $eta_t > 0$ is the learning rate and $xi_i(t)$ is a mini-batch sampled from $D_i$.
-
-After a synchronization step, the local models are aggregated by computing their arithmetic mean:
+After a synchronization step, the local models are aggregated by
+averaging:
 $
-theta^(t+1) = 1/N sum_(i=1)^N theta_i(t+1).
+theta_(t+1) = 1/N sum_(i=1)^N theta_(t+1/2),
 $
-
-The aggregated model $theta^(t+1)$ is then broadcast back to all nodes, which reset their local 
-models accordingly:
-$
-forall i, quad theta_i(t+1) := theta^(t+1).
-$
-
-This procedure is repeated iteratively. Under standard assumptions such as convexity or smoothness 
-of the loss function and IID data distribution across nodes, Average SGD converges to the same 
-optimum as centralized SGD.
+// Under standard regularity assumptions on $cal(L)_i$ and IID data
+// distribution across nodes, Average SGD converges to the same optimum
+// as centralized SGD @lian2017can.
 ] <def:average-sgd>
 
+#remark[
+An alternative is to aggregate gradients rather than parameters:
+nodes exchange $nabla cal(L)_i (theta_i (t))$, average them, and
+apply the result to a shared model. This is equivalent to Average SGD
+when the local models are synchronized at every step, but differs
+when local updates accumulate over several steps before aggregation.
+We restrict our study to parameter-based aggregation for simplicity.
+]
 
-An alternative approach consists in aggregating gradients rather than model parameters. In this 
-case, nodes exchange local gradient updates, which are averaged and applied to a shared model. 
-While gradient-based aggregation can offer finer control over the optimization process, we 
-restrict our study to parameter-based aggregation for simplicity and clarity.
-
-Aggregation can be interleaved with local training in different ways. One option is to first 
-perform local training and then aggregate the resulting models. Another option is to aggregate 
-models before performing further local training. In practice, both strategies are commonly used 
-and often lead to similar convergence behavior under standard assumptions.
-
-Another important design choice concerns the aggregation frequency. Nodes may aggregate their 
-models at every learning cycle, or perform several local training steps before participating in 
-an aggregation round. This trade-off impacts communication cost, convergence speed, and model 
-stability.
-
-Finally, the statistical properties of the local datasets play a crucial role. When local data 
-are independently and identically distributed (IID), average SGD is known to perform well and 
-often achieves convergence comparable to centralized training. Since this thesis primarily 
-focuses on understanding the interaction between aggregation and decentralized network dynamics, 
-we restrict our analysis to the IID data setting.
+Two key design choices govern aggregation in practice. First, the
+*aggregation frequency*: nodes may aggregate at every iteration or
+after several local steps, trading communication cost against
+convergence speed. Second, the *statistical assumptions* on local
+data: under IID distributions, average SGD performs comparably to
+centralized training. Since this thesis focuses on the interaction
+between aggregation and network dynamics, we restrict our analysis
+to the IID setting.
 
 === Aggregation Strategies
 
