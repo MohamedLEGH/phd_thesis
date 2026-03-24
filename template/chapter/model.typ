@@ -725,7 +725,6 @@ The graph $G(t) = (V(t), E(t))$ represents the network topology at time $t$. The
 ] <def:tvg>
 
 == Failure Models 
-// citer Raynal
 
 In the previous sections, we have formalized the behavior of nodes, the evolution of the overlay network, and the dynamics of protocol execution in terms of steps and cycles.
 Having established this abstract execution framework, we now consider the possibility that nodes may fail during the system evolution.
