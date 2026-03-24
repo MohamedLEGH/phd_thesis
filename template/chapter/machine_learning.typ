@@ -163,7 +163,7 @@ model performs on a given example or dataset.
   $D = {(x_1, y_1), dots, (x_N, y_N)}$, the overall loss is computed 
   as the average over all examples:
   $
-    cal(L)(theta) = 1/N sum_(i=1)^N L(f_theta (x_i), y_i).
+    L(theta) = 1/N sum_(i=1)^N L(f_theta (x_i), y_i).
   $
 ] <def:loss-function>
 
@@ -680,6 +680,9 @@ where $y_(n k) in {0, 1}$ indicates whether the $n$-th example belongs to class 
 
 ==== Neural Networks and Multi-Layer Perceptrons
 
+The models introduced so far rely on a linear mapping of the form $W^T x + b$ applied to the input features. 
+While these models are simple, efficient, and well understood, their expressive power is fundamentally limited: they can only represent linear decision boundaries in the input space.
+
 #figure(
   diagram(
     spacing: (20mm, 8mm),
@@ -735,8 +738,6 @@ where $y_(n k) in {0, 1}$ indicates whether the $n$-th example belongs to class 
   ),
   caption: [A fully connected neural network with two hidden layers ($L = 3$).],
 )
-The models introduced so far rely on a linear mapping of the form $W^T x + b$ applied to the input features. 
-While these models are simple, efficient, and well understood, their expressive power is fundamentally limited: they can only represent linear decision boundaries in the input space.
 
 Artificial neural networks extend these models by composing multiple linear transformations with nonlinear activation functions. 
 The simplest neural network, known as the *single-layer perceptron*, consists of a single linear unit followed by a nonlinear activation function. 
@@ -2882,38 +2883,51 @@ table(
   caption: [Main aggregation strategies and their associated network topologies.],
 ) <tab:aggregation-strategies-topology>
 
+== Conclusion
 
-// == Metrics
+This chapter has progressively built the conceptual and formal
+foundations necessary to situate decentralized learning within the
+broader landscape of machine learning. Starting from the classical
+supervised learning framework --- loss functions, gradient descent,
+and standard model classes --- we introduced a series of learning
+paradigms of increasing decentralization: from centralized learning,
+where a single entity holds all data and controls the entire training
+process, through distributed approaches such as data parallelism,
+model parallelism, and ensemble learning, to fully decentralized
+schemes in which nodes operate autonomously on private local datasets
+without any central coordinator.
 
-// At the machine-learning level, we assess the performance of decentralized 
-// learning protocols by evaluating how well the global model generalizes 
-// on unseen data. In this work, we focus primarily on *accuracy*, 
-// while noting that other metrics could also provide insights into 
-// model quality, robustness, and fairness.
+Within this landscape, we formalized the decentralized learning
+problem by grounding it in the peer-to-peer model of @chap:model:
+a decentralized learning node is a peer-to-peer node enriched with
+a local dataset and a local model, and the global learning objective
+is to collectively minimize the aggregate loss $L_"global"$ without
+any node ever observing the data of another. We characterized
+convergence in terms of this global objective, and introduced
+complementary performance metrics --- final accuracy and time to
+accuracy --- that will serve as evaluation criteria throughout the
+remainder of this thesis.
 
-// #definition(title: "Accuracy")[
-// Let $D_v^("test")$ denote the local test dataset of node $v$, and let 
-// $hat(y)_i$ be the predicted label for input $x_i$ with true label $y_i$. 
-// The *accuracy* of a model $M_v$ at node $v$ is defined as:
+We then surveyed the main topology-driven aggregation strategies
+proposed in the literature, ranging from the star-shaped architecture
+of federated learning and its hierarchical extensions, to fully
+decentralized schemes such as gossip learning and epidemic learning.
+This survey revealed a fundamental tension that runs through the
+field: centralized and hierarchical approaches such as federated
+learning benefit from efficient coordination and fast convergence,
+but rely on a central point of control that introduces fragility,
+scalability limitations, and trust requirements. Fully decentralized
+approaches such as gossip learning eliminate this central dependency
+and offer strong resilience properties, but typically converge more
+slowly due to the limited bandwidth of local pairwise interactions.
 
-// $
-// "Accuracy"_v = 1/(|D_v^("test")|) sum_((x_i, y_i) in D_v^"test") bb(1) {hat(y)_i = y_i} 
-// $
-
-// Where $bb(1) {dot.c}$ is the indicator function, equal to 1 if the prediction is correct ($hat(y)_i = y_i$), and 0 otherwise.
-
-// The *global accuracy* of the system at time $t$ is computed as the average accuracy across all nodes:
-
-// $
-// "Accuracy"(t) = 1/(|V|) sum_(v in V) "Accuracy"_v (t)
-// $
-
-// We evaluate accuracy in two complementary ways:
-
-// 1. *Final Accuracy*: the accuracy measured at the end of the learning process, 
-//    either after a sufficiently long time $T$ in the mathematical model, or 
-//    after a fixed number of cycles in the simulations.
-
-// 2. *Time-to-Accuracy*: the time or number of cycles required for the system 
-//    to reach a predetermined accuracy threshold, e.g., 90%.
-// ]
+Bridging this gap --- combining the convergence efficiency of
+federated learning with the robustness and decentralization
+properties of gossip-based protocols --- remains an open challenge.
+The following chapter presents our contribution to this problem.
+We introduce a novel peer-to-peer protocol that operates without any
+central coordinator, leverages the epidemic learning communication
+pattern to achieve richer local aggregation, and is designed to
+exhibit convergence properties competitive with federated learning
+while retaining the fault tolerance and scalability of fully
+decentralized systems.
