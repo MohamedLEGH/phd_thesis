@@ -540,9 +540,18 @@ edge(label("4"), "->", stroke: 1pt)
 ) <watts-strogatz-example>
 
 ==== Power-law & Scale-free networks
-The Erdős–Rényi and Watts–Strogatz models are interesting and can be used to model certain networks, but many real networks are more complex than simple random networks. 
+// The Erdős–Rényi and Watts–Strogatz models are interesting and can be used to model certain networks, but many real networks are more complex than simple random networks. 
 
-Many real-world networks are commonly described as *scale-free* networks @barabasi1999emergence. Informally, a network is said to be scale-free if its structural properties remain invariant across scales, meaning that the same organizational patterns can be observed regardless of the network size. In particular, there is no characteristic degree scale that dominates the topology, and the network exhibits self-similar properties, often associated with fractal-like structures.
+// Many real-world networks are commonly described as *scale-free* networks @barabasi1999emergence. Informally, a network is said to be scale-free if its structural properties remain invariant across scales, meaning that the same organizational patterns can be observed regardless of the network size. In particular, there is no characteristic degree scale that dominates the topology, and the network exhibits self-similar properties, often associated with fractal-like structures.
+The Erdős–Rényi and Watts–Strogatz models are interesting and can be
+used to model certain networks, but many real-world networks are more
+complex than simple random graphs. In particular, they are commonly
+described as *scale-free* networks @barabasi1999emergence: their
+structural properties remain invariant across scales, meaning that the
+same organizational patterns can be observed regardless of the network
+size. There is no characteristic degree scale that dominates the
+topology, and the network exhibits self-similar properties, often
+associated with fractal-like structures.
 
 In practice, scale-free behavior is most often associated with degree distributions that follow a *power-law*. As a result, scale-free networks are commonly modeled as power-law networks, at least asymptotically. While the notions of scale-free and power-law are not strictly equivalent, the latter provides a precise mathematical framework to characterize the absence of a characteristic scale in the degree distribution.
 
@@ -558,93 +567,48 @@ $
 where $gamma > 1$ is the power-law exponent.
 ]
 
-
-// #definition(title: "Power-law network")[
-// Let $G = (V, E)$ be a graph with $|V| = N$. Let $K$ be the random variable denoting the degree of a node chosen uniformly at random from $V$. The network is said to be power-law if
-
-// $
-// P(K = k) ~ k^(-gamma)
-// $
-
-// where $gamma > 1$ is the power-law exponent.
-// ]
-
-// #figure(
-// diagram({
-//   node((1,0), name: "ServerRoot", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
-//   edge(label("Server1"), "-", stroke: 1pt)
-//   edge(label("Server2"), "-", stroke: 1pt)
-//   edge(label("Server3"), "-", stroke: 1pt)
-//   edge(label("Client6"), "-", stroke: 1pt)
-
-//   node((-1,1.5), name: "Server1", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
-//   edge(label("Client1"), "-", stroke: 1pt)
-//   edge(label("Client2"), "-", stroke: 1pt)
-//   edge(label("Client3"), "-", stroke: 1pt)
-
-//   node((0.5,1.5), name: "Server2", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
-//   edge(label("Client4"), "-", stroke: 1pt)
-//   edge(label("Client5"), "-", stroke: 1pt)
-
-//   node((2,1.5), name: "Server3", radius: 1em, stroke: 1pt, fill: green.lighten(60%))  
-//   edge(label("Client7"), "-", stroke: 1pt)
-//   edge(label("Client8"), "-", stroke: 1pt)
-//   edge(label("Client9"), "-", stroke: 1pt)
-
-//   node((-3,2.8), name: "Client1", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
-
-//   node((-2,2.8), name: "Client2", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
-
-//   node((-1.2,2.8), name: "Client3", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
-
-//   node((-0.5,2.8), name: "Client4", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
-
-//   node((0.2,2.8), name: "Client5", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
-  
-//   node((1,2.8), name: "Client6", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
-
-//   node((1.8,2.8), name: "Client7", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
-  
-//   node((2.5,2.8), name: "Client8", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
-
-//   node((3.5,2.8), name: "Client9", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
-
-// }),
-//   caption: [Example of a scale-free network],
-// ) <fig:scale-free-example>
-
-
 A defining characteristic of power-law networks is their heavy-tailed degree distribution: most nodes have small degree, while a small but non-negligible fraction of nodes—commonly referred to as hubs—exhibit very large degree. This structural heterogeneity sharply contrasts with classical random graph models such as Erdős–Rényi graphs, whose degree distribution is binomial.
 
 Empirical studies of real-world systems, including peer-to-peer overlays, communication networks, and social graphs, frequently report power-law exponents in the range $2 < gamma < 3$ @barabasi1999emergence. In this regime, the average degree remains finite, while the variance diverges in the limit of large network size.
 
-Beyond their statistical properties, power-law networks exhibit structural features that can be advantageous for information dissemination. In particular, hubs—nodes with very high degree—can act as communication shortcuts, significantly reducing the average path length and facilitating rapid message exchange across the network. As a consequence, broadcast, gossip, and aggregation processes may converge faster than in more homogeneous topologies. Moreover, many scale-free networks exhibit what is commonly referred to as the *ultra-small world* property @cohen2003scale. In contrast to classical random graphs, where the diameter typically scales as $log N$, scale-free networks may display diameters that scale as $log log N$. This ultra-small diameter further accelerates information spreading and reinforces the central role of hubs in ensuring global connectivity.
+Beyond their statistical properties, power-law networks exhibit
+structural features that can be advantageous for information
+dissemination. In particular, hubs --- nodes with very high degree ---
+act as communication shortcuts, significantly reducing the average
+path length and facilitating rapid message exchange across the
+network. As a consequence, broadcast, gossip, and aggregation
+processes may converge faster than in more homogeneous topologies.
+Moreover, many scale-free networks exhibit what is commonly referred
+to as the *ultra-small world* property @cohen2003scale: in contrast
+to classical random graphs, where the diameter typically scales as
+$log N$, scale-free networks may display diameters that scale as
+$log log N$, further accelerating information spreading and
+reinforcing the central role of hubs in ensuring global connectivity.
 
+A classical generative model for scale-free networks is the
+Barabási--Albert (BA) model @barabasi1999emergence, which produces
+power-law degree distributions through a mechanism known as
+*preferential attachment*. The model proceeds as follows: starting
+from a small initial network of $m_0$ nodes, a new node is added at
+each time step and connects to $m <= m_0$ existing nodes. The
+probability that the new node attaches to node $i$ is proportional
+to its current degree:
+$
+Pi(i) = k_i / (sum_j k_j),
+$
+where $k_i$ is the degree of node $i$. This rich-get-richer mechanism
+naturally leads to the emergence of hubs and a power-law degree
+distribution, reproducing the structural properties observed in many
+real-world networks.
 
-// In fact, real networks are heterogeneous, with hubs, i.e., nodes with many connections. Scale-free networks are a class of networks in which the degree distribution follows a power-law, meaning that most nodes have few connections while a small number of nodes, called hubs, have a very large number of connections. This property is observed in many real-world networks, such as the Internet, social networks, and citation networks. Scale-free networks also exhibit a self-similar or fractal topology: as the number of nodes increases, the overall structure of the network remains similar, and its statistical properties are preserved. This scalability is one reason why many real networks naturally adopt a scale-free topology. The Barabási–Albert (BA) model @barabasi1999emergence introduced a generative mechanism for scale-free networks based on growth and preferential attachment: starting from a small initial network, new nodes are added one by one and each new node connects to existing nodes with a probability proportional to their degree. This process leads to the emergence of hubs and a degree distribution with a typical power-law exponent around γ ≈ 3. Scale-free networks generally have a small diameter, which allows for efficient communication between nodes. However, the presence of hubs also introduces a vulnerability: the failure of one or more hubs can significantly degrade the connectivity of the network. Unlike classical random graphs, scale-free networks are highly heterogeneous, with a few highly connected nodes dominating the network structure, while most nodes have relatively few connections. Variants of the BA model have been proposed to limit the maximum degree of nodes, add constraints on connectivity, or increase resilience to failures.
+#definition(title: "Preferential attachment")[
+Preferential attachment is a network formation mechanism in which the probability that a node establishes a link to another node is proportional to the current degree of the latter. Formally, if $k_i$ denotes the degree of node $i$, the probability that a new edge connects to node $i$ is given by
 
+$
+P(i) = k_i/(sum_j k_j)
+$
+]
 
-// #definition(title: "Scale-Free Network")[
-//   A scale-free network is a network whose degree distribution follows a power law: $P(k) tilde.basic k^{-gamma}$, where $P(k)$ is the probability that a node has degree $k$ and $gamma$ is a positive constant typically between 2 and 3. Most nodes have few connections, while a few nodes, called hubs, have many connections.
-
-//   One classical generative model is the Barabási–Albert (BA) model:
-//   1. Start with a small initial network of $m_0$ nodes.
-//   2. At each time step, add a new node with $m <= m_0$ edges.
-//   3. Each new edge connects to an existing node \(i\) with probability proportional to its degree:
-  
-//     $Pi(i) = k_i/(sum_j k_j)$,
-  
-//   where $k_i$ is the degree of node $i$. This preferential attachment process leads to the emergence of hubs and a power-law degree distribution.
-// ] <def:scale-free-network>
-
-One classical generative model is the Barabási–Albert (BA) model:
-1. Start with a small initial network of $m_0$ nodes.
-2. At each time step, add a new node with $m <= m_0$ edges.
-3. Each new edge connects to an existing node \(i\) with probability proportional to its degree:
-
-  $Pi(i) = k_i/(sum_j k_j)$,
-
-where $k_i$ is the degree of node $i$. This preferential attachment process leads to the emergence of hubs and a power-law degree distribution.
 
 #figure(
 diagram({
@@ -689,50 +653,6 @@ diagram({
 }),
   caption: [Example of a scale-free network],
 ) <fig:scale-free-example>
-
-// #figure(
-// diagram({
-//   node((1,0), name: "ServerRoot", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
-//   edge(label("Server1"), "-", stroke: 1pt)
-//   edge(label("Server2"), "-", stroke: 1pt)
-//   edge(label("Server3"), "-", stroke: 1pt)
-//   edge(label("Client6"), "-", stroke: 1pt)
-
-//   node((-1,1.5), name: "Server1", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
-//   edge(label("Client1"), "-", stroke: 1pt)
-//   edge(label("Client2"), "-", stroke: 1pt)
-//   edge(label("Client3"), "-", stroke: 1pt)
-
-//   node((0.5,1.5), name: "Server2", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
-//   edge(label("Client4"), "-", stroke: 1pt)
-//   edge(label("Client5"), "-", stroke: 1pt)
-
-//   node((2,1.5), name: "Server3", radius: 2em, stroke: 1pt, fill: green.lighten(60%))  
-//   edge(label("Client7"), "-", stroke: 1pt)
-//   edge(label("Client8"), "-", stroke: 1pt)
-//   edge(label("Client9"), "-", stroke: 1pt)
-
-//   node((-3,2.8), name: "Client1", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
-
-//   node((-2,2.8), name: "Client2", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
-
-//   node((-1.2,2.8), name: "Client3", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
-
-//   node((-0.5,2.8), name: "Client4", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
-
-//   node((0.2,2.8), name: "Client5", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
-  
-//   node((1,2.8), name: "Client6", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
-
-//   node((1.8,2.8), name: "Client7", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
-  
-//   node((2.5,2.8), name: "Client8", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
-
-//   node((3.5,2.8), name: "Client9", radius: 2em, stroke: 1pt, fill: green.lighten(60%))
-
-// }),
-//   caption: [A scale free network.],
-// ) <scale-free-schema>
 
 ==== Stochastic block model
 In real-world networks, randomness often coexists with community structures. Stochastic Block Models (SBM) @holland1983stochastic are a generalization of the classical Erdős–Rényi random graph and provide a flexible framework to model such networks. In an SBM, nodes are partitioned into communities (or blocks), and the probability of a link between two nodes depends on the communities to which they belong. This allows the generation of networks that appear random globally but exhibit strong local structures, highlighting the presence of communities. The model allows explicit control over the number and size of communities, as well as the intra- and inter-community connection probabilities, enabling the study of networks with varying modularity. Moreover, because SBM is probabilistic, multiple network instances can be generated from the same parameters, making it a powerful tool for benchmarking community detection algorithms and exploring structural properties of complex networks.
