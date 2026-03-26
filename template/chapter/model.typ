@@ -318,7 +318,7 @@ $
 // In order to study overlay networks, it is useful to adopt a mathematical representation that allows formalizing and comparing their properties. Graph theory provides a natural framework for this purpose. A network can be represented as a graph, where nodes correspond to servers or users, and edges represent connections between them. 
 
 // === Standard Graph Structures
-=== Network Topologies
+=== Common Network Topologies
 // In network analysis, certain graph topologies frequently appear due to their structural properties. These standard structures serve as fundamental models for understanding connectivity, routing, and aggregation behavior in distributed systems.  
 // Each topology has distinct characteristics that can influence how information propagates, how resilient the network is to failures, and how algorithms perform. Below, we summarize some of the most commonly studied graph structures along with their defining properties.
 
@@ -402,6 +402,94 @@ edge(label("1"),"-", stroke: 1pt)
   caption: [A ring topology, with 6 nodes.],
 ) <ring>
 
+==== Grid / Lattice
+
+A grid (or lattice) network topology arranges nodes in a regular
+$d$-dimensional structure, where each node is connected only to its
+immediate neighbors along each dimension. In a $d$-dimensional
+lattice, each interior node has exactly $2d$ neighbors: two per
+dimension, corresponding to its left and right neighbors along each
+axis. The most common case encountered in practice is the
+two-dimensional grid, where each interior node has exactly four
+neighbors, while boundary and corner nodes have three and two
+neighbors respectively.
+
+It is worth noting that the one-dimensional grid corresponds exactly
+to the ring topology discussed earlier, where each node is connected
+to exactly two neighbors forming a closed cycle. At the other
+extreme, the *hypercube* is a $d$-dimensional grid over $N = 2^d$
+nodes, in which each node has exactly $d = log_2 N$ neighbors. This
+topology offers a favorable trade-off between degree and diameter:
+the diameter grows as $O(log N)$, significantly better than the
+two-dimensional grid while maintaining a moderate and uniform degree.
+
+The local nature of connections in grid topologies comes at the cost
+of communication efficiency. The diameter of a two-dimensional
+$n times n$ grid grows as $O(n) = O(sqrt(N))$, meaning that messages
+may need to traverse many hops to reach distant nodes. Information
+dissemination and aggregation processes are therefore significantly
+slower than in mesh or scale-free topologies.
+
+#figure(
+  diagram(
+    node-fill: green.lighten(60%),
+    node-stroke: 1pt,
+    spacing: 18mm,
+    {
+      // Row 0
+      node((0,0), name: "n00", radius: 1.2em)
+      edge(label("n10"), "-", stroke: 1pt)
+      edge(label("n01"), "-", stroke: 1pt)
+      node((1,0), name: "n10", radius: 1.2em)
+      edge(label("n20"), "-", stroke: 1pt)
+      edge(label("n11"), "-", stroke: 1pt)
+      node((2,0), name: "n20", radius: 1.2em)
+      edge(label("n30"), "-", stroke: 1pt)
+      edge(label("n21"), "-", stroke: 1pt)
+      node((3,0), name: "n30", radius: 1.2em)
+      edge(label("n40"), "-", stroke: 1pt)
+      edge(label("n31"), "-", stroke: 1pt)
+      node((4,0), name: "n40", radius: 1.2em)
+      edge(label("n50"), "-", stroke: 1pt)
+      edge(label("n41"), "-", stroke: 1pt)
+      node((5,0), name: "n50", radius: 1.2em)
+      edge(label("n51"), "-", stroke: 1pt)
+
+      // Row 1
+      node((0,1), name: "n01", radius: 1.2em)
+      edge(label("n11"), "-", stroke: 1pt)
+      edge(label("n02"), "-", stroke: 1pt)
+      node((1,1), name: "n11", radius: 1.2em)
+      edge(label("n21"), "-", stroke: 1pt)
+      edge(label("n12"), "-", stroke: 1pt)
+      node((2,1), name: "n21", radius: 1.2em)
+      edge(label("n31"), "-", stroke: 1pt)
+      edge(label("n22"), "-", stroke: 1pt)
+      node((3,1), name: "n31", radius: 1.2em)
+      edge(label("n41"), "-", stroke: 1pt)
+      edge(label("n32"), "-", stroke: 1pt)
+      node((4,1), name: "n41", radius: 1.2em)
+      edge(label("n51"), "-", stroke: 1pt)
+      edge(label("n42"), "-", stroke: 1pt)
+      node((5,1), name: "n51", radius: 1.2em)
+      edge(label("n52"), "-", stroke: 1pt)
+
+      // Row 2
+      node((0,2), name: "n02", radius: 1.2em)
+      edge(label("n12"), "-", stroke: 1pt)
+      node((1,2), name: "n12", radius: 1.2em)
+      edge(label("n22"), "-", stroke: 1pt)
+      node((2,2), name: "n22", radius: 1.2em)
+      edge(label("n32"), "-", stroke: 1pt)
+      node((3,2), name: "n32", radius: 1.2em)
+      edge(label("n42"), "-", stroke: 1pt)
+      node((4,2), name: "n42", radius: 1.2em)
+      edge(label("n52"), "-", stroke: 1pt)
+      node((5,2), name: "n52", radius: 1.2em)
+    }
+  ),
+  caption: [A $6 times 3$ two-dimensional grid network.],
+) <fig:grid-network>
 ==== Hierarchical
 A hierarchical network topology corresponds to a graph structured as a tree, where nodes are organized into different levels with parent–child relationships. This topology is commonly used in large-scale systems such as the Domain Name System (DNS), which relies on a hierarchical structure of authorities, ranging from root servers at the top level to top-level domain servers and authoritative name servers below. Compared to a star topology, hierarchical networks scale more effectively, as intermediate nodes distribute and absorb part of the workload, reducing the burden on any single central node. However, this topology remains largely static and is inherently fragile to failures. If an intermediate node fails, all its descendants become disconnected from the rest of the network, and a failure at the root level can impact the entire system. As a result, hierarchical topologies often require additional mechanisms such as redundancy, replication, or failover strategies to improve fault tolerance and availability.
 #figure(
@@ -539,76 +627,66 @@ edge(label("4"), "->", stroke: 1pt)
   caption: [A directed small world network, with 2 clusters (left and right).],
 ) <watts-strogatz-example>
 
-==== Power-law & Scale-free networks
-// The Erdős–Rényi and Watts–Strogatz models are interesting and can be used to model certain networks, but many real networks are more complex than simple random networks. 
+==== Power-law and scale-free networks
 
-// Many real-world networks are commonly described as *scale-free* networks @barabasi1999emergence. Informally, a network is said to be scale-free if its structural properties remain invariant across scales, meaning that the same organizational patterns can be observed regardless of the network size. In particular, there is no characteristic degree scale that dominates the topology, and the network exhibits self-similar properties, often associated with fractal-like structures.
-The Erdős–Rényi and Watts–Strogatz models are interesting and can be
-used to model certain networks, but many real-world networks are more
-complex than simple random graphs. In particular, they are commonly
-described as *scale-free* networks @barabasi1999emergence: their
-structural properties remain invariant across scales, meaning that the
-same organizational patterns can be observed regardless of the network
-size. There is no characteristic degree scale that dominates the
-topology, and the network exhibits self-similar properties, often
-associated with fractal-like structures.
+The Erdős–Rényi and Watts–Strogatz models are useful approximations,
+but many real-world networks are more complex than simple random
+graphs. In particular, they are commonly described as *scale-free*
+networks @barabasi1999emergence: their structural properties remain
+invariant across scales, meaning that the same organizational patterns
+can be observed regardless of the network size, with no characteristic
+degree scale dominating the topology.
 
-In practice, scale-free behavior is most often associated with degree distributions that follow a *power-law*. As a result, scale-free networks are commonly modeled as power-law networks, at least asymptotically. While the notions of scale-free and power-law are not strictly equivalent, the latter provides a precise mathematical framework to characterize the absence of a characteristic scale in the degree distribution.
-
-A network (or graph) is said to follow a power-law degree distribution if the probability that a node has degree $k$ decays as a power of $k$.
+In practice, scale-free behavior is most often associated with degree
+distributions that follow a *power-law*. While the notions of
+scale-free and power-law are not strictly equivalent, the latter
+provides a precise mathematical framework to characterize the absence
+of a characteristic scale in the degree distribution.
 
 #definition(title: "Power-law network")[
-Let $G = (V, E)$ be a graph with $|V| = N$. Let $K$ be the random variable denoting the degree of a node chosen uniformly at random from $V$. The network is said to be power-law if
-
+Let $G = (V, E)$ be a graph with $|V| = N$. Let $K$ be the random
+variable denoting the degree of a node chosen uniformly at random
+from $V$. The network is said to be power-law if
 $
 P(K = k) ~ k^(-gamma)
 $
-
 where $gamma > 1$ is the power-law exponent.
 ]
 
-A defining characteristic of power-law networks is their heavy-tailed degree distribution: most nodes have small degree, while a small but non-negligible fraction of nodes—commonly referred to as hubs—exhibit very large degree. This structural heterogeneity sharply contrasts with classical random graph models such as Erdős–Rényi graphs, whose degree distribution is binomial.
+A defining characteristic of power-law networks is their heavy-tailed
+degree distribution: most nodes have small degree, while a small but
+non-negligible fraction --- commonly referred to as *hubs* --- exhibit
+very large degree. This structural heterogeneity sharply contrasts
+with Erdős–Rényi graphs, whose degree distribution is binomial.
+Empirical studies of real-world systems, including peer-to-peer
+overlays, communication networks, and social graphs, frequently report
+power-law exponents in the range $2 < gamma < 3$ @barabasi1999emergence,
+a regime in which the average degree remains finite while the variance
+diverges in the limit of large network size.
 
-Empirical studies of real-world systems, including peer-to-peer overlays, communication networks, and social graphs, frequently report power-law exponents in the range $2 < gamma < 3$ @barabasi1999emergence. In this regime, the average degree remains finite, while the variance diverges in the limit of large network size.
-
-Beyond their statistical properties, power-law networks exhibit
-structural features that can be advantageous for information
-dissemination. In particular, hubs --- nodes with very high degree ---
-act as communication shortcuts, significantly reducing the average
-path length and facilitating rapid message exchange across the
-network. As a consequence, broadcast, gossip, and aggregation
+This structural heterogeneity has direct consequences for information
+dissemination. Hubs act as communication shortcuts, significantly
+reducing the average path length and facilitating rapid message
+exchange. As a consequence, broadcast, gossip, and aggregation
 processes may converge faster than in more homogeneous topologies.
-Moreover, many scale-free networks exhibit what is commonly referred
-to as the *ultra-small world* property @cohen2003scale: in contrast
-to classical random graphs, where the diameter typically scales as
-$log N$, scale-free networks may display diameters that scale as
-$log log N$, further accelerating information spreading and
-reinforcing the central role of hubs in ensuring global connectivity.
+Many scale-free networks also exhibit the *ultra-small world* property
+@cohen2003scale: while the diameter of classical random graphs
+typically scales as $log N$, scale-free networks may display diameters
+scaling as $log log N$, further accelerating information spreading.
 
 A classical generative model for scale-free networks is the
 Barabási--Albert (BA) model @barabasi1999emergence, which produces
-power-law degree distributions through a mechanism known as
-*preferential attachment*. The model proceeds as follows: starting
-from a small initial network of $m_0$ nodes, a new node is added at
-each time step and connects to $m <= m_0$ existing nodes. The
-probability that the new node attaches to node $i$ is proportional
-to its current degree:
+power-law degree distributions through *preferential attachment*: when
+a new node joins the network, it connects to existing nodes with
+probability proportional to their current degree,
 $
 Pi(i) = k_i / (sum_j k_j),
 $
-where $k_i$ is the degree of node $i$. This rich-get-richer mechanism
-naturally leads to the emergence of hubs and a power-law degree
-distribution, reproducing the structural properties observed in many
-real-world networks.
-
-#definition(title: "Preferential attachment")[
-Preferential attachment is a network formation mechanism in which the probability that a node establishes a link to another node is proportional to the current degree of the latter. Formally, if $k_i$ denotes the degree of node $i$, the probability that a new edge connects to node $i$ is given by
-
-$
-P(i) = k_i/(sum_j k_j)
-$
-]
-
+where $k_i$ is the degree of node $i$. Starting from a small initial
+network of $m_0$ nodes and adding one node with $m <= m_0$ edges at
+each step, this rich-get-richer mechanism naturally leads to the
+emergence of hubs and a power-law degree distribution, reproducing
+the structural properties observed in many real-world networks.
 
 #figure(
 diagram({
