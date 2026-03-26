@@ -62,7 +62,7 @@ In structured networks, each node is assigned a logical identifier, often derive
 As a result, the network forms a well-defined topology that enables deterministic and efficient routing, typically with logarithmic complexity in the number of nodes.
 
 When a node joins the network, it must follow the protocol rules to establish links only with a specific subset of authorized neighbors. 
-For instance, in ring-based topologies (see @tab:standard-graph-structures), each node maintains connections with its immediate predecessor and successor, forming a logical ring. 
+For instance, in ring-based topologies, each node maintains connections with its immediate predecessor and successor, forming a logical ring. 
 This structure guarantees that any node can be reached by traversing the ring in a finite number of hops.
 
 Node departures, whether voluntary or due to failures, require the remaining nodes to reconfigure their connections in order to preserve the global topology. 

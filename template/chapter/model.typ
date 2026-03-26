@@ -310,19 +310,33 @@ $
 $
 ]
 
+Having established the formal vocabulary of graph theory --- vertices,
+edges, paths, distances, and degree --- we now turn to the study of
+specific network models. The following section surveys the principal
+graph structures and generative models encountered in the peer-to-peer
+and distributed systems literature, ranging from deterministic
+topologies defined by explicit construction rules to random models
+whose structure emerges from probabilistic processes.
 
+=== Common network topologies
 
-// other metrics
+Network topology refers to the structural organization of a network:
+the way nodes are interconnected and how links are arranged between
+them. Different topologies lead to fundamentally different properties
+in terms of connectivity, robustness, routing efficiency, and
+scalability. In the context of overlay networks, topologies are not
+viewed as static structures but as reference models describing the
+possible shapes of snapshot graphs $G(t)$ induced by peer-to-peer
+protocols over time.
 
-// // === Graph Theory
-// In order to study overlay networks, it is useful to adopt a mathematical representation that allows formalizing and comparing their properties. Graph theory provides a natural framework for this purpose. A network can be represented as a graph, where nodes correspond to servers or users, and edges represent connections between them. 
-
-// === Standard Graph Structures
-=== Common Network Topologies
-// In network analysis, certain graph topologies frequently appear due to their structural properties. These standard structures serve as fundamental models for understanding connectivity, routing, and aggregation behavior in distributed systems.  
-// Each topology has distinct characteristics that can influence how information propagates, how resilient the network is to failures, and how algorithms perform. Below, we summarize some of the most commonly studied graph structures along with their defining properties.
-
-Network topology refers to the structural organization of a network, that is, the way nodes are interconnected and how links are arranged between them. In the context of overlay networks, topology is naturally described through the shape of the underlying graph, where nodes represent participants and edges represent logical connections. Different topologies lead to fundamentally different properties in terms of connectivity, robustness, routing efficiency, and scalability. Broadly, network topologies can be divided into two categories: deterministic and random. Deterministic topologies are defined by explicit construction rules that impose a fixed structure on the graph, such as stars, rings, trees, or meshes, where the presence of an edge is fully determined by the position or role of each node. In contrast, random topologies are generated according to probabilistic rules, where edges are created based on random processes or statistical constraints rather than fixed patterns. This category includes classical random graphs, as well as more advanced models from complex network theory such as small-world networks, power-law networks, and stochastic block models, which introduce community structure through probabilistic connection patterns. Random topologies are particularly relevant for modeling large-scale and dynamic peer-to-peer systems, where global coordination is impractical and network structure often emerges from local interactions. In this chapter, network topologies are not viewed as static structures, but as reference models describing the possible shapes of snapshot graphs $G(t)$ induced by peer-to-peer protocols over time.
+Network topologies can be broadly divided into two categories.
+*Deterministic topologies* are defined by explicit construction rules
+that fully determine the presence of each edge from the position or
+role of nodes --- stars, rings, trees, grids, and meshes fall into
+this category. *Random topologies* are generated according to
+probabilistic rules, and include classical random graphs as well as
+more advanced models such as small-world networks, power-law
+networks, and stochastic block models.
 
 ==== Mesh
 A mesh network topology corresponds to a complete graph, in which every node is directly connected to every other node in the network. This topology offers optimal communication properties, as any node can reach any other node in a single hop, resulting in a graph diameter equal to one and minimal latency for message dissemination. Such full connectivity also provides high redundancy, making the network inherently robust to individual link failures. However, these advantages come at a prohibitive cost in large-scale systems. Each node must maintain a connection with all other nodes, leading to a quadratic growth in the number of links and significant overhead in terms of bandwidth, memory, and connection management. Moreover, a mesh topology requires each node to know the complete list of participants in the network, which is impractical or impossible in dynamic environments where nodes frequently join and leave. As a result, mesh networks are inherently static and do not scale well, limiting their applicability to small, tightly controlled systems rather than large peer-to-peer or highly dynamic overlay networks.
@@ -359,7 +373,8 @@ diagram({
 }),
   caption: [A star topology.],
 ) <star-topology>
-==== Multi stars
+==== Multi-star
+
 A multi-star topology can be seen as an extension of the star topology in which several central nodes coexist, each forming a local star with a subset of clients. From a graph-theoretic point of view, this corresponds to a collection of star subgraphs that may or may not be interconnected. This topology is widely used in cloud systems, for instance in distributed databases where a primary server is supported by one or more replica servers that can take over in case of failure or overload. Multi-star architectures are also common in geographically distributed systems, where services are replicated across multiple regions to reduce latency and provide better quality of service to users worldwide. Several variants of multi-star topologies exist: in some designs, clients are connected to all available servers, while in others each client is connected to a single server at a time; similarly, servers may be fully interconnected, partially connected, or completely isolated from each other. Compared to a single-star topology, multi-star networks improve scalability, fault tolerance, and availability, but they still rely on centralized components at the level of each star. As a result, they remain more structured and less decentralized than peer-to-peer topologies, and require coordination mechanisms for load balancing, leader election, or consistency among servers.
 #figure(
 diagram({
@@ -378,8 +393,8 @@ diagram({
 
   node((2,1.5), name: "Client3", radius: 2em, stroke: 1pt, fill: blue.lighten(60%))  
 }),
-  caption: [A mult-stars topology, with 2 servers and 3 clients. Each client is connected to each server.],
-) <star-topology>
+  caption: [A multi-star topology, with 2 servers and 3 clients. Each client is connected to each server.],
+) <multi-star-topology>
 
 ==== Ring
 A ring topology corresponds to a graph in which each node maintains exactly two connections, typically referred to as its left and right neighbors, forming a closed cycle. From a graph-theoretic perspective, this structure is a simple cycle graph. Ring topologies require coordination mechanisms between nodes, as well-defined rules are needed to handle the addition or removal of one or more nodes without breaking the ring and disconnecting the network. In particular, join and leave operations must ensure that neighbor relationships are consistently updated to preserve connectivity. The diameter of a ring network grows linearly with the number of nodes, i.e., it is proportional to $N$, which leads to potentially high communication latency as information may need to traverse many intermediate nodes. To mitigate this limitation, many ring-based systems introduce additional long-range links, often inspired by skip lists, allowing nodes to bypass large portions of the ring and significantly reduce routing and propagation times. Such enhancements improve efficiency while preserving the simplicity and locality properties of the underlying ring structure.
@@ -393,7 +408,7 @@ node((0.8,1.2), name: "3", radius: 2em)
 edge( "-", stroke: 1pt)
 node((0,1.5), name: "4", radius: 2em)
 edge( "-", stroke: 1pt)
-node((-0.8,1.2), name: "6", radius: 2em)
+node((-0.8,1.2), name: "5", radius: 2em)
 edge( "-", stroke: 1pt)
 node((-0.8,0.3), name: "6", radius: 2em)
 edge(label("1"),"-", stroke: 1pt)
@@ -733,7 +748,24 @@ diagram({
 ) <fig:scale-free-example>
 
 ==== Stochastic block model
-In real-world networks, randomness often coexists with community structures. Stochastic Block Models (SBM) @holland1983stochastic are a generalization of the classical Erdős–Rényi random graph and provide a flexible framework to model such networks. In an SBM, nodes are partitioned into communities (or blocks), and the probability of a link between two nodes depends on the communities to which they belong. This allows the generation of networks that appear random globally but exhibit strong local structures, highlighting the presence of communities. The model allows explicit control over the number and size of communities, as well as the intra- and inter-community connection probabilities, enabling the study of networks with varying modularity. Moreover, because SBM is probabilistic, multiple network instances can be generated from the same parameters, making it a powerful tool for benchmarking community detection algorithms and exploring structural properties of complex networks.
+While power-law and scale-free models capture degree heterogeneity,
+they do not explicitly account for community structure --- the
+tendency of nodes to form densely connected groups with sparser
+connections between them. Stochastic Block Models (SBM)
+@holland1983stochastic address this limitation by providing a
+generative framework in which nodes are partitioned into communities
+(or blocks), and the probability of a link between two nodes depends
+solely on the communities to which they belong. This allows the
+generation of networks that appear random globally but exhibit strong
+local structure, with explicit control over the number and size of
+communities as well as intra- and inter-community connection
+probabilities. SBM generalizes the Erdős–Rényi random graph, which
+corresponds to the special case of a single block, and is
+particularly well suited to model overlays organized around hubs or
+clusters of nodes sharing common interests. Because it is
+probabilistic, multiple network instances can be generated from the
+same parameters, making it a valuable tool for benchmarking community
+detection algorithms and studying networks with varying modularity.
 
 #definition(title: "Stochastic Block Model")[
   A Stochastic Block Model (SBM) is a generative model for random graphs with community structure. 
@@ -742,151 +774,26 @@ In real-world networks, randomness often coexists with community structures. Sto
   
   Formally, let $B in [0,1]^{K times K}$ be a matrix of connection probabilities between blocks, where $B_{"ab"}$ is the probability that a node in block $C_a$ connects to a node in block $C_b$. Then, for each pair of nodes $(i,j)$:
   
-  - If node $i in C_a$ and node $j in C_b$, the edge $(i,j)$ exists independently with probability $B_{"ab"}$:
-      $P((i,j) in E) = B_{"ab"}$.
+  - If node $i in C_a$ and node $j in C_b$, the edge $(i,j)$ exists independently with probability $B_(a b)$:
+      $P((i,j) in E) = B_(a b)$.
   
   Special cases include:
-  - *Intra-block probabilities*: $B_{"aa"}$, the probability of connection between nodes within the same community.
-  - *Inter-block probabilities*: $B_{"ab"}$, $a eq.not b$, the probability of connection between nodes of different communities.
+  - *Intra-block probabilities*: $B_(a a)$, the probability of connection between nodes within the same community.
+  - *Inter-block probabilities*: $B_(a b)$, $a eq.not b$, the probability of connection between nodes of different communities.
   
   SBM generalizes the Erdős–Rényi random graph, which corresponds to the case $K=1$.
 ] <def:sbm>
 
+The topologies surveyed above --- from deterministic structures such
+as meshes, stars, and rings, to probabilistic models such as random
+graphs, small-world networks, power-law networks, and stochastic
+block models --- provide a rich vocabulary for characterizing the
+structural properties of peer-to-peer overlays. Having established
+this repertoire, we now turn to the formal modeling of overlay
+networks as graphs, and introduce the abstractions that will be used
+throughout this manuscript to reason about connectivity, communication,
+and protocol execution.
 
-
-// #show figure: set block(breakable: true)
-
-#figure(
-table(
-  columns: (1fr, 1fr, 1fr),
-  inset: 10pt,
-  align: horizon,
-
-  table.header(
-    [*Graph Structure*], [*Description*], [*Example*],
-  ),
-
-  [Complete Graph],
-  [Every node is connected to every other node, representing maximal connectivity.], [#figure(diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
-node((0,0), name: "1", radius: 1em)
-edge(label("2"), "-", stroke: 1pt)
-edge(label("3"), "-", stroke: 1pt)
-edge(label("4"), "-", stroke: 1pt)
-node((1,1), name: "2", radius: 1em)
-edge(label("3"), "-", stroke: 1pt)
-edge(label("4"), "-", stroke: 1pt)
-node((0, 1), name: "3", radius: 1em)
-edge(label("4"), "-", stroke: 1pt)
-node((1,0), name: "4", radius: 1em)
-}),
-)],
-
-  [Star Graph],
-  [A central node is connected to all the other nodes.], [#figure(
-diagram({
-  node((1,0), name: "Server", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
-  edge(label("Client1"), "-", stroke: 1pt)
-  edge(label("Client2"), "-", stroke: 1pt)
-  edge(label("Client3"), "-", stroke: 1pt)
-
-  node((0,1.1), name: "Client1", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
-
-  node((1,1.1), name: "Client2", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
-
-  node((2,1.1), name: "Client3", radius: 1em, stroke: 1pt, fill: green.lighten(60%))  
-}))
-],
-
-  [Ring Graph],
-  [Nodes form a closed loop, each connected to two neighbors.], [#figure(
-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
-node((0,0), name: "1", radius: 1em)
-edge( "-", stroke: 1pt)
-node((0.8,0.3), name: "2", radius: 1em)
-edge( "-", stroke: 1pt)
-node((0.8,1.2), name: "3", radius: 1em)
-edge( "-", stroke: 1pt)
-node((0,1.5), name: "4", radius: 1em)
-edge( "-", stroke: 1pt)
-node((-0.8,1.2), name: "6", radius: 1em)
-edge( "-", stroke: 1pt)
-node((-0.8,0.3), name: "6", radius: 1em)
-edge(label("1"),"-", stroke: 1pt)
-}))
-],
-
-  [Grid / Lattice Graph],
-  [Nodes arranged in a 2D or multi-dimensional grid, each node connected to its immediate neighbors.], [#figure(diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
-node((0,0), name: "1", radius: 1em)
-edge(label("3"), "-", stroke: 1pt)
-edge(label("4"), "-", stroke: 1pt)
-node((1,1), name: "2", radius: 1em)
-edge(label("3"), "-", stroke: 1pt)
-node((0, 1), name: "3", radius: 1em)
-edge(label("6"), "-", stroke: 1pt)
-node((1,0), name: "4", radius: 1em)
-edge(label("2"), "-", stroke: 1pt)
-edge(label("5"), "-", stroke: 1pt)
-node((2,0), name: "5", radius: 1em)
-edge(label("6"), "-", stroke: 1pt)
-node((2,1), name: "6", radius: 1em)
-}),
-)],
-
-  [Tree Graph],
-  [Hierarchical structure with parent-child relationships, no cycles.], [#figure(
-diagram({
-  node((0.6,0), name: "ServerRoot", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
-  edge(label("Server1"), "-", stroke: 1pt)
-  edge(label("Server2"), "-", stroke: 1pt)
-  edge(label("Server3"), "-", stroke: 1pt)
-
-  node((-0.3,0.7), name: "Server1", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
-  edge(label("Client1"), "-", stroke: 1pt)
-  edge(label("Client2"), "-", stroke: 1pt)
-
-  node((0.6,0.7), name: "Server2", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
-  edge(label("Client3"), "-", stroke: 1pt)
-
-  node((1.5,0.7), name: "Server3", radius: 1em, stroke: 1pt, fill: green.lighten(60%))  
-  edge(label("Client4"), "-", stroke: 1pt)
-
-  node((-0.7,1.8), name: "Client1", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
-
-  node((0,1.8), name: "Client2", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
-
-  node((0.6,1.8), name: "Client3", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
-
-  node((1.5,1.8), name: "Client4", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
-
-}))],
-
-  [Random Graph],
-  [Edges between nodes are placed randomly according to some probability distribution.], [#figure(
-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
-node((0,0), name: "1", radius: 1em)
-edge(label("5"), "-", stroke: 1pt)
-edge(label("2"), "-", stroke: 1pt)
-node((0.3,1), name: "2", radius: 1em)
-edge(label("5"), "-", stroke: 1pt)
-edge(label("3"), "-", stroke: 1pt)
-node((1,1.5), name: "3", radius: 1em)
-edge(label("5"), "-", stroke: 1pt)
-edge(label("2"), "-", stroke: 1pt)
-node((1.8,1), name: "4", radius: 1em)
-edge(label("1"), "-", stroke: 1pt)
-edge(label("5"), "-", stroke: 1pt)
-node((1.8,0), name: "5", radius: 1em)
-edge(label("1"), "-", stroke: 1pt)
-edge(label("4"), "-", stroke: 1pt)
-}))],
-
-), caption: [Standard graph structures and their main characteristics.],
-) <tab:standard-graph-structures>
-
-// #show figure: set block(breakable: false)
-
-// === Network components
 === Overlay Network Modeling
 
 With the basic concepts of graph theory in place, we can now formalize the representation of an overlay network.  
