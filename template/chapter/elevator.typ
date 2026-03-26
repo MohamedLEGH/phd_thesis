@@ -1,3 +1,5 @@
+// aggrandir les figures
+
 #import "@preview/fletcher:0.5.8" as fletcher: diagram, node, edge
 
 #import "@preview/lovelace:0.3.0": *
@@ -292,72 +294,6 @@ Readers who wish to explore gossip networks in more depth can refer to this surv
 All the previously discussed protocols primarily aim at constructing random k-out graph topologies, in which each node maintains approximately k outgoing links and the distribution of incoming degrees follows a binomial law centered around k. Such topologies are known for their strong resilience to node crashes and churn: even when a large fraction of nodes fail or leave the system, the overlay graph remains connected with high probability. However, this robustness comes at a cost in terms of performance. In particular, information dissemination may be suboptimal, and some nodes can experience relatively high incoming degrees, leading to increased load. In contrast, alternative overlay structures introduce heterogeneity in the distribution of incoming degrees. These include power-law networks, where the degree distribution follows an exponential or heavy-tailed law, and scale-free networks, whose structure scales with the number of nodes in a self-similar manner. Although such topologies are generally less resilient to failures and churn, they often provide better performance for information dissemination, as highly connected nodes act as hubs that can rapidly spread information throughout the network.
 
 === Peer sampling in Power-law networks
-Many real-world networks are commonly described as *scale-free* networks @barabasi1999emergence. Informally, a network is said to be scale-free if its structural properties remain invariant across scales, meaning that the same organizational patterns can be observed regardless of the network size. In particular, there is no characteristic degree scale that dominates the topology, and the network exhibits self-similar properties, often associated with fractal-like structures.
-
-In practice, scale-free behavior is most often associated with degree distributions that follow a power-law. As a result, scale-free networks are commonly modeled as power-law networks, at least asymptotically. While the notions of scale-free and power-law are not strictly equivalent, the latter provides a precise mathematical framework to characterize the absence of a characteristic scale in the degree distribution.
-
-A network (or graph) is said to follow a power-law degree distribution if the probability that a node has degree $k$ decays as a power of $k$.
-
-#definition(title: "Power-law network")[
-Let $G = (V, E)$ be a graph with $|V| = N$. Let $K$ be the random variable denoting the degree of a node chosen uniformly at random from $V$. The network is said to be power-law if
-
-$
-P(K = k) ~ k^(-gamma)
-$
-
-where $gamma > 1$ is the power-law exponent.
-]
-
-#figure(
-diagram({
-  node((1,0), name: "ServerRoot", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
-  edge(label("Server1"), "-", stroke: 1pt)
-  edge(label("Server2"), "-", stroke: 1pt)
-  edge(label("Server3"), "-", stroke: 1pt)
-  edge(label("Client6"), "-", stroke: 1pt)
-
-  node((-1,1.5), name: "Server1", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
-  edge(label("Client1"), "-", stroke: 1pt)
-  edge(label("Client2"), "-", stroke: 1pt)
-  edge(label("Client3"), "-", stroke: 1pt)
-
-  node((0.5,1.5), name: "Server2", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
-  edge(label("Client4"), "-", stroke: 1pt)
-  edge(label("Client5"), "-", stroke: 1pt)
-
-  node((2,1.5), name: "Server3", radius: 1em, stroke: 1pt, fill: green.lighten(60%))  
-  edge(label("Client7"), "-", stroke: 1pt)
-  edge(label("Client8"), "-", stroke: 1pt)
-  edge(label("Client9"), "-", stroke: 1pt)
-
-  node((-3,2.8), name: "Client1", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
-
-  node((-2,2.8), name: "Client2", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
-
-  node((-1.2,2.8), name: "Client3", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
-
-  node((-0.5,2.8), name: "Client4", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
-
-  node((0.2,2.8), name: "Client5", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
-  
-  node((1,2.8), name: "Client6", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
-
-  node((1.8,2.8), name: "Client7", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
-  
-  node((2.5,2.8), name: "Client8", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
-
-  node((3.5,2.8), name: "Client9", radius: 1em, stroke: 1pt, fill: green.lighten(60%))
-
-}),
-  caption: [Example of a scale-free network],
-) <fig:scale-free-example>
-
-
-A defining characteristic of power-law networks is their heavy-tailed degree distribution: most nodes have small degree, while a small but non-negligible fraction of nodes—commonly referred to as hubs—exhibit very large degree. This structural heterogeneity sharply contrasts with classical random graph models such as Erdős–Rényi graphs, whose degree distribution is binomial.
-
-Empirical studies of real-world systems, including peer-to-peer overlays, communication networks, and social graphs, frequently report power-law exponents in the range $2 < gamma < 3$ @barabasi1999emergence. In this regime, the average degree remains finite, while the variance diverges in the limit of large network size.
-
-Beyond their statistical properties, power-law networks exhibit structural features that can be advantageous for information dissemination. In particular, hubs—nodes with very high degree—can act as communication shortcuts, significantly reducing the average path length and facilitating rapid message exchange across the network. As a consequence, broadcast, gossip, and aggregation processes may converge faster than in more homogeneous topologies. Moreover, many scale-free networks exhibit what is commonly referred to as the *ultra-small world* property @cohen2003scale. In contrast to classical random graphs, where the diameter typically scales as $log N$, scale-free networks may display diameters that scale as $log log N$. This ultra-small diameter further accelerates information spreading and reinforces the central role of hubs in ensuring global connectivity.
 
 Motivated by these properties, several peer sampling and overlay management algorithms are explicitly designed to create or maintain power-law–like topologies. Rather than relying solely on organic network growth, these protocols actively engineer degree heterogeneity in order to exploit the presence of hubs for improved efficiency, scalability, and robustness. This is typically achieved by biasing neighbor selection, attachment, or rewiring mechanisms toward high-degree nodes, thereby shaping the overlay toward a target power-law degree distribution.
 
@@ -1381,17 +1317,17 @@ These choices are motivated as follows: a larger $h$ increases the speed of conv
 
 We evaluate the two proposed models (Model A: Geometric Growth Model and Model B: Logistic Function) by comparing them with the results obtained from simulations of the Elevator protocol. The goal of this comparison is to examine whether the theoretical models reproduce the same qualitative behavior observed in practice, in particular the progression curve of the hub node’s indegree over time. We will quantitatively assess the models by computing the mean absolute error (MAE) and the root mean squared error (RMSE) between the predicted curves and the simulation data. As we can see in  @ModelNsize, @Modelcachesize and @Modelnbhubs, the Logistic Model is closer to the data from the simulation, and in particular it's more accurate in situations where the values of K and h are changed. As we can see in @Nfit, @Kfit and @hfit, the Logistic has almost always a better RMSE and MAE compared to the Geometric model, and sometimes with values very small, indicating that our model is very good at fitting to the data. If we look at convergence times (in @timeN, @timeK and @timeh), the geometric model is often too fast in terms of convergence time. The logistic model is more pessimistic, but this suits us because we want to have an upper bound on convergence time, and in any case, convergence times remain very close to the simulation results. It should be noted that when calculating the convergence time, we used an approximation of $10^{-3}$ relative to the simulation value, given that the Logistic model never reaches the limit value but comes as close to it as possible.
 #grid(
-    columns: 2,
+    columns: 1,
 [#figure(
-  image("../../Images/models/indegree_Nsize_comparison_models.pdf"),
+  image("../../Images/models/indegree_Nsize_comparison_models.pdf", width: 90%),
   caption: [In-degree evolution of the hub, comparing models with simulation data, with N from 100 to 1000. K=20, h=10.],
 ) <ModelNsize>],
 [#figure(
-  image("../../Images/models/indegree_cachesize_comparison_models.pdf"),
+  image("../../Images/models/indegree_cachesize_comparison_models.pdf", width: 90%),
   caption: [In-degree evolution of the hub, comparing models with simulation data, with varying values for K. N=1000, h=10.],
 ) <Modelcachesize>],
 [#figure(
-  image("../../Images/models/indegree_numberhubs_comparison_models.pdf"),
+  image("../../Images/models/indegree_numberhubs_comparison_models.pdf", width: 90%),
   caption: [In-degree evolution of the hub, comparing models with simulation data, with varying values for h. K=20, N=1000.],
 ) <Modelnbhubs>]
 )
@@ -1488,7 +1424,7 @@ All simulations use the Java *PeerSim* simulator @p2p09-peersim.
 We have modified the simulator to add parallelism to accelerate computations.
 With Peersim, we implemented our algorithm Elevator, and state-of-the-art PROOFS @stavrou2004lightweight and Phenix @wouhaybi2004phenix algorithms #footnote[https://gitlab.lip6.fr/legheraba/elevator].
 Also, we used the implementation of Newscast provided by PeerSim.
-// A detailed description of these algorithms can be found in Appendix @sec:algorithms.
+
 We compared the performance of Elevator with these 3 algorithms.
 We chose to compare our proposed algorithm to these three algorithms as they are widely used in the literature.
 Newscast is used for gossip learning @ormandi2013gossip, PROOFS is a foundational algorithm, as Secure Cyclon @antonov2023securecyclon, one of the latest peer sampling algorithm in the literature, is based on Cyclon @voulgaris2005cyclon, itself based on PROOFS.
@@ -1536,23 +1472,22 @@ The Phenix algorithm yields similar results.
 This is better than PROOFS and Newscast, which output respectively 3 and 4 for this metric.
 
 #grid(
-  columns: 2,
+  columns: 1,
   [#figure(
-  image("../../Images/Elevator/normal_1000_100xp_clustering_color.pdf"),
+  image("../../Images/Elevator/normal_1000_100xp_clustering_color.pdf", width: 90%),
   caption: [Clustering coefficient computed during the simulation (no failures), for each algorithm, every 10 cycles],
 ) <fig:ClustCoef>],
 [#figure(
-  image("../../Images/Elevator/normal_1000_100xp_average_path_color.pdf"),
+  image("../../Images/Elevator/normal_1000_100xp_average_path_color.pdf", width: 90%),
   caption: [Average path length computed during the simulation (no failures), for each algorithm, every 10 cycles],
 ) <fig:AveragePathLength>],
 [#figure(
-  image("../../Images/Elevator/normal_1000_100xp_diameter_color.pdf"),
+  image("../../Images/Elevator/normal_1000_100xp_diameter_color.pdf", width: 90%),
   caption: [Diameter computed during the simulation (no failures), for each algorithm, every 10 cycles],
 ) <fig:Diameter>],
 )
 
 We also compared the algorithms according to their resilience to crashes, churn, and byzantine attacks, as shown below.
-// Additional results and the accompanying figures are included in the Appendix @sec:figures.
 
 === Resilience to crashes
 
@@ -1567,17 +1502,17 @@ In @fig:ClustCoefCrash, the clustering coefficient evolution shows that it is no
 The same observation holds for the average path length and the diameter, as we can see in @fig:AveragePathLengthCrash and @fig:DiameterCrash.
 
 #grid(
-  columns: 2,
+  columns: 1,
 [#figure(
-  image("../../Images/Elevator/crash_1000_100xp_clustering_color.pdf"),
+  image("../../Images/Elevator/crash_1000_100xp_clustering_color.pdf", width: 90%),
   caption: [Clustering coefficient computed with a 50% crash, for each algorithm, every 10 cycles],
 ) <fig:ClustCoefCrash>],
 [#figure(
-  image("../../Images/Elevator/crash_1000_100xp_average_path_color.pdf"),
+  image("../../Images/Elevator/crash_1000_100xp_average_path_color.pdf", width: 90%),
   caption: [Average path length computed with a 50% crash, for each algorithm, every 10 cycles],
 ) <fig:AveragePathLengthCrash>],
 [#figure(
-  image("../../Images/Elevator/crash_1000_100xp_diameter_color.pdf"),
+  image("../../Images/Elevator/crash_1000_100xp_diameter_color.pdf", width: 90%),
   caption: [Diameter computed with a 50% crash, for each algorithm, every 10 cycles],
 ) <fig:DiameterCrash>],
 )
@@ -1597,17 +1532,17 @@ For the average path length, PROOFS is the most affected, with a value going fro
 In @fig:DiameterChurn, we can see that the diameter varies with churn, with a mean going up to 3.25 instead of 2.0, but the values for Phenix and Elevator remain below the ones of Newscast and PROOFS.
 
 #grid(
-  columns: 2,
+  columns: 1,
 [#figure(
-  image("../../Images/Elevator/churn_1000_100xp_clustering_color.pdf"),
+  image("../../Images/Elevator/churn_1000_100xp_clustering_color.pdf", width: 90%),
   caption: [Clustering coefficient computed with churn, for each algorithm, every 10 cycles],
 ) <fig:ClustCoefChurn>],
 [#figure(
-  image("../../Images/Elevator/churn_1000_100xp_average_path_color.pdf"),
+  image("../../Images/Elevator/churn_1000_100xp_average_path_color.pdf", width: 90%),
   caption: [Average path length computed with churn, for each algorithm, every 10 cycles],
 ) <fig:AveragePathLengthChurn>],
 [#figure(
-  image("../../Images/Elevator/churn_1000_100xp_diameter_color.pdf"),
+  image("../../Images/Elevator/churn_1000_100xp_diameter_color.pdf", width: 90%),
   caption: [Diameter computed with churn, for each algorithm, every 10 cycles],
 ) <fig:DiameterChurn>],
 )
@@ -1624,17 +1559,17 @@ In @fig:ClustCoefCrashHub we can see that we have almost the same results as the
 Its the same for the average path length and the diameter, there is no impact, as we can see in @fig:AveragePathLengthCrashHub and @fig:DiameterCrashHub.
 
 #grid(
-  columns: 2,
+  columns: 1,
 [#figure(
-  image("../../Images/Elevator/crash_hub_1000_100xp_clustering_color.pdf"),
+  image("../../Images/Elevator/crash_hub_1000_100xp_clustering_color.pdf", width: 90%),
   caption: [Clustering coefficient computed with a hub-targeted failure, for each algorithm, every 10 cycles],
 ) <fig:ClustCoefCrashHub>],
 [#figure(
-  image("../../Images/Elevator/crash_hub_1000_100xp_average_path_color.pdf"),
+  image("../../Images/Elevator/crash_hub_1000_100xp_average_path_color.pdf", width: 90%),
   caption: [Average path length computed with a hub-targeted failure, for each algorithm, every 10 cycles],
 ) <fig:AveragePathLengthCrashHub>],
 [#figure(
-  image("../../Images/Elevator/crash_hub_1000_100xp_diameter_color.pdf"),
+  image("../../Images/Elevator/crash_hub_1000_100xp_diameter_color.pdf", width: 90%),
   caption: [Diameter computed with a hub-targeted failure, for each algorithm, every 10 cycles],
 ) <fig:DiameterCrashHub>],
 )
@@ -1651,26 +1586,26 @@ Our experimental evaluation of Elevator under Byzantine attacks reveals several 
 When multiple non-coordinated Byzantine nodes are introduced randomly in the network, their impact remains limited. On average, only 0.95 out of 10 hubs are Byzantine, meaning that although the attackers represent 5% of the nodes, they account for 9.5% of hubs (@fig:independent_byzantine). 
 
 #grid(
-  columns: 2,
+  columns: 1,
 [#figure(
-  image("../../Images/CANDAR/no_attack.pdf"),
+  image("../../Images/CANDAR/no_attack.pdf", width: 90%),
   caption: [Running of Elevator without attack.],
 ) <fig:no_attack>
 ],
   [
     #figure(
-      image("../../Images/CANDAR/elevator.ElevatorVOneByzantine2_oneByzantineActif_1000_nb_hubs_100_cycles.pdf"),
+      image("../../Images/CANDAR/elevator.ElevatorVOneByzantine2_oneByzantineActif_1000_nb_hubs_100_cycles.pdf", width: 90%),
       caption: [Active Byzantine behavior.],
     ) <fig:single_byzantine_active>
   ],
   [
     #figure(
-      image("../../Images/CANDAR/elevator.ElevatorVOneByzantine_oneByzantinePassif_1000_nb_hubs_100_cycles.pdf"),
+      image("../../Images/CANDAR/elevator.ElevatorVOneByzantine_oneByzantinePassif_1000_nb_hubs_100_cycles.pdf", width: 90%),
       caption: [Passive Byzantine behavior.],
     ) <fig:single_byzantine_passive>
   ],
   [#figure(
-  image("../../Images/CANDAR/elevator.ElevatorVByzantine2_5percentindep_1000_nb_hubs_100_cycles.pdf"),
+  image("../../Images/CANDAR/elevator.ElevatorVByzantine2_5percentindep_1000_nb_hubs_100_cycles.pdf", width: 90%),
   caption: [Independent Byzantine attack at 5% rate.],
 ) <fig:independent_byzantine>
 ],)
@@ -1681,19 +1616,19 @@ This highlights that coordination is a critical factor for a successful attack. 
 These findings demonstrate that while Elevator is resilient to individual or independent attacks, its main vulnerability lies in coordinated misinformation. Consequently, it is necessary to implement a defense mechanism that mitigates the influence of Byzantine nodes and restores fairness.
 
 #grid(
-  columns: 2,
+  columns: 1,
 [#figure(
-  image("../../Images/CANDAR/elevator.ElevatorVByzantine2_1percentrandom_1000_nb_hubs_100_cycles.pdf"),
+  image("../../Images/CANDAR/elevator.ElevatorVByzantine2_1percentrandom_1000_nb_hubs_100_cycles.pdf", width: 90%),
   caption: [Byzantine hub infiltration at 1% rate.],
 ) <fig:1percent_byzantine>
 ],
 [#figure(
-  image("../../Images/CANDAR/elevator.ElevatorVByzantine2_2percentrandom_1000_nb_hubs_100_cycles.pdf"),
+  image("../../Images/CANDAR/elevator.ElevatorVByzantine2_2percentrandom_1000_nb_hubs_100_cycles.pdf", width: 90%),
   caption: [Byzantine hub infiltration at 2% rate.],
 ) <fig:2percent_byzantine>
 ],
 [#figure(
-  image("../../Images/CANDAR/elevator.ElevatorVByzantine2_5percentrandom_1000_nb_hubs_100_cycles.pdf"),
+  image("../../Images/CANDAR/elevator.ElevatorVByzantine2_5percentrandom_1000_nb_hubs_100_cycles.pdf", width: 90%),
   caption: [Byzantine hub infiltration at 5% rate.],
 ) <fig:5percent_byzantine>
 ],
@@ -1710,63 +1645,34 @@ For 10% Byzantine participation, the countermeasure initially removes Byzantine 
 At 15% Byzantine participation, the Lift countermeasure’s effectiveness diminishes further. While the initial elimination at cycle 100 is successful, Byzantine nodes progressively reestablish themselves as hubs, reaching an average of 4.21 Byzantine hubs by the end. The total number of hubs also decreases from 10 to 6.71, meaning roughly 62% of hubs are now Byzantine. At this level, the countermeasure fails to maintain effective control over hub formation (@fig:counter_15percent).
 
 #grid(
-  columns: 2,
+  columns: 1,
 [#figure(
-      image("../../Images/CANDAR/elevator.ElevatorVCounter_5percentcounter_1000_nb_hubs_100_cycles.pdf"),
+      image("../../Images/CANDAR/elevator.ElevatorVCounter_5percentcounter_1000_nb_hubs_100_cycles.pdf", width: 90%),
       caption: [Counter-attack effectiveness at 5% rate.],
     ) <fig:counter_5percent>],
     [    #figure(
-      image("../../Images/CANDAR/elevator.ElevatorVCounter_10percentcounter_1000_nb_hubs_100_cycles.pdf"),
+      image("../../Images/CANDAR/elevator.ElevatorVCounter_10percentcounter_1000_nb_hubs_100_cycles.pdf", width: 90%),
       caption: [Counter-attack effectiveness at 10% rate.],
     ) <fig:counter_10percent>],
     [    #figure(
-      image("../../Images/CANDAR/elevator.ElevatorVCounter_15percentcounter_1000_nb_hubs_100_cycles.pdf"),
+      image("../../Images/CANDAR/elevator.ElevatorVCounter_15percentcounter_1000_nb_hubs_100_cycles.pdf", width: 90%),
       caption: [Counter-attack effectiveness at 15% rate.],
     ) <fig:counter_15percent>
 ],
   )
 
-// === Summary
-
-// We have compared the in-degree distribution of the network after the run of the Elevator algorithm for a various number of hubs in @fig:degreeDistributionVariableNbHubs, and also for each context of simulation in @fig:CompareContext.
-// The shape of the degree distribution remains consistent across different hub counts, except for a scenario with 20 hubs where nodes exclusively connect to these hubs (resulting in a multi-star topology).
-// This phenomenon aligns with the prescribed number of preferred connections (*h* = *c* = 20), where nodes exclusively link to elevated hub nodes, omitting random connections entirely.
-// The shape of distribution also remains consistent across failure contexts.
-// In @fig:ElevatorContextCoefClust, @fig:ElevatorAveragePathLength and @fig:ElevatorDiameter, we compare Elevator across all contexts for the different metrics, and we can see that there are not many variations in values, as expected from the definition of our protocol and as seen in previous comparative analyses presented above.
-// Another notable feature is that Elevator seems more stable than Phenix.
-// This is because once the hubs are in place they do not change (except in the event of failures), which provides stability in terms of network diameter or average path length.
-
-// === Summary
-
-// The results demonstrate that the Lift counter-attack successfully disrupts Byzantine coordination at lower participation levels, such as 5%, by introducing a deterministic selection process for new hubs. However, as Byzantine participation increases to 10% and 15%, the effectiveness diminishes: malicious nodes gradually re-infiltrate hub positions following the initial activation of the countermeasure. Concurrently, the total number of hubs decreases, suggesting that some correct nodes are prevented by Byzantine nodes from maintaining their hub positions.
-
-// An interesting and unexpected observation is that, even after the countermeasure, Byzantine nodes continue to attempt hub capture and achieve partial success. This behavior can prevent full retention of all hubs in certain cases. Consequently, the empirical results show a slight deviation from theoretical expectations, which predicted an average of B/N Byzantine hubs. Despite this, Lift significantly reduces the influence of Byzantine nodes and has the advantage of being lightweight, as it operates as a one-shot solution.
-
-// The proposed counter-attack mitigates Elevator's primary vulnerability—coordinated manipulation of hub selection—by introducing a deterministic redistribution mechanism based on immutable node identifiers. This approach requires synchronized activation at a predetermined cycle but does not rely on Byzantine-resistant communication. While effective at limiting Byzantine influence, the mechanism assumes a static network during activation and is sensitive to timing of convergence, making it less effective under high Byzantine participation rates or network churn.
-
-// === Summary
-
-// We first analyzed the structural properties of the network produced by the Elevator protocol. The in-degree distribution remains consistent across different numbers of hubs (see @fig:degreeDistributionVariableNbHubs and @fig:CompareContext), except in the extreme case where $h = c = 20$. In this configuration, nodes connect exclusively to hubs, resulting in a multi-star topology and eliminating random connections. This behavior is fully aligned with the protocol definition, where all outgoing links become preferential.
-
-// Across different failure contexts, the overall distribution shape and structural metrics remain stable. As illustrated in @fig:ElevatorContextCoefClust, @fig:ElevatorAveragePathLength, and @fig:ElevatorDiameter, the clustering coefficient, average path length, and diameter exhibit only minor variations. This stability is an intrinsic property of the protocol: once hubs emerge, they remain stable over time (except in the presence of failures), which explains the robustness of global metrics. In this regard, Elevator demonstrates greater structural stability than Phenix, particularly concerning diameter and average path length.
-
-// We then evaluated the protocol under Byzantine behavior and assessed the effectiveness of the Lift counter-attack. The results show that Lift successfully disrupts coordinated Byzantine hub capture at lower participation rates (e.g., 5%) by introducing a deterministic hub redistribution mechanism. However, as Byzantine participation increases (10% and 15%), its effectiveness decreases: malicious nodes progressively regain hub positions after the countermeasure is triggered. Additionally, the total number of hubs may decrease, indicating that Byzantine interference can prevent some correct nodes from maintaining their hub status.
-
-// Interestingly, even after activation of the countermeasure, Byzantine nodes continue attempting hub capture and achieve partial success, leading to slight deviations from the theoretical expectation of an average of $B/N$ Byzantine hubs. Nevertheless, Lift significantly reduces Byzantine influence while remaining lightweight, as it operates as a one-shot solution.
-
-// Overall, the proposed counter-attack mitigates Elevator’s primary vulnerability—coordinated manipulation of hub selection—by introducing a deterministic redistribution mechanism based on immutable node identifiers. While effective at limiting Byzantine influence, the mechanism assumes a static network during activation and is sensitive to convergence timing, which explains its reduced effectiveness under higher Byzantine participation rates or network churn.
 === Summary
 
 We first analyzed the structural properties of the network produced by the Elevator protocol. The in-degree distribution remains consistent across different numbers of hubs (see @fig:degreeDistributionVariableNbHubs and @fig:CompareContext), except in the extreme case where $h = c = 20$. In this configuration, nodes connect exclusively to hubs, resulting in a multi-star topology and eliminating random connections. This behavior is fully aligned with the protocol definition, where all outgoing links become preferential.
 
 #grid(
-  columns: 2,
+  columns: 1,
 [#figure(
-  image("../../Images/Elevator/Elevator_1000_100xp_indegree_color.pdf"),
+  image("../../Images/Elevator/Elevator_1000_100xp_indegree_color.pdf", width: 90%),
   caption: [In-degree distribution of the network, after the run of the Elevator algorithm, with a variable number of hubs (5 hubs, 10 hubs, 15 hubs, 20 hubs), no failures.],
 ) <fig:degreeDistributionVariableNbHubs>],
 [#figure(
-  image("../../Images/Elevator/Elevator_context_1000_100xp_indegree_color.pdf"),
+  image("../../Images/Elevator/Elevator_context_1000_100xp_indegree_color.pdf", width: 90%),
   caption: [In-degree distribution of the network, after the run of the Elevator algorithm, during each context (no failures, 50% crash, churn, and hub-targeted failure).],
 ) <fig:CompareContext>],
 )
@@ -1774,17 +1680,17 @@ We first analyzed the structural properties of the network produced by the Eleva
 Across different failure contexts, the overall distribution shape and structural metrics remain stable. As illustrated in @fig:ElevatorContextCoefClust, @fig:ElevatorAveragePathLength, and @fig:ElevatorDiameter, the clustering coefficient, average path length, and diameter exhibit only minor variations. This stability is an intrinsic property of the protocol: once hubs emerge, they remain stable over time (except in the presence of failures), which explains the robustness of global metrics. In this regard, Elevator demonstrates greater structural stability than Phenix, particularly concerning diameter and average path length.
 
 #grid(
-  columns: 2,
+  columns: 1,
 [#figure(
-  image("../../Images/Elevator/Elevator_context_1000_100xp_clustering_color.pdf"),
+  image("../../Images/Elevator/Elevator_context_1000_100xp_clustering_color.pdf", width: 90%),
   caption: [Clustering of the network, after the run of the Elevator algorithm, during each context (no failures, 50% crash, churn, and hub-targeted failure).],
 ) <fig:ElevatorContextCoefClust>],
 [#figure(
-  image("../../Images/Elevator/Elevator_context_1000_100xp_average_path_color.pdf"),
+  image("../../Images/Elevator/Elevator_context_1000_100xp_average_path_color.pdf", width: 90%),
   caption: [Average path length of the network, after the run of the Elevator algorithm, during each context (no failures, 50% crash, churn, and hub-targeted failure).],
 ) <fig:ElevatorAveragePathLength>],
 [#figure(
-  image("../../Images/Elevator/Elevator_context_1000_100xp_diameter_color.pdf"),
+  image("../../Images/Elevator/Elevator_context_1000_100xp_diameter_color.pdf", width: 90%),
   caption: [Diameter of the network, after the run of the Elevator algorithm, during each context (no failures, 50% crash, churn, and hub-targeted failure).],
 ) <fig:ElevatorDiameter>],
 )
@@ -1868,24 +1774,22 @@ The implementation was validated through a series of experiments on small- to me
 
 In @fig:VictorCrash, we show experiments that simulated hub failures by forcibly disconnecting the highest-degree nodes during execution. In all cases, new hubs emerged naturally after a short transient phase, demonstrating the self-healing properties of the protocol. The presence of random connections in the cache played a crucial role in maintaining connectivity and enabling recovery.
 
-// === Practical observations
-
 From a systems perspective, the implementation revealed a high degree of concurrency, with a large number of goroutines active at runtime. This behavior is expected, as libp2p internally spawns goroutines for stream handling, connection management, and message processing. Despite this, the system remained stable and responsive throughout the experiments.
 
 Overall, this TCP/IP implementation confirms that Elevator is not only theoretically sound and effective in simulation, but also practical and robust when deployed over real peer-to-peer networks. It further demonstrates that the protocol tolerates asynchronous execution, node failures, and dynamic network conditions, making it suitable for realistic distributed environments.
 
 #grid(
-  columns: 2,
+  columns: 1,
   [#figure(
-  image("../../Images/Victor/graphe_4HUBS_Cycles12.pdf"),
+  image("../../Images/Victor/graphe_4HUBS_Cycles12.pdf", width: 90%),
   caption: [Number of hubs at each cycle, with $N=20$, $c=10$ and $h=4$],
 ) <fig:Victor20nodes>],
   [#figure(
-  image("../../Images/Victor/graphe_5HUBS_Cycles.pdf"),
+  image("../../Images/Victor/graphe_5HUBS_Cycles.pdf", width: 90%),
   caption: [Number of hubs at each cycle, with $N=50$, $c=10$ and $h=5$],
 ) <fig:Victor50nodes>],
   [#figure(
-  image("../../Images/Victor/graphe_4HUBS_deco_Cycles.pdf"),
+  image("../../Images/Victor/graphe_4HUBS_deco_Cycles.pdf", width: 90%),
   caption: [Crash of the hubs in the middle of the experiment, with $N=50$, $c=10$ and $h=4$],
 ) <fig:VictorCrash>],
 )
@@ -1901,17 +1805,17 @@ Following preliminary tests on a personal machine, the implementation and script
 For the single-machine experiments, three configurations of the Elevator protocol were tested. In all configurations, the network consisted of 100 nodes executing 100 protocol cycles, with each node maintaining a cache of size 20. The three versions differed in the number of hubs: Version 1 used 10 hubs, Version 2 used 5 hubs, and Version 3 used a single hub. These experiments allowed us to evaluate the impact of varying the number of hubs on the stabilization and performance of the protocol while keeping other parameters constant. For all three versions, the experiments were conducted using 100 nodes with a cache size of 20 and 100 protocol cycles, while varying the number of hubs. The resulting graphs (@fig:Victor100nodes, @fig:Victor100nodesSynchrone and @fig:Victor100nodesAsynchrone) were consistent with those presented in the previous section, showing rapid stabilization of hubs within the first cycles, regardless of parameter variations. Analysis of CPU metrics revealed that certain nodes consumed nearly twice the %CPU and CPU time compared to others. These nodes were identified as the selected hubs, which aligns with the intrinsic definition of a hub: a node maintaining a large number of connections to other peers. Indeed, hubs transmit their caches to a larger subset of nodes, explaining the increased computational load observed.
 
 #grid(
-  columns: 2,
+  columns: 1,
 [#figure(
-  image("../../Images/Victor/graphe_test_V1_10_HUBS.pdf"),
+  image("../../Images/Victor/graphe_test_V1_10_HUBS.pdf", width: 90%),
   caption: [Number of hubs at each cycle, semi-synchronous, with $N=100$, $c=20$ and $h=10$],
 ) <fig:Victor100nodes>],
   [#figure(
-  image("../../Images/Victor/graphe_test_V2_5_HUBS.pdf"),
+  image("../../Images/Victor/graphe_test_V2_5_HUBS.pdf", width: 90%),
   caption: [Number of hubs, synchronous mode, with $N=100$, $c=20$ and $h=10$],
 ) <fig:Victor100nodesSynchrone>],
   [#figure(
-  image("../../Images/Victor/graphe_test_V2_5_HUBS.pdf"),
+  image("../../Images/Victor/graphe_test_V2_5_HUBS.pdf", width: 90%),
   caption: [Number of hubs, asynchronous mode, with $N=100$, $c=20$ and $h=1$],
 ) <fig:Victor100nodesAsynchrone>],
 )
@@ -1922,27 +1826,20 @@ For the two-machine experiments, the network was distributed across a server and
 Experimental results confirmed theoretical expectations, with rapid convergence to the preconfigured number of hubs across all tested scenarios. Variations in node parameters did not affect the overall stabilization behavior, illustrating the robustness of the Elevator protocol. Future work may involve scaling the experiments to larger networks distributed across more machines to assess performance at a greater scale and to compare results under more heterogeneous deployment conditions.
 
 #grid(
-  columns: 2,
+  columns: 1,
   [#figure(
-  image("../../Images/Victor/graphe_test2_V1.pdf"),
+  image("../../Images/Victor/graphe_test2_V1.pdf", width: 90%),
   caption: [Experiments on a cluster of 2 machines, semi-synchronous mode, with $N=100$, $c=20$ and $h=10$],
 ) <fig:Victor100nodesCluster>],
   [#figure(
-  image("../../Images/Victor/graphe_test2_V2.pdf"),
+  image("../../Images/Victor/graphe_test2_V2.pdf", width: 90%),
   caption: [Experiments on a cluster of 2 machines, synchronous mode, with $N=100$, $c=20$ and $h=10$],
 ) <fig:Victor100nodesClusterSynchrone>],
   [#figure(
-  image("../../Images/Victor/graphe_test2_V3.pdf"),
+  image("../../Images/Victor/graphe_test2_V3.pdf", width: 90%),
   caption: [Experiments on a cluster of 2 machines, asynchronous mode, with $N=100$, $c=20$ and $h=10$],
 ) <fig:Victor100nodesClusterAsynchrone>],
 )
-
-// == Conclusion
-
-// We proposed a novel peer sampling algorithm, Elevator, designed for unstructured P2P networks, which facilitates the organic promotion of specific nodes to serve as hubs. Our simulations confirm that the Elevator algorithm successfully maintains network connectivity, constructs networks with low diameters, achieves stability with a defined number of hubs (denoted as _h_), and demonstrates resilience against crashes, churn, and targeted attacks on hubs.
-// The distinctive aspect of our work lies in our pursuit of developing an unstructured network model with inherent hub nodes. 
-// We anticipate that this work will pave the way for a new category of algorithms known as "hub sampling algorithms", which could hold significant relevance for specific decentralized applications. For instance, such algorithms may accelerate the transmission of machine learning models in federated learning scenarios or automate the selection of validators in blockchain networks, thus potentially replacing the need for traditional proof-of-work protocols.
-// While our current study does not delve into these specific use cases, we envision exploring federated learning applications within this network paradigm in future investigations. 
 
 == Conclusion
 

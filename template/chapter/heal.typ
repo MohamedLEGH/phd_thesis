@@ -86,7 +86,7 @@ cannot cope with these faults.
 
 #figure(
   table(
-    columns: (3cm, 3cm, auto, 1.5cm, 2cm),
+    columns: (4cm, 3cm, auto, 3.5cm, 3cm),
     align: (left, left, center, left, left),
     stroke: 0.5pt,
 
@@ -480,35 +480,27 @@ and the training job continues as if no catastrophic event had happened. During
 churn, model accuracy falls slightly, but rises again very quickly once churn is
 over, back to the level without failures.
 
-#figure(
-  grid(
-    columns: 2,
-    gutter: 1em,
+#grid(
+    columns: 1,
     [
       #figure(
-        image("../../Images/HEAL/normal_accuracy_MNIST_color.pdf", width: 100%),
+        image("../../Images/HEAL/normal_accuracy_MNIST_color.pdf", width: 95%),
         caption: [Without failures],
       ) <fig:AccuracyMNIST>
     ],
     [
       #figure(
-        image("../../Images/HEAL/crash20peers_accuracy_MNIST_color.pdf", width: 100%),
+        image("../../Images/HEAL/crash20peers_accuracy_MNIST_color.pdf", width: 95%),
         caption: [When 20% of the nodes fail at round 10],
       ) <fig:AccuracyCrash20peers>
     ],
-  ),
-  caption: [Accuracy of various communication protocols, for the MNIST dataset,
-  with a network of 100 nodes, during 1000 cycles. HEAL overlay has 5 hubs,
-  each node sends its model to one hub.],
-)
+  )
 
-#figure(
-  grid(
-    columns: 2,
-    gutter: 1em,
+  #grid(
+    columns: 1,
     [
       #figure(
-        image("../../Images/HEAL/various_hub_accuracy_MNIST_color.pdf", width: 100%),
+        image("../../Images/HEAL/various_hub_accuracy_MNIST_color.pdf", width: 95%),
         caption: [HEAL with different numbers of hubs (_h_), from 1 to 25, each
         node sent its model to (_s_) hubs, with (_s_) equals to 1 or $h/2$,
         no failures, 2000 cycles],
@@ -516,24 +508,67 @@ over, back to the level without failures.
     ],
     [
       #figure(
-        image("../../Images/HEAL/hub_learning_accuracy_allcontexts_color.pdf", width: 100%),
+        image("../../Images/HEAL/hub_learning_accuracy_allcontexts_color.pdf", width: 95%),
         caption: [HEAL for all contexts (no failures, crash of 20 peers, crash
         of 1 hub, crash of all hubs, churn), with 5 hubs, each node sent its
         model to one hub, 200 cycles],
       ) <fig:AccuracyContexts>
     ],
   ),
-  caption: [Accuracy of HEAL for the MNIST dataset, with 100 nodes.],
-)
+
+
+// #figure(
+//   grid(
+//     columns: 2,
+//     gutter: 1em,
+//     [
+//       #figure(
+//         image("../../Images/HEAL/normal_accuracy_MNIST_color.pdf", width: 100%),
+//         caption: [Without failures],
+//       ) <fig:AccuracyMNIST>
+//     ],
+//     [
+//       #figure(
+//         image("../../Images/HEAL/crash20peers_accuracy_MNIST_color.pdf", width: 100%),
+//         caption: [When 20% of the nodes fail at round 10],
+//       ) <fig:AccuracyCrash20peers>
+//     ],
+//   ),
+//   caption: [Accuracy of various communication protocols, for the MNIST dataset,
+//   with a network of 100 nodes, during 1000 cycles. HEAL overlay has 5 hubs,
+//   each node sends its model to one hub.],
+// )
+
+// #figure(
+//   grid(
+//     columns: 2,
+//     gutter: 1em,
+//     [
+//       #figure(
+//         image("../../Images/HEAL/various_hub_accuracy_MNIST_color.pdf", width: 100%),
+//         caption: [HEAL with different numbers of hubs (_h_), from 1 to 25, each
+//         node sent its model to (_s_) hubs, with (_s_) equals to 1 or $h/2$,
+//         no failures, 2000 cycles],
+//       ) <fig:AccuracyVariousNbHubs>
+//     ],
+//     [
+//       #figure(
+//         image("../../Images/HEAL/hub_learning_accuracy_allcontexts_color.pdf", width: 100%),
+//         caption: [HEAL for all contexts (no failures, crash of 20 peers, crash
+//         of 1 hub, crash of all hubs, churn), with 5 hubs, each node sent its
+//         model to one hub, 200 cycles],
+//       ) <fig:AccuracyContexts>
+//     ],
+//   ),
+//   caption: [Accuracy of HEAL for the MNIST dataset, with 100 nodes.],
+// )
 
 #figure(
   table(
     columns: (auto, auto, auto),
     align: center,
-    stroke: 0.5pt,
-
+    inset: 12pt,
     [*Method*], [*Spambase*], [*MNIST (LeNet)*],
-
     [Federated Learning], [0.9087], [0.9742],
     [Gaia],              [0.8826], [0.9442],
     [Gossip Learning],   [0.8322], [0.7098],

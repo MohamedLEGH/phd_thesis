@@ -334,37 +334,3 @@ In real-world networks, randomness often coexists with community structures. Sto
   SBM generalizes the Erdős–Rényi random graph, which corresponds to the case $K=1$.
 ] <def:sbm>
 
-After introducing various network topologies, whether deterministic or random, it is natural 
-to consider the ability of peer-to-peer protocols to *reach* or *maintain* these structures. 
-In a dynamic system where nodes may join, leave, or update their connections, the observed 
-topology at time $t$, represented by the graph $G(t)$, can deviate from the ideal configurations 
-presented above. The notion of *topology convergence* formalizes this idea: a protocol is said 
-to converge if, starting from any initial topology, it drives the network toward a set of 
-desired topologies. These target topologies may be strictly deterministic, such as a ring or 
-a fully connected graph, or probabilistic, such as a random graph or a small-world network. 
-This formalization provides a rigorous framework to analyze and compare the effectiveness of 
-protocols in creating, stabilizing, or preserving different network structures in dynamic, 
-distributed environments.
-
-#definition(title: "Topology Convergence in Peer-to-Peer Networks")[
-A peer-to-peer protocol is said to achieve *topology convergence* if there exists a set of 
-desired network topologies $G^*$ such that, starting from any initial topology 
-$G(0)$, the sequence of overlay graphs $G(t)_(t >= 0)$ produced by the protocol satisfies:
-
-$
-exists T >= 0 "such as" forall t >= T, G(t) in G^*.
-$
-
-The desired topology may be:
-
-- *Deterministic*, e.g., a ring, a fully connected graph, or a structured DHT, in which 
-  case convergence requires that the protocol reorganizes the overlay exactly into this structure.
-
-- *Random*, e.g., an Erdős–Rényi or other random graph model, in which case convergence 
-  is defined in a statistical sense: the degree distribution, clustering coefficient, or 
-  other network metrics of $G(t)$ should approximate those of a graph sampled from the target 
-  random model.
-
-Convergence may hold deterministically or with high probability depending on the assumptions 
-made on the protocol execution, and the rules for neighbor selection.
-] <def:topology-convergence>

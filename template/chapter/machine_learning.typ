@@ -1739,7 +1739,7 @@ node* by enriching the general peer-to-peer node with machine learning
 components.
 
 #definition(title: "Decentralized Learning Node")[
-A *decentralized learning node* is a peer-to-peer node (see @def:node-entity)
+A *decentralized learning node* is a node (see @def:node-entity)
 whose local state $s_i$ is extended with two additional components:
 
 1. a *local dataset* $cal(D)_i = {(x_j, y_j)}_(j=1)^(n_i)$, where
