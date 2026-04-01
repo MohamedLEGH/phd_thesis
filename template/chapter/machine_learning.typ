@@ -2781,6 +2781,10 @@ disseminates the fragments that differ most across nodes, exploiting
 model diversity to accelerate convergence time.
 
 ==== Decentralized Learning on Ring Topology
+Decentralized learning can also be implemented over a ring topology  @hua2024towards, although this approach 
+is relatively uncommon in the machine learning literature. In a ring-based system, each node 
+maintains connections with exactly two neighbors, typically referred to as its left and right neighbors, forming a closed cycle. This topology is simple, deterministic, and requires each node to store only a constant number of connections, which makes it attractive from a 
+maintenance and routing perspective.
 
 #figure(
   diagram(
@@ -2828,10 +2832,7 @@ model diversity to accelerate convergence time.
     next neighbor.
   ],
 )
-Decentralized learning can also be implemented over a ring topology @legheraba2025heal, although this approach 
-is relatively uncommon in the machine learning literature. In a ring-based system, each node 
-maintains connections with exactly two neighbors, typically referred to as its left and right neighbors, forming a closed cycle. This topology is simple, deterministic, and requires each node to store only a constant number of connections, which makes it attractive from a 
-maintenance and routing perspective.
+
 
 Several aggregation strategies can be employed in a ring topology. A first approach consists 
 in *local neighborhood aggregation*, where each node periodically exchanges model parameters 
@@ -2841,12 +2842,13 @@ own model with those received from the left and right neighbors.
 A second strategy relies on *model circulation*. In this approach, a single model is passed sequentially from node to node along the ring. Each node locally updates the received model using its own dataset before forwarding it to the next neighbor. 
 After a full traversal of the ring, the model has effectively been trained on the data of all 
 nodes, in a manner reminiscent of incremental or online learning. 
+
+An illustrative example of a ring-based decentralized learning protocol is Fedlay @hua2024towards, which organizes nodes into *virtual rings*. In Fedlay, each node maintains connections to $2 ell$ neighbors across $ell$ distinct virtual rings, where $ell in NN^*$ is a configurable protocol parameter. At each training cycle, every node performs model aggregation by merging its local model with those received from its neighbors in each virtual ring, typically through weighted averaging. This multi-ring structure increases connectivity without sacrificing the simplicity of ring-based routing, allowing for more robust information propagation compared to a single-ring topology. However, the reliance on virtual rings still inherits some of the fundamental limitations of ring structures, particularly regarding latency and sensitivity to node churn.
+
 Despite its conceptual simplicity, decentralized learning on a ring topology suffers from 
-significant limitations. Information propagation is inherently slow, as updates must traverse 
-the ring sequentially, leading to convergence times that grow linearly with the number of 
-nodes. Moreover, the rigid structure of the ring makes the system particularly vulnerable to 
+significant limitations. The rigid structure of the ring makes the system particularly vulnerable to 
 failures and churn. The failure of a single node or link may break the ring and disconnect the 
-network unless additional repair mechanisms are employed. Frequent joins and leaves further 
+network unless additional repair mechanisms are employed @hua2024towards. Frequent joins and leaves further 
 complicate the maintenance of the ring structure and may disrupt the learning process.
 
 ==== Summary
