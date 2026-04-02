@@ -218,7 +218,7 @@ cannot cope with these faults.
 
 == HEAL Protocol
 
-=== Desired Properties 
+=== Desired Properties <sec:heal-desired-properties>
 
 HEAL is designed to satisfy a set of fundamental properties that characterize a practical, efficient, and resilient decentralized learning framework.
 
@@ -404,6 +404,27 @@ The aggregation function used in HEAL, Average SGD (defined in @def:average-sgd)
 In practice, model size imposes implicit constraints on both local computation and network transfer costs. Large models require more memory, longer training times, and higher communication bandwidth. HEAL does not address these engineering concerns directly; the model is treated as an abstract parameterized function throughout the protocol. In our simulations, we restrict experiments to small-scale models for practical reasons, but nothing in the protocol design precludes the use of larger architectures.
 
 Once the iterative training process has converged and a satisfactory global model has been reached, the HEAL protocol is no longer needed. Each node retains its local copy of the global model and can use it autonomously for inference, without any further communication with the rest of the network.
+
+// === From architecture to properties
+=== Architectural properties
+
+The layered architecture presented in the preceding subsection directly supports the desired properties
+established in @sec:heal-desired-properties. Model convergence follows from the aggregation design:
+by distributing the federated averaging computation across $h$ concurrent hubs and ensuring that all
+hubs reach an identical global model through the inter-hub coordination phase, HEAL reproduces the
+communication structure of FedAvg @mcmahan2017communication and inherits its convergence guarantees
+under IID data distributions. Fast dissemination is achieved through the Elevator overlay, whose
+$O(log N)$ convergence diameter ensures that model updates propagate to all nodes within a small
+number of communication rounds. Model agnosticism is enforced by the Application Layer interface,
+which imposes no structural constraints beyond gradient-based trainability and a compatible parameter
+format, accommodating any supervised learning model from linear classifiers to deep neural networks.
+Resilience to failures and churn is provided by Elevator, which tolerates individual node departures
+--- including hub failures --- and restores the desired topology within a bounded number of cycles;
+the aggregation process may pause if all hubs fail simultaneously, but resumes automatically once
+new hubs are elected. Finally, resource efficiency and algorithmic simplicity are reflected in the
+two-phase aggregation design: each non-hub node transmits its model to at most $s$ hubs per round,
+and the hub algorithm requires no coordination beyond a single broadcast among hubs, keeping both
+communication overhead and implementation complexity minimal.
 
 == Simulation-Based Evaluation
 

@@ -356,7 +356,7 @@ This separation is essential to detect *overfitting*, a phenomenon that occurs w
 
 #remark[In the sense of @def:ml-mitchell, the task $T$ corresponds to binary or multinomial classification, the experience $E$ to the labeled dataset $D = {(x_i, y_i)}_(i=1)^N$ from which the model learns, and the performance measure $P$ to the loss function $cal(L)(theta)$ that quantifies how well the model performs on this task.]
 
-=== Machine Learning Models
+== Machine Learning Models
 Having introduced the key components of supervised learning, we now have all the ingredients to formally define a supervised learning model as a mathematical tool for solving the supervised learning problem.
 
 // #definition(title: "Machine Learning Model")[
@@ -405,7 +405,7 @@ complexity and expressiveness in the hypothesis class $cal(F)$.
 
 // In what follows, we introduce several machine learning models that are widely used in practice and that serve as building blocks for the federated and decentralized learning frameworks studied in this thesis. Specifically, we cover *linear regression*, *logistic regression*, and *multilayer perceptrons (MLPs)*, each representing a different level of complexity and expressiveness in the hypothesis class $cal(F)$.
 
-==== Linear Regression
+=== Linear Regression
 
 Linear regression is one of the simplest and most widely used models in machine learning. 
 It is a type of supervised learning model used to predict a continuous output variable $y$ 
@@ -525,7 +525,7 @@ L(theta) = 1/N sum_(n=1)^N (y_n - f_theta (x_n))^2.
 $
 ] <def:linear-regression>
 
-==== Logistic Regression
+=== Logistic Regression
 Logistic regression is a supervised learning model used for classification tasks, 
 rather than predicting continuous values. It is particularly suited for binary 
 classification problems, where the goal is to predict whether an instance belongs 
@@ -638,7 +638,7 @@ L(theta) = - 1/N sum_(n=1)^N [y_n log(hat(y)_n) + (1 - y_n) log(1 - hat(y)_n)].
 $
 ] <def:logistic-regression>
 
-==== Multinomial Logistic Regression
+=== Multinomial Logistic Regression
 
 While binary logistic regression predicts the probability of an instance 
 belonging to one of two classes, multinomial logistic regression generalizes 
@@ -678,7 +678,7 @@ where $y_(n k) in {0, 1}$ indicates whether the $n$-th example belongs to class 
 
 #remark[For $K = 2$, this formulation reduces to binary logistic regression.]
 
-==== Neural Networks and Multi-Layer Perceptrons
+=== Neural Networks and Multi-Layer Perceptrons
 
 The models introduced so far rely on a linear mapping of the form $W^T x + b$ applied to the input features. 
 While these models are simple, efficient, and well understood, their expressive power is fundamentally limited: they can only represent linear decision boundaries in the input space.
