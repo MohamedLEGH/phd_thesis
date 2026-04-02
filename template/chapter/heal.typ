@@ -359,7 +359,7 @@ By decoupling overlay management from learning logic, HEAL ensures that the aggr
 // that achieves performance levels similar to Federated Learning while maintaining
 // resilience properties as Gossip and Epidemic Learning.
 
-==== HEAL Learning Protocol
+==== Aggregation Layer
 
 Regarding the communication algorithm, we utilize the hubs within the network
 as aggregators, similar to how the central server aggregates models in Federated
