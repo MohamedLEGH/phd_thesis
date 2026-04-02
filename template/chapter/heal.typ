@@ -395,7 +395,7 @@ The Aggregation Layer exposes two primary artifacts to the Application Layer abo
 
 ==== Application Layer
 
-The Application Layer constitutes the topmost component of the HEAL protocol stack. Its responsibility is to orchestrate the local learning process at each node, interfacing with the Aggregation Layer to retrieve the current model and contribute locally trained updates.
+The Application Layer constitutes the topmost component of the protocol stack, interfacing with the Aggregation Layer to retrieve the current global model and contribute locally trained updates. In HEAL, the application is a machine learning model itself, as formally defined in @chap:learning.
 
 HEAL is designed to support any supervised machine learning model (as defined in @def:supervised-ml), without imposing structural constraints on the model architecture. Linear regressors, support vector machines, and deep neural networks are all valid instantiations, provided that three conditions are satisfied. First, the model must be trainable via gradient descent, as local training relies on iterative parameter updates driven by a differentiable loss function. Second, each node must hold a local dataset partitioned into a training set, used to update the model parameters, and a test set, used to evaluate model quality independently of the training process. Third, all nodes must represent their models in a compatible parameter format, so that model averaging during the aggregation phase is well-defined.
 
