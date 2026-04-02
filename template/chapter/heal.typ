@@ -278,20 +278,6 @@ cetz.canvas({
 }), caption: [Layered architecture of HEAL]
 ) <fig:system-architecture>
 
-// Federated Learning is vulnerable due to its reliance on a central server, so
-// our protocol must avoid having a single point of failure. Additionally, to
-// ensure resilience to failures and churn, the topology should not be predefined
-// but generated in a peer-to-peer manner. Conversely, to guarantee rapid model
-// convergence, learning models should not be shared via gossip within the network
-// but aggregated by a network node, which will then create the global model and
-// distribute it back to the other network nodes. These two aspects may seem
-// contradictory, but the HEAL-overlay (Elevator) protocol allows us to create a
-// topology that satisfies both requirements.
-
-// HEAL architecture shown in @fig:system-architecture is composed of two layers on top
-// of the physical network. HEAL-overlay given by the Elevator protocol introduced
-// in @legheraba2024emergent and HEAL-learning protocol described in the sequel.
-
 ==== Network Layer
 
 The Network Layer forms the foundation of the HEAL protocol stack. It is responsible for low-level peer-to-peer communication, providing the basic message passing primitives upon which all higher layers depend. This layer directly implements the network assumptions formalized in @chap:model. In particular, we assume the underlying network is connected, reliable, and provides bidirectional communication channels between nodes.
@@ -337,9 +323,7 @@ By decoupling overlay management from learning logic, HEAL ensures that the aggr
 The Aggregation Layer defines the strategy by which locally trained models are combined into a global model and redistributed across the network. As surveyed in @chap:learning, the literature offers a variety of aggregation strategies for decentralized learning, ranging from gossip-based averaging to more structured federated approaches. These strategies differ in their communication patterns, convergence guarantees, and tolerance to heterogeneous data distributions.
 
 HEAL adopts an aggregation design inspired by Federated Learning @mcmahan2017communication, but departs from the classical single-server assumption by distributing the aggregation responsibility across multiple coordinators. Specifically, HEAL leverages the hub set maintained by the Overlay Layer to instantiate $h$ concurrent aggregators, where $h$ is a global parameter of the underlying Elevator protocol. This design choice directly addresses the single point of failure inherent to centralized federated approaches, and distributes the aggregation load evenly across the network.
-Each node in the network executes the HEAL aggregation learning protocol, in addition to
-the Elevator protocol (that dynamically assigns
-"normal" (client) or "hub" (server) status to the participating nodes).
+Each node in the network executes the HEAL aggregation learning protocol, in addition to the Elevator protocol (that dynamically assigns "normal" (client) or "hub" (server) status to the participating nodes).
 
 The aggregation process unfolds in four successive phases.
 
@@ -355,19 +339,8 @@ This four-phase process is repeated over successive rounds until the global mode
 
 The number of aggregators $h$ is inherited directly from the Elevator protocol, making it a tunable parameter that jointly governs overlay topology and aggregation granularity. Increasing $h$ reduces the per-hub load and improves fault tolerance, at the cost of additional inter-hub communication during the reconciliation phase. The parameter $s$ offers a flexibility-redundancy trade-off: setting $s = 1$ minimizes bandwidth usage, while $s > 1$ provides redundancy in the event of hub failures. Since each node contributes its model the same number of times regardless of $s$, the aggregated global model is unaffected by this choice.
 
+In the event of one or more hubs failing during a protocol cycle, the remaining hubs can temporarily manage the nodes without a dedicated hub until a new hub emerges, which typically occurs within two cycles. If all hubs fail simultaneously, the aggregation process halts but resumes as soon as new hubs appear. Elevator also establishes random connections between nodes in addition to hub connections. In HEAL, model aggregation relies solely on hub connections and inter-hub exchanges. These random connections could potentially be exploited to accelerate model convergence or mitigate malicious behavior, but this lies beyond the scope of the present work. We currently assume that all network nodes are honest, and leave the investigation of Byzantine-resilient aggregation to future research.
 
-In the event of one or more hubs failing during a protocol cycle, the remaining
-hubs can temporarily manage the nodes without a dedicated hub until a new hub
-emerges, which typically occurs within two cycles. If all hubs fail, the
-aggregation process halts but resumes as soon as new hubs appear, again within
-two cycles. It's important to note that Elevator also establishes random
-connections in the network, in addition to hub connections. In HEAL, we focus
-solely on connections to hubs (and between hubs) for model aggregation. These
-random connections could potentially be used to accelerate model convergence or
-mitigate malicious behavior, but this is beyond the scope of our current work.
-For now, we assume that all network nodes (and hubs) are honest, with plans to
-investigate malicious behavior in future research.
-  
 @algo:HubLearningHub and @algo:HubLearningNode present the detailed pseudo-code of HEAL Aggregation.
 
 #figure(
@@ -390,7 +363,7 @@ investigate malicious behavior in future research.
       + nb_receive $arrow.l$ $0$
       + *while* nb_receive < $"nb_hubs" - 1$
         + hub_model $arrow.l$ receive()
-        + nb_receive
+        + nb_receive $arrow.l$ nb_receive $+ 1$
         + models_hubs.append(hub_model)
       + global_model $arrow.l$ average(models_hubs)
       + send(backwards_list, global_model)
@@ -410,7 +383,6 @@ investigate malicious behavior in future research.
       + *for* hub *in* hubs
         + send(hub, model)
       + hubs_models $arrow.l$ list()
-      // + #text(style: "italic")[//Receiving the global models from the hubs]
       + *for* hub *in* hubs
         + model_hub $arrow.l$ receive()
         + hubs_models.append(model_hub)
@@ -419,12 +391,19 @@ investigate malicious behavior in future research.
   caption: [HEAL Learning: The client algorithm.],
 ) <algo:HubLearningNode>
 
+The Aggregation Layer exposes two primary artifacts to the Application Layer above: the current model, updated at the end of each aggregation round, and access to the node's local dataset, which the Application Layer uses to drive the local training loop.
 
-// == Description
+==== Application Layer
 
-// = Properties
+The Application Layer constitutes the topmost component of the HEAL protocol stack. Its responsibility is to orchestrate the local learning process at each node, interfacing with the Aggregation Layer to retrieve the current model and contribute locally trained updates.
 
-// = Theoretical Analysis
+HEAL is designed to support any supervised machine learning model (as defined in @def:supervised-ml), without imposing structural constraints on the model architecture. Linear regressors, support vector machines, and deep neural networks are all valid instantiations, provided that three conditions are satisfied. First, the model must be trainable via gradient descent, as local training relies on iterative parameter updates driven by a differentiable loss function. Second, each node must hold a local dataset partitioned into a training set, used to update the model parameters, and a test set, used to evaluate model quality independently of the training process. Third, all nodes must represent their models in a compatible parameter format, so that model averaging during the aggregation phase is well-defined.
+
+The aggregation function used in HEAL, Average SGD (defined in @def:average-sgd), computes a simple uniform average of the received model parameters. This approach implicitly assumes that the local datasets are independently and identically distributed (IID) across nodes, meaning that each node's data is drawn from the same underlying distribution. While this assumption simplifies the convergence analysis and is standard in introductory federated learning literature @mcmahan2017communication, it does not always hold in practice: nodes in a real deployment may hold data with significantly different statistical properties, a setting commonly referred to as non-IID or heterogeneous data. The study of decentralized learning under non-IID data distributions, and the design of aggregation strategies robust to such heterogeneity, lie beyond the scope of this thesis and are left as directions for future work.
+
+In practice, model size imposes implicit constraints on both local computation and network transfer costs. Large models require more memory, longer training times, and higher communication bandwidth. HEAL does not address these engineering concerns directly; the model is treated as an abstract parameterized function throughout the protocol. In our simulations, we restrict experiments to small-scale models for practical reasons, but nothing in the protocol design precludes the use of larger architectures.
+
+Once the iterative training process has converged and a satisfactory global model has been reached, the HEAL protocol is no longer needed. Each node retains its local copy of the global model and can use it autonomously for inference, without any further communication with the rest of the network.
 
 == Simulation-Based Evaluation
 
