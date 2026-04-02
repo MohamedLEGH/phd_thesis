@@ -332,44 +332,43 @@ The primary objective of this overlay design is to enable efficient model aggreg
 
 By decoupling overlay management from learning logic, HEAL ensures that the aggregation strategy can be modified or extended without affecting the underlying topology maintenance, and vice versa. This separation of concerns is central to the modularity and extensibility of the overall architecture.
 
-// ==== HEAL Overlay
-
-// In the following we briefly revisit how Elevator operates. For a more detailed
-// explanation, readers can refer to the article that introduces the
-// algorithm @legheraba2024emergent.
-
-// The Elevator protocol performs the following actions during each cycle: Each
-// node in the peer-to-peer network retrieves the list of neighbors of their
-// neighbors (i.e., the neighbors at a distance of two). The node then constructs
-// an ordered list of the most frequent peers (the frequency map) and contacts the
-// _c_ most frequent nodes (referred to as _preferred_). Each contacted node
-// responds by sending the addresses from its backward list to the contacting node
-// and adds the contacting node to its backward list. The contacting node's cache
-// is then reset to an empty array. Subsequently, the node selects the _h_ most
-// frequent peers and _c-h_ random peers from the backward lists of all preferred
-// peers to populate its cache.
-
-// This protocol enables the rapid formation (in 4 cycles or fewer in practical
-// settings) of a network topology with _h_ defined hubs and a random distribution
-// of the remaining incoming connections. The resulting network has a diameter of 2
-// and is highly resistant to both failures (including hub failures) and churn. In
-// the event of all hubs failing, new hubs quickly emerge (typically within one
-// cycle). These properties are particularly advantageous for decentralized
-// learning, suggesting that we can implement a learning algorithm on this topology
-// that achieves performance levels similar to Federated Learning while maintaining
-// resilience properties as Gossip and Epidemic Learning.
-
 ==== Aggregation Layer
 
-Regarding the communication algorithm, we utilize the hubs within the network
-as aggregators, similar to how the central server aggregates models in Federated
-Learning. The key difference is that multiple hubs perform the aggregation, not
-just one, and these hubs emerge automatically. We leverage the presence of
-multiple hubs to distribute the aggregation workload, with each hub handling a
-portion of the network nodes and subsequently aggregating with each other. Each
-hub then returns the global model to its clients, and the protocol begins a new
-cycle. As with Federated Learning, the learning process continues over several
-cycles and concludes when the global model has converged.
+The Aggregation Layer defines the strategy by which locally trained models are combined into a global model and redistributed across the network. As surveyed in @chap:learning, the literature offers a variety of aggregation strategies for decentralized learning, ranging from gossip-based averaging to more structured federated approaches. These strategies differ in their communication patterns, convergence guarantees, and tolerance to heterogeneous data distributions.
+
+HEAL adopts an aggregation design inspired by Federated Learning @mcmahan2017communication, but departs from the classical single-server assumption by distributing the aggregation responsibility across multiple coordinators. Specifically, HEAL leverages the hub set maintained by the Overlay Layer to instantiate $h$ concurrent aggregators, where $h$ is a global parameter of the underlying Elevator protocol. This design choice directly addresses the single point of failure inherent to centralized federated approaches, and distributes the aggregation load evenly across the network.
+Each node in the network executes the HEAL aggregation learning protocol, in addition to
+the Elevator protocol (that dynamically assigns
+"normal" (client) or "hub" (server) status to the participating nodes).
+
+The aggregation process unfolds in four successive phases.
+
+1. *Model transfer.* Each non-hub node selects $s$ hubs uniformly at random and transmits its current local model to these hubs (with $s$ a global parameter of the protocol). This randomized assignment ensures that the incoming load is balanced across all hubs in expectation.
+
+2. *Hub aggregation.* Upon receiving model submissions, each hub waits for a configurable delay $delta in RR^+$ before proceeding. This window allows the hub to collect contributions from a sufficient number of nodes before aggregating. After the delay, each hub independently computes a local aggregate from the models it has received, using Average SGD (as defined in @def:average-sgd).
+
+3. *Inter-hub coordination.* Once local aggregation is complete, all hubs enter a synchronous coordination phase. Since hubs form a complete graph --- every hub is connected to every other hub by construction of the Elevator overlay --- each hub broadcasts its local aggregate to all other hubs and receives their aggregates in return. Each hub then computes the global model from the full set of hub aggregates (again, using Average SGD). Because all hubs perform this computation on the same inputs, the resulting global model is identical across all hubs.
+
+4. *Redistribution.* Finally, each hub transmits the global model back to the non-hub nodes that submitted their local model to it during the model transfer phase. Since each non-hub node has submitted its model to $s$ hubs, and all hubs compute an identical global model during the inter-hub coordination phase, each node receives $s$ copies of the same global model. The node retains the first received copy and discards the remaining ones, then proceeds to the next training round.
+
+This four-phase process is repeated over successive rounds until the global model converges, mirroring the iterative communication structure of Federated Learning @mcmahan2017communication.
+
+The number of aggregators $h$ is inherited directly from the Elevator protocol, making it a tunable parameter that jointly governs overlay topology and aggregation granularity. Increasing $h$ reduces the per-hub load and improves fault tolerance, at the cost of additional inter-hub communication during the reconciliation phase. The parameter $s$ offers a flexibility-redundancy trade-off: setting $s = 1$ minimizes bandwidth usage, while $s > 1$ provides redundancy in the event of hub failures. Since each node contributes its model the same number of times regardless of $s$, the aggregated global model is unaffected by this choice.
+
+
+In the event of one or more hubs failing during a protocol cycle, the remaining
+hubs can temporarily manage the nodes without a dedicated hub until a new hub
+emerges, which typically occurs within two cycles. If all hubs fail, the
+aggregation process halts but resumes as soon as new hubs appear, again within
+two cycles. It's important to note that Elevator also establishes random
+connections in the network, in addition to hub connections. In HEAL, we focus
+solely on connections to hubs (and between hubs) for model aggregation. These
+random connections could potentially be used to accelerate model convergence or
+mitigate malicious behavior, but this is beyond the scope of our current work.
+For now, we assume that all network nodes (and hubs) are honest, with plans to
+investigate malicious behavior in future research.
+  
+@algo:HubLearningHub and @algo:HubLearningNode present the detailed pseudo-code of HEAL Aggregation.
 
 #figure(
   pseudocode-list(booktabs: true)[
@@ -398,17 +397,16 @@ cycles and concludes when the global model has converged.
     ],  caption: [HEAL Learning: The Hub algorithm.],
 ) <algo:HubLearningHub>
 
-
 #figure(
   pseudocode-list(booktabs: true)[
     - duration to wait for model: *delta_time*
     - The model, weights or parameters initialized at random: *model*
     - The local data of the node: *data*
     - list of all hubs (obtained by HEAL overlay, Elevator protocol): *hubs_list*
-    - number of hubs to send the model to: *number_hub_send*
+    - number of hubs to send the model to: *s*
     + *loop*
       + model $arrow.l$ trainModel(model, data)
-      + hubs $arrow.l$ chooseRandom(hubs_list, number_hub_send)
+      + hubs $arrow.l$ chooseRandom(hubs_list, s)
       + *for* hub *in* hubs
         + send(hub, model)
       + hubs_models $arrow.l$ list()
@@ -416,49 +414,11 @@ cycles and concludes when the global model has converged.
       + *for* hub *in* hubs
         + model_hub $arrow.l$ receive()
         + hubs_models.append(model_hub)
-      + model $arrow.l$ average(hubs_models)
+      + model $arrow.l$ hubs_models[0]
   ],
   caption: [HEAL Learning: The client algorithm.],
 ) <algo:HubLearningNode>
 
-
-In the event of one or more hubs failing during a protocol cycle, the remaining
-hubs can temporarily manage the nodes without a dedicated hub until a new hub
-emerges, which typically occurs within two cycles. If all hubs fail, the
-aggregation process halts but resumes as soon as new hubs appear, again within
-two cycles. It's important to note that Elevator also establishes random
-connections in the network, in addition to hub connections. In HEAL, we focus
-solely on connections to hubs (and between hubs) for model aggregation. These
-random connections could potentially be used to accelerate model convergence or
-mitigate malicious behavior, but this is beyond the scope of our current work.
-For now, we assume that all network nodes (and hubs) are honest, with plans to
-investigate malicious behavior in future research.
-
-One intriguing feature of Elevator is the ability to select the number of hubs
-in the network through a parameter shared by all nodes. This is particularly
-valuable in HEAL, as it allows us to balance between having fewer hubs for
-higher convergence speed and more hubs for greater resilience to failures.
-Additionally, HEAL offers the flexibility to choose the number of hubs to which
-a client sends its model. A more detailed description of how Learning operates
-in HEAL follows.
-
-Each node in the network executes the HEAL learning protocol, in addition to
-HEAL overlay construction via the Elevator protocol (that dynamically assigns
-"normal" (client) or "hub" (server) status to the participating nodes):
-
-- If the node is a normal (client) node, it (1) selects a number of hubs
-  (servers) at random, (2) performs a local training step, (3) sends the
-  trained model to the hubs, and (4) waits for the global model.
-
-- If the node is a hub, it (1) waits for a _delta_ period to receive models
-  from normal nodes, (2) aggregates these models by averaging their parameters,
-  and (3) sends its aggregated model to all other hubs. (4) It then waits to
-  receive models from other hubs and (5) aggregates all these models to obtain
-  the global model. (6) Finally, the hub sends the global model back to the
-  nodes.
-
-  
-@algo:HubLearningHub and @algo:HubLearningNode present the detailed pseudo-code of HEAL Learning.
 
 // == Description
 

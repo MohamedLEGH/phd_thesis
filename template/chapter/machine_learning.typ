@@ -8,7 +8,7 @@
 #import cosmos.fancy: *
 #show: show-theorion
 
-= From Centralized to Decentralized Machine Learning
+= From Centralized to Decentralized Machine Learning <chap:learning>
 
 Artificial intelligence and machine learning have become central drivers of
 technological innovation over the past decade, transforming domains ranging from
