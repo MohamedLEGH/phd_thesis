@@ -122,99 +122,12 @@ cannot cope with these faults.
     [Yes (only one)], [No], [slow & local],
 
     [*HEAL*],
-    [*Dynamic (Elevator @legheraba2024emergent)*],
+    // [*Dynamic (Elevator @legheraba2024emergent)*],
+    [*Dynamic (Elevator)*],
     [*Yes*], [*Yes*], [*quick, using hubs*],
   ),
   caption: [Comparison of different decentralized learning algorithms.],
 ) <tab:all_algorithm>
-
-// *Paper organization.*
-// In @sec:learning-background we propose an overview of decentralized learning
-// strategies. @sec:HEAL introduces the architecture of HEAL and the detailed
-// description of the HEAL learning strategies. @sec:evaluation presents our
-// extensive evaluations. @sec:conclusions concludes and proposes open research
-// directions.
-
-// == Overview of Decentralized Learning Techniques <sec:learning-background>
-
-// The distinguishing factors among various decentralized learning algorithms in
-// the literature are: (1) the algorithm employed to propagate and aggregate
-// learning models within the network, and (2) the network topology on which the
-// learning occurs. Naturally, these two concepts are interconnected, as certain
-// propagation methods are better suited to specific topologies.
-
-// *Decentralized propagation and aggregation of the learning models.*
-
-// There are various techniques for propagating the learning models within a
-// network, each with its own set of advantages and disadvantages. The three most
-// commonly discussed methods in the literature are _Federated Learning_,
-// _Gossip Learning_, and _Epidemic Learning_. In Federated Learning
-// @mcmahan2017communication, all models are aggregated at a central server,
-// facilitating rapid convergence towards a global model. In Gossip Learning
-// @ormandi2013gossip, each participant shares its model at a specified time
-// interval with a randomly chosen neighbor in the network. In Epidemic Learning
-// @de2024epidemic, each participant shares its model with all their neighbors in
-// each cycle.
-
-// *Network topology vs decentralized learning.*
-
-// In decentralized learning, the network topology significantly influences the
-// performance of the learning task, as evidenced by various studies in the
-// literature @vogels2022beyond. Different topologies impact the speed of
-// information propagation and the system's resilience to node or link failures.
-// At the extremes, we have the star topology, typically used with Federated
-// Learning, and the random graph topology, often paired with Gossip Learning.
-// However, many other topologies exist between these extremes. Additionally, it
-// is important to distinguish between static topologies (predefined and
-// unchangeable) and dynamic topologies (which evolve over time).
-
-// - *Static topologies.* Among static topologies, _star topology_, features a
-//   central server and clients connected to it. This setup is not entirely
-//   decentralized, as the aggregator server is selected at the beginning of the
-//   learning process, creating a single point of failure. The _multi-star
-//   topology_ is a variation of the star topology, involving multiple servers.
-//   Typically, all stars are interconnected in a complete topology, with all
-//   other nodes connected to a predefined star. Next, we have the _complete
-//   topology_, where every participant communicates directly with all others.
-//   While this maximizes information propagation speed and ensures rapid
-//   convergence, it is impractical for large-scale networks. Another common
-//   topology is the _ring topology_, where each node is connected to two
-//   neighbors, forming a circular ring. This topology is straightforward to
-//   construct but does not scale well. Finally, in _random regular graphs_ each
-//   participant is randomly connected to _k_ other participants in the network,
-//   with _k_ being a predefined parameter. This topology is highly robust against
-//   failures and churn, but the learning process convergence is slow. Other
-//   random topologies in the literature include small worlds and power-law
-//   networks.
-
-// - *Self-organised dynamic topologies.* To establish a dynamic topology, two
-//   primary approaches are discussed in the literature: Distributed Hash Table
-//   (DHT)-based methods and decentralized peer sampling methods. Among the
-//   DHT-based methods, Chord @stoica2001chord is a notable example. Additionally,
-//   Fedlay @hua2024towards is specifically designed for decentralized learning.
-//   For non-DHT methods, Newscast @jelasity2007gossip is commonly used in Gossip
-//   Learning and Epidemic Learning.
-
-// An important aspect to consider in dynamic topologies is their resilience to
-// failures. A specific type of failure is churn, where nodes in a peer-to-peer
-// network enter and leave without any control. Another particular case of failures
-// involves attacks targeting specific nodes, such as servers or central nodes.
-// Centralized topologies are highly sensitive to these types of failures.
-// In a static topology, there is no possibility to repair the topology in the
-// event of a failure. In a DHT, some repairs are possible, but not always
-// guaranteed face to high churn.
-// Peer sampling algorithms are a good compromise to repair the topology when
-// failures are detected and to be resilient to high churn.
-
-// HEAL uses as underlying topology Elevator @legheraba2024emergent, a recently
-// proposed decentralized peer-sampling algorithm. This algorithm enables nodes in
-// a peer-to-peer network to construct an overlay with _h_ defined hubs, each hub
-// being connected to all nodes in the network, with _h_ being a parameter of the
-// algorithm. Elevator is totally distributed, self-organizing and resilient to
-// churn.
-// In @tab:all_algorithm, we summarized the topologies used with various
-// decentralized learning algorithms, along with the strengths and weaknesses of
-// each approach.
 
 == HEAL Protocol
 
@@ -325,17 +238,92 @@ The Aggregation Layer defines the strategy by which locally trained models are c
 HEAL adopts an aggregation design inspired by Federated Learning @mcmahan2017communication, but departs from the classical single-server assumption by distributing the aggregation responsibility across multiple coordinators. Specifically, HEAL leverages the hub set maintained by the Overlay Layer to instantiate $h$ concurrent aggregators, where $h$ is a global parameter of the underlying Elevator protocol. This design choice directly addresses the single point of failure inherent to centralized federated approaches, and distributes the aggregation load evenly across the network.
 Each node in the network executes the HEAL aggregation learning protocol, in addition to the Elevator protocol (that dynamically assigns "normal" (client) or "hub" (server) status to the participating nodes).
 
-The aggregation process unfolds in four successive phases.
+The aggregation process unfolds in five successive phases.
 
-1. *Model transfer.* Each non-hub node selects $s$ hubs uniformly at random and transmits its current local model to these hubs (with $s$ a global parameter of the protocol). This randomized assignment ensures that the incoming load is balanced across all hubs in expectation.
+1. *Local training.* Each non-hub node trains its current model on its local dataset, producing an
+   updated set of parameters ready for aggregation.
 
-2. *Hub aggregation.* Upon receiving model submissions, each hub waits for a configurable delay $delta in RR^+$ before proceeding. This window allows the hub to collect contributions from a sufficient number of nodes before aggregating. After the delay, each hub independently computes a local aggregate from the models it has received, using Average SGD (as defined in @def:average-sgd).
+2. *Model transfer.* Each non-hub node selects $s$ hubs uniformly at random and transmits its
+   current local model to these hubs (with $s$ a global parameter of the protocol). This randomized
+   assignment ensures that the incoming load is balanced across all hubs in expectation.
 
-3. *Inter-hub coordination.* Once local aggregation is complete, all hubs enter a synchronous coordination phase. Since hubs form a complete graph --- every hub is connected to every other hub by construction of the Elevator overlay --- each hub broadcasts its local aggregate to all other hubs and receives their aggregates in return. Each hub then computes the global model from the full set of hub aggregates (again, using Average SGD). Because all hubs perform this computation on the same inputs, the resulting global model is identical across all hubs.
+3. *Hub aggregation.* Upon receiving model submissions, each hub waits for a configurable delay
+   $delta in RR^+$ before proceeding. This window allows the hub to collect contributions from a
+   sufficient number of nodes before aggregating. After the delay, each hub independently computes a
+   local aggregate from the models it has received, using Average SGD (as defined in @def:average-sgd).
 
-4. *Redistribution.* Finally, each hub transmits the global model back to the non-hub nodes that submitted their local model to it during the model transfer phase. Since each non-hub node has submitted its model to $s$ hubs, and all hubs compute an identical global model during the inter-hub coordination phase, each node receives $s$ copies of the same global model. The node retains the first received copy and discards the remaining ones, then proceeds to the next training round.
+4. *Inter-hub coordination.* Once local aggregation is complete, all hubs enter a synchronous
+   coordination phase. Since hubs form a complete graph --- every hub is connected to every other hub
+   by construction of the Elevator overlay --- each hub broadcasts its local aggregate to all other
+   hubs and receives their aggregates in return. Each hub then computes the global model from the
+   full set of hub aggregates (again, using Average SGD). Because all hubs perform this computation
+   on the same inputs, the resulting global model is identical across all hubs.
 
-This four-phase process is repeated over successive rounds until the global model converges, mirroring the iterative communication structure of Federated Learning @mcmahan2017communication.
+5. *Redistribution.* Finally, each hub transmits the global model back to the non-hub nodes that
+   submitted their local model to it during the model transfer phase. Since each non-hub node has
+   submitted its model to $s$ hubs, and all hubs compute an identical global model during the
+   inter-hub coordination phase, each node receives $s$ copies of the same global model. The node
+   retains the first received copy and discards the remaining ones, then proceeds to the next
+   training round.
+
+This five-phase process is repeated over successive rounds until the global model converges,
+mirroring the iterative communication structure of Federated Learning @mcmahan2017communication.
+#figure(
+  diagram(
+    node-fill: green.lighten(60%),
+    node-stroke: 1pt,
+    {
+      let dash_node = (paint: green, dash: "dashed")
+      let dash_hub = (paint: blue, dash: "dashed")
+
+      node((-1.1,-1.2), `1) Each node trains a
+      local model`,
+        stroke: dash_node, inset: 0.5em)
+      node((-1.2, -0.1), `2) Each node sends 
+      its model to a (random) 
+      subset of hubs`,
+        stroke: dash_node, inset: 0.5em)
+      node(( 2.2,-1.2), `3) Hubs receive 
+      and aggregate models`,
+        fill: blue.lighten(60%), stroke: dash_hub, inset: 0.5em)
+      node(( 2, -0.3), `4) Hubs compute a global 
+      model together`,
+        fill: blue.lighten(60%), stroke: dash_hub, inset: 0.5em)
+      node(( 2.2, 0.5), `5) Hubs send back
+      the global model 
+      to the nodes`,
+        fill: blue.lighten(60%), stroke: dash_hub, inset: 0.5em)
+
+      node((0.00, 0.00), "0", name: <0>, radius: 1em, fill: blue.lighten(60%))
+      node((1.00, 0.00), "1", name: <1>, radius: 1em, fill: blue.lighten(60%))
+      node((1.22,-1), "2", name: <2>, radius: 1em)
+      node((0.6,-1), "3", name: <3>, radius: 1em)
+      node((-0.49, 0.66), "4", name: <4>, radius: 1em)
+      node((1.14, 0.73), "5", name: <5>, radius: 1em)
+      node((-0.11,-0.71), "6", name: <6>, radius: 1em)
+
+      edge(<0>, <1>, "-|>")
+      edge(<1>, <0>, "-|>")
+      edge(<2>, <0>, "-|>")
+      edge(<2>, <1>, "-|>")
+      edge(<3>, <0>, "-|>")
+      edge(<3>, <1>, "-|>")
+      edge(<2>, <3>, "-|>")
+      edge(<3>, <6>, "-|>")
+      edge(<4>, <0>, "-|>")
+      edge(<4>, <1>, "-|>")
+      edge(<4>, <6>, "-|>")
+      edge(<5>, <0>, "-|>")
+      edge(<5>, <1>, "-|>")
+      edge(<5>, <6>, "-|>")
+      edge(<5>, <3>, "-|>")
+      edge(<6>, <0>, "-|>")
+      edge(<6>, <1>, "-|>")
+      edge(<6>, <5>, "-|>")
+    }
+  ),
+  caption: [HEAL learning protocol: the five phases],
+) <fig:heal-aggregation>
 
 The number of aggregators $h$ is inherited directly from the Elevator protocol, making it a tunable parameter that jointly governs overlay topology and aggregation granularity. Increasing $h$ reduces the per-hub load and improves fault tolerance, at the cost of additional inter-hub communication during the reconciliation phase. The parameter $s$ offers a flexibility-redundancy trade-off: setting $s = 1$ minimizes bandwidth usage, while $s > 1$ provides redundancy in the event of hub failures. Since each node contributes its model the same number of times regardless of $s$, the aggregated global model is unaffected by this choice.
 
@@ -426,6 +414,11 @@ two-phase aggregation design: each non-hub node transmits its model to at most $
 and the hub algorithm requires no coordination beyond a single broadcast among hubs, keeping both
 communication overhead and implementation complexity minimal.
 
+Having established the design and theoretical properties of HEAL, we now turn to its empirical
+evaluation. The protocol is assessed through simulation, which allows us to control network
+conditions, vary key parameters, and measure convergence behavior in a reproducible setting. The
+following section describes the simulation methodology, experimental setup, and results.
+
 == Simulation-Based Evaluation
 
 We evaluated our algorithm using simulations on the Gossipy
@@ -450,6 +443,64 @@ compare with the 5 hubs) and 19 nodes (or workers) attached to each server.
 Each algorithm was evaluated 5 times, and we present the average results
 obtained.
 
+// === Setup
+
+=== Datasets
+HEAL is evaluated on two supervised learning tasks drawn from standard benchmarks in the machine
+learning literature. These datasets were selected to cover both binary and multiclass classification
+settings, and to allow meaningful comparison with prior work.
+
+==== Spambase
+
+The Spambase dataset @spambase_94 is a binary classification benchmark originally compiled by
+Hewlett-Packard Labs and made publicly available through the UCI Machine Learning Repository. It
+consists of 4,601 email messages, each represented as a feature vector of 57 continuous attributes,
+grouped into three categories. The first 48 attributes, of type `word_freq_WORD`, measure the
+percentage of words in the email that match a given keyword, computed as $100 times (text("count of "
+"WORD")) \/ text("total words")$. The following 6 attributes, of type `char_freq_CHAR`, measure the
+percentage of characters in the email matching a given special character, computed analogously over
+the full character sequence. The remaining 3 attributes capture the structure of capital letter
+sequences: `capital_run_length_average` is the average length of uninterrupted sequences of capital
+letters, `capital_run_length_longest` is the length of the longest such sequence, and
+`capital_run_length_total` is the total number of capital letters in the email. The task is to
+classify each email as either spam ($y = 1$) or legitimate ($y = 0$), making this a standard binary
+classification problem. The dataset is moderately imbalanced, with approximately 39% of instances
+labeled as spam. Its relatively small size and tabular structure make it well suited for evaluating
+lightweight models such as support vector machines and shallow neural networks in a distributed
+setting.
+
+#figure(
+  table(
+    columns: (auto, auto, auto),
+    align: (left, left, left),
+    table.header([*Attribute*], [*Type*], [*Description*]),
+    [`word_freq_meeting`], [Continuous $[0,100]$], [% of words matching "meeting"],
+    [`word_freq_original`], [Continuous $[0,100]$], [% of words matching "original"],
+    [`word_freq_project`], [Continuous $[0,100]$], [% of words matching "project"],
+    [#sym.dots.v], [#sym.dots.v], [#sym.dots.v],
+    [`char_freq_;`], [Continuous $[0,100]$], [% of characters matching ";"],
+    [`char_freq_(`], [Continuous $[0,100]$], [% of characters matching "("],
+    [#sym.dots.v], [#sym.dots.v], [#sym.dots.v],
+    [`capital_run_length_average`], [Continuous $[1, +infinity[$], [Average length of capital letter runs],
+    [`capital_run_length_longest`], [Integer $[1, +infinity[$],   [Length of longest capital letter run],
+    [`capital_run_length_total`],   [Integer $[1, +infinity[$],   [Total number of capital letters],
+    [*Class*], [Binary], [Spam ($y=1$) or legitimate ($y=0$)],
+  ),
+  caption: [Selected attributes of the Spambase dataset. The full feature set comprises 48 word frequency attributes, 6 character frequency attributes, and 3 capital run-length attributes.],
+) <tab:spambase-features>
+
+==== MNIST
+
+The MNIST dataset @lecun2010mnist is a multiclass classification benchmark consisting of 70,000
+grayscale images of handwritten digits, partitioned into 60\,000 training samples and 10,000 test
+samples. Each image is of size $28 times 28$ pixels, yielding a 784-dimensional input vector after
+flattening. The task is to assign each image to one of ten classes corresponding to the digits 0
+through 9. MNIST is one of the most widely used benchmarks in the machine learning literature,
+serving as a standard testbed for evaluating classification models ranging from logistic regression
+to deep convolutional networks. In the context of HEAL, it provides a more demanding evaluation
+setting than Spambase, due to its higher input dimensionality and the multiclass nature of the
+learning task.
+
 We assessed all protocols on two tasks: a binary classification task (Logistic
 Regression @hosmer2013applied on the Spambase dataset @spambase_94, with a
 learning rate of 0.1) and on a multinomial classification task
@@ -461,6 +512,8 @@ at 0.01. Our algorithm was evaluated under various conditions: the failure of
 
 All simulations were run on 16 vCPU, using 64G of memory, on a cluster
 composed of 10 servers.
+
+=== Results
 
 _Crash-free, churn-free environment:_
 For simulations without failures and churn, we ran all algorithms over 1000
@@ -622,6 +675,8 @@ over, back to the level without failures.
   with 5 hubs, each node sends its model to one hub (fault and churn free
   scenario).],
 ) <tab:all_results>
+
+== LEACH-FL: Alternative Architecture
 
 == Conclusion
 
