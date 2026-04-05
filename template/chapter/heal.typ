@@ -414,26 +414,59 @@ two-phase aggregation design: each non-hub node transmits its model to at most $
 and the hub algorithm requires no coordination beyond a single broadcast among hubs, keeping both
 communication overhead and implementation complexity minimal.
 
-Having established the design and theoretical properties of HEAL, we now turn to its empirical
-evaluation. The protocol is assessed through simulation, which allows us to control network
-conditions, vary key parameters, and measure convergence behavior in a reproducible setting. The
-following section describes the simulation methodology, experimental setup, and results.
+=== Communication overhead
 
+The number of models exchanged per cycle varies depending on the topology type and the
+aggregation algorithm used. We derive the theoretical message count for each framework
+as follows. In Federated Learning, each of the $n-1$ non-server nodes sends its local
+model to the server, which then broadcasts the aggregated global model back to all $n-1$
+nodes, yielding $2(n-1)$ exchanges per cycle. In Gossip Learning, each node sends its
+model to one neighbor per cycle, resulting in $n$ exchanges in total. Epidemic Learning
+follows the same principle, except that each node contacts all $c$ of its outgoing
+neighbors, giving $n dot c$ exchanges. For HEAL, the exchange proceeds in three steps:
+first, each of the $n-h$ non-hub nodes sends its model to $s$ hubs, contributing
+$(n-h) dot s$ messages; the hubs then exchange their aggregated models with one another,
+producing $h(h-1)$ messages; finally, each hub redistributes the global model back to
+the $n-h$ non-hub nodes that contributed to it, adding another $(n-h) dot s$ messages.
+The total per-cycle overhead for HEAL is therefore $2(n-h) dot s + h(h-1)$.
+// @tab:nb-messages summarises these theoretical values.
+
+#figure(
+  table(
+    columns: (auto, auto),
+    align: (left, center),
+    table.header(
+      [*Aggregation framework*], [*Number of messages per cycle*],
+    ),
+    [Federated Learning],  [$2(n-1)$],
+    [Gossip Learning],     [$n$],
+    [Epidemic Learning],   [$n dot c$],
+    [*HEAL*],              [$2(n-h) dot s + h(h-1)$],
+  ),
+  caption: [Comparison of decentralised learning frameworks in terms of communication
+  overhead per cycle, where $n$ is the total number of nodes (including server\/hubs),
+  $c$ is the number of outgoing connections, $h$ is the number of hubs, and $s$ is the
+  number of hubs to which each node sends its model.],
+) <tab:nb-messages>
 == Simulation-Based Evaluation
 
-We evaluated our algorithm using simulations on the Gossipy
-simulator#footnote[https://github.com/makgyver/gossipy]. We compared Hub
-Learning against Federated Learning @mcmahan2017communication,
+Having established the design and theoretical properties of HEAL, we now turn to its empirical
+evaluation. The protocol is assessed through simulation, which allows us to control network
+conditions, vary key parameters, and measure convergence behavior in a reproducible setting. This section describes the experimental setup, the simulation methodology, and results.
+
+=== Setup
+
+We evaluated our protocol using simulations on the Gossipy
+simulator#footnote[https://github.com/makgyver/gossipy]. We compared HEAL against Federated Learning @mcmahan2017communication,
 Gaia @hsieh2017gaia, Gossip Learning @ormandi2013gossip, Epidemic
 Learning @de2024epidemic, Epidemic Learning on a Chord
 topology @stoica2001chord, Epidemic Learning on a ring topology, and
 Fedlay @hua2024towards. For the static topologies (Federated Learning, ring,
 Chord, and Gaia), we generated the topology using the Python library
 Networkx#footnote[https://networkx.org/].
-For the dynamic topologies (Gossip Learning, Epidemic Learning, Fedlay and Hub
-Learning with Elevator), we generated the topology using the PeerSim
+For the dynamic topologies (Gossip Learning, Epidemic Learning, Fedlay and HEAL with Elevator), we generated the topology using the PeerSim
 simulator @p2p09-peersim.
-In Elevator (used by Hub Learning), the connections are directional. However,
+In Elevator (used by HEAL), the connections are directional. However,
 to compare them with other algorithms (which assume an undirected graph), we
 modified the underlying graph of the topology generated to make it undirected.
 All evaluations were conducted with a network of 100 nodes. For Elevator, we
@@ -443,70 +476,70 @@ compare with the 5 hubs) and 19 nodes (or workers) attached to each server.
 Each algorithm was evaluated 5 times, and we present the average results
 obtained.
 
-// === Setup
+We evaluate our protocol on two learning tasks: 1) binary classification and 2) multinomial
+classification, as defined in the previous chapter (@def:binary-classification and
+@def:multinomial-classification). Binary classification constitutes a straightforward
+baseline that allows us to verify the correctness of the protocol, whilst multinomial
+classification is more complex, enabling us to compare our protocol more precisely with
+other decentralised protocols.
 
-=== Datasets
-HEAL is evaluated on two supervised learning tasks drawn from standard benchmarks in the machine
-learning literature. These datasets were selected to cover both binary and multiclass classification
-settings, and to allow meaningful comparison with prior work.
+The binary classification task is evaluated on the Spambase dataset (@sec:datasets), which
+comprises 4601 samples split into 90% for training and 10% for testing. We use a logistic
+regression model (@def:logistic-regression) — a simple model that is sufficient for this
+dataset — with 57 parameters (excluding the bias) and a binary output. The model is
+trained using SGD with a learning rate of $0.1$ and a batch size of 32.
 
-==== Spambase
+The multinomial classification task is evaluated on the MNIST dataset (@sec:datasets),
+which provides 60,000 training images and 10,000 test images. We use a LeNet5
+@lecun1989backpropagation convolutional neural network, originally designed for this dataset, with approximately 60,000 parameters and an output over 10 classes. The model is trained using the Adam optimiser @kingma2014adam with a learning rate of $0.001$, a weight decay of $0.01$, and a batch size of 32.
 
-The Spambase dataset @spambase_94 is a binary classification benchmark originally compiled by
-Hewlett-Packard Labs and made publicly available through the UCI Machine Learning Repository. It
-consists of 4,601 email messages, each represented as a feature vector of 57 continuous attributes,
-grouped into three categories. The first 48 attributes, of type `word_freq_WORD`, measure the
-percentage of words in the email that match a given keyword, computed as $100 times (text("count of "
-"WORD")) \/ text("total words")$. The following 6 attributes, of type `char_freq_CHAR`, measure the
-percentage of characters in the email matching a given special character, computed analogously over
-the full character sequence. The remaining 3 attributes capture the structure of capital letter
-sequences: `capital_run_length_average` is the average length of uninterrupted sequences of capital
-letters, `capital_run_length_longest` is the length of the longest such sequence, and
-`capital_run_length_total` is the total number of capital letters in the email. The task is to
-classify each email as either spam ($y = 1$) or legitimate ($y = 0$), making this a standard binary
-classification problem. The dataset is moderately imbalanced, with approximately 39% of instances
-labeled as spam. Its relatively small size and tabular structure make it well suited for evaluating
-lightweight models such as support vector machines and shallow neural networks in a distributed
-setting.
+In both cases, the dataset is partitioned across the network nodes in an IID fashion. The data partition is performed randomly and uniformly across nodes.
 
 #figure(
   table(
-    columns: (auto, auto, auto),
-    align: (left, left, left),
-    table.header([*Attribute*], [*Type*], [*Description*]),
-    [`word_freq_meeting`], [Continuous $[0,100]$], [% of words matching "meeting"],
-    [`word_freq_original`], [Continuous $[0,100]$], [% of words matching "original"],
-    [`word_freq_project`], [Continuous $[0,100]$], [% of words matching "project"],
-    [#sym.dots.v], [#sym.dots.v], [#sym.dots.v],
-    [`char_freq_;`], [Continuous $[0,100]$], [% of characters matching ";"],
-    [`char_freq_(`], [Continuous $[0,100]$], [% of characters matching "("],
-    [#sym.dots.v], [#sym.dots.v], [#sym.dots.v],
-    [`capital_run_length_average`], [Continuous $[1, +infinity[$], [Average length of capital letter runs],
-    [`capital_run_length_longest`], [Integer $[1, +infinity[$],   [Length of longest capital letter run],
-    [`capital_run_length_total`],   [Integer $[1, +infinity[$],   [Total number of capital letters],
-    [*Class*], [Binary], [Spam ($y=1$) or legitimate ($y=0$)],
+    columns: (auto, auto, auto, auto),
+    align: (left, left, left, right),
+    table.header(
+      [*Task*], [*Dataset*], [*Model*], [*Parameters*],
+    ),
+    [Binary classification],      [Spambase], [Logistic regression], [57],
+    [Multinomial classification], [MNIST],    [LeNet5],              [60,000],
   ),
-  caption: [Selected attributes of the Spambase dataset. The full feature set comprises 48 word frequency attributes, 6 character frequency attributes, and 3 capital run-length attributes.],
-) <tab:spambase-features>
+  caption: [Summary of the learning tasks and models used in our experiments.],
+) <tab:models-summary>
 
-==== MNIST
+// We assessed all protocols on two tasks: a binary classification task 
 
-The MNIST dataset @lecun2010mnist is a multiclass classification benchmark consisting of 70,000
-grayscale images of handwritten digits, partitioned into 60\,000 training samples and 10,000 test
-samples. Each image is of size $28 times 28$ pixels, yielding a 784-dimensional input vector after
-flattening. The task is to assign each image to one of ten classes corresponding to the digits 0
-through 9. MNIST is one of the most widely used benchmarks in the machine learning literature,
-serving as a standard testbed for evaluating classification models ranging from logistic regression
-to deep convolutional networks. In the context of HEAL, it provides a more demanding evaluation
-setting than Spambase, due to its higher input dimensionality and the multiclass nature of the
-learning task.
+// The logistic regression model used in our experiments consists of a single linear layer
+// mapping the input features to a scalar output, followed by a sigmoid activation function.
+// This model is well-suited to the Spambase dataset introduced in @sec:datasets, which
+// presents a binary classification task over $d = 57$ features. Formally, given an input
+// vector $bold(x) in RR^57$, the model produces a prediction $hat(y) in (0, 1)$ as
 
-We assessed all protocols on two tasks: a binary classification task (Logistic
-Regression @hosmer2013applied on the Spambase dataset @spambase_94, with a
-learning rate of 0.1) and on a multinomial classification task
-(LeNet5 @lecun1989backpropagation on the MNIST dataset @lecun2010mnist, with a
-learning rate of 0.001). The weight decay (regularization parameter) was fixed
-at 0.01. Our algorithm was evaluated under various conditions: the failure of
+// $
+// hat(y) = sigma(bold(w)^top bold(x) + b),
+// $
+
+// where $bold(w) in RR^57$ is the weight vector, $b in RR$ is the bias term, and $sigma$
+// is the sigmoid activation function defined in @def:sigmoid. The model is trained by
+// minimizing the binary cross-entropy loss via gradient descent. A binary prediction is
+// obtained by thresholding $hat(y)$ at $0.5$.
+
+
+// (Logistic
+// Regression @hosmer2013applied on the Spambase dataset @spambase_94, with a
+// learning rate of 0.1) 
+
+
+
+
+// and on a multinomial classification task
+// (LeNet5 @lecun1989backpropagation on the MNIST dataset @lecun2010mnist, with a
+// learning rate of 0.001). The weight decay (regularization parameter) was fixed
+// at 0.01. 
+
+
+Our algorithm was evaluated under various conditions: the failure of
 20% of nodes, the failure of a hub, the failure of all 5 hubs, and during churn
 (where 10% of nodes disappear at each cycle and are replaced by new nodes).
 

@@ -356,7 +356,69 @@ This separation is essential to detect *overfitting*, a phenomenon that occurs w
 
 #remark[In the sense of @def:ml-mitchell, the task $T$ corresponds to binary or multinomial classification, the experience $E$ to the labeled dataset $D = {(x_i, y_i)}_(i=1)^N$ from which the model learns, and the performance measure $P$ to the loss function $cal(L)(theta)$ that quantifies how well the model performs on this task.]
 
-== Machine Learning Models
+=== Datasets <sec:datasets>
+
+Previously, we introduced the notion of dataset in the supervised learning 
+setting, defining it abstractly as a collection of labeled examples drawn from an unknown 
+joint distribution. To ground this abstraction, we now present two concrete datasets drawn 
+from the machine learning literature, covering binary and multiclass classification 
+respectively. These examples illustrate what such a dataset looks like in practice.
+
+==== Spambase
+
+The Spambase dataset @spambase_94 is a binary classification benchmark originally compiled by
+Hewlett-Packard Labs and made publicly available through the UCI Machine Learning Repository. It
+consists of 4,601 email messages, each represented as a feature vector of 57 continuous attributes,
+grouped into three categories. The first 48 attributes, of type `word_freq_WORD`, measure the
+percentage of words in the email that match a given keyword, computed as $100 times (text("count of "
+"WORD")) \/ text("total words")$. The following 6 attributes, of type `char_freq_CHAR`, measure the
+percentage of characters in the email matching a given special character, computed analogously over
+the full character sequence. The remaining 3 attributes capture the structure of capital letter
+sequences: `capital_run_length_average` is the average length of uninterrupted sequences of capital
+letters, `capital_run_length_longest` is the length of the longest such sequence, and
+`capital_run_length_total` is the total number of capital letters in the email. The task is to
+classify each email as either spam ($y = 1$) or legitimate ($y = 0$), making this a standard binary
+classification problem. The dataset is moderately imbalanced, with approximately 39% of instances
+labeled as spam. Its relatively small size and tabular structure make it well suited for evaluating
+lightweight models such as support vector machines and shallow neural networks in a distributed
+setting.
+
+#figure(
+  table(
+    columns: (auto, auto, auto),
+    align: (left, left, left),
+    table.header([*Attribute*], [*Type*], [*Description*]),
+    [`word_freq_meeting`], [Continuous $[0,100]$], [% of words matching "meeting"],
+    [`word_freq_original`], [Continuous $[0,100]$], [% of words matching "original"],
+    [`word_freq_project`], [Continuous $[0,100]$], [% of words matching "project"],
+    [#sym.dots.v], [#sym.dots.v], [#sym.dots.v],
+    [`char_freq_;`], [Continuous $[0,100]$], [% of characters matching ";"],
+    [`char_freq_(`], [Continuous $[0,100]$], [% of characters matching "("],
+    [#sym.dots.v], [#sym.dots.v], [#sym.dots.v],
+    [`capital_run_length_average`], [Continuous $[1, +infinity[$], [Average length of capital letter runs],
+    [`capital_run_length_longest`], [Integer $[1, +infinity[$],   [Length of longest capital letter run],
+    [`capital_run_length_total`],   [Integer $[1, +infinity[$],   [Total number of capital letters],
+    [*Class*], [Binary], [Spam ($y=1$) or legitimate ($y=0$)],
+  ),
+  caption: [Selected attributes of the Spambase dataset. The full feature set comprises 48 word frequency attributes, 6 character frequency attributes, and 3 capital run-length attributes.],
+) <tab:spambase-features>
+
+==== MNIST
+
+The MNIST dataset @lecun2010mnist is a multiclass classification benchmark consisting of 70,000
+grayscale images of handwritten digits, partitioned into 60\,000 training samples and 10,000 test
+samples. Each image is of size $28 times 28$ pixels, yielding a 784-dimensional input vector after
+flattening. The task is to assign each image to one of ten classes corresponding to the digits 0
+through 9. MNIST is one of the most widely used benchmarks in the machine learning literature,
+serving as a standard testbed for evaluating classification models ranging from logistic regression
+to deep convolutional networks. In the context of HEAL, it provides a more demanding evaluation
+setting than Spambase, due to its higher input dimensionality and the multiclass nature of the
+learning task.
+
+#figure(image("../../Images/Dataset/MNIST_dataset_example.png"),  caption: [MNIST Dataset.],
+) <fig:mnist>
+
+=== Machine Learning Models
 Having introduced the key components of supervised learning, we now have all the ingredients to formally define a supervised learning model as a mathematical tool for solving the supervised learning problem.
 
 // #definition(title: "Machine Learning Model")[
@@ -405,7 +467,7 @@ complexity and expressiveness in the hypothesis class $cal(F)$.
 
 // In what follows, we introduce several machine learning models that are widely used in practice and that serve as building blocks for the federated and decentralized learning frameworks studied in this thesis. Specifically, we cover *linear regression*, *logistic regression*, and *multilayer perceptrons (MLPs)*, each representing a different level of complexity and expressiveness in the hypothesis class $cal(F)$.
 
-=== Linear Regression
+==== Linear Regression
 
 Linear regression is one of the simplest and most widely used models in machine learning. 
 It is a type of supervised learning model used to predict a continuous output variable $y$ 
@@ -525,7 +587,7 @@ L(theta) = 1/N sum_(n=1)^N (y_n - f_theta (x_n))^2.
 $
 ] <def:linear-regression>
 
-=== Logistic Regression
+==== Logistic Regression
 Logistic regression is a supervised learning model used for classification tasks, 
 rather than predicting continuous values. It is particularly suited for binary 
 classification problems, where the goal is to predict whether an instance belongs 
@@ -638,7 +700,7 @@ L(theta) = - 1/N sum_(n=1)^N [y_n log(hat(y)_n) + (1 - y_n) log(1 - hat(y)_n)].
 $
 ] <def:logistic-regression>
 
-=== Multinomial Logistic Regression
+==== Multinomial Logistic Regression
 
 While binary logistic regression predicts the probability of an instance 
 belonging to one of two classes, multinomial logistic regression generalizes 
@@ -678,7 +740,7 @@ where $y_(n k) in {0, 1}$ indicates whether the $n$-th example belongs to class 
 
 #remark[For $K = 2$, this formulation reduces to binary logistic regression.]
 
-=== Neural Networks and Multi-Layer Perceptrons
+==== Neural Networks and Multi-Layer Perceptrons
 
 The models introduced so far rely on a linear mapping of the form $W^T x + b$ applied to the input features. 
 While these models are simple, efficient, and well understood, their expressive power is fundamentally limited: they can only represent linear decision boundaries in the input space.
