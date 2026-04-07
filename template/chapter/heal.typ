@@ -429,7 +429,6 @@ $(n-h) dot s$ messages; the hubs then exchange their aggregated models with one 
 producing $h(h-1)$ messages; finally, each hub redistributes the global model back to
 the $n-h$ non-hub nodes that contributed to it, adding another $(n-h) dot s$ messages.
 The total per-cycle overhead for HEAL is therefore $2(n-h) dot s + h(h-1)$.
-// @tab:nb-messages summarises these theoretical values.
 
 #figure(
   table(
@@ -448,33 +447,38 @@ The total per-cycle overhead for HEAL is therefore $2(n-h) dot s + h(h-1)$.
   $c$ is the number of outgoing connections, $h$ is the number of hubs, and $s$ is the
   number of hubs to which each node sends its model.],
 ) <tab:nb-messages>
+
 == Simulation-Based Evaluation
 
 Having established the design and theoretical properties of HEAL, we now turn to its empirical
 evaluation. The protocol is assessed through simulation, which allows us to control network
-conditions, vary key parameters, and measure convergence behavior in a reproducible setting. This section describes the experimental setup, the simulation methodology, and results.
+conditions, vary key parameters, and measure convergence behavior in a reproducible setting. This section describes the experimental setup and results.
 
-=== Setup
+=== Experimental setup
 
-We evaluated our protocol using simulations on the Gossipy
-simulator#footnote[https://github.com/makgyver/gossipy]. We compared HEAL against Federated Learning @mcmahan2017communication,
-Gaia @hsieh2017gaia, Gossip Learning @ormandi2013gossip, Epidemic
-Learning @de2024epidemic, Epidemic Learning on a Chord
-topology @stoica2001chord, Epidemic Learning on a ring topology, and
-Fedlay @hua2024towards. For the static topologies (Federated Learning, ring,
-Chord, and Gaia), we generated the topology using the Python library
-Networkx#footnote[https://networkx.org/].
-For the dynamic topologies (Gossip Learning, Epidemic Learning, Fedlay and HEAL with Elevator), we generated the topology using the PeerSim
-simulator @p2p09-peersim.
-In Elevator (used by HEAL), the connections are directional. However,
-to compare them with other algorithms (which assume an undirected graph), we
-modified the underlying graph of the topology generated to make it undirected.
-All evaluations were conducted with a network of 100 nodes. For Elevator, we
-used 5 hubs, as we found this number to be a good balance between performance
-and resilience. For Gaia, we had 5 servers responsible for aggregation (to
-compare with the 5 hubs) and 19 nodes (or workers) attached to each server.
-Each algorithm was evaluated 5 times, and we present the average results
-obtained.
+This section describes the experimental setup used to evaluate HEAL. We detail the
+simulation environment, the learning tasks, the baselines, the configuration of each
+protocol, and the fault scenarios considered.
+
+==== Simulation environment
+
+All experiments were conducted using Gossipy #footnote[https://github.com/makgyver/gossipy],
+a cycle-based peer-to-peer learning simulator. In Gossipy, each cycle consists of every
+node sequentially executing the protocol. The learning component is not simulated —
+models are trained using real gradient updates via PyTorch @ketkar2021introduction — while the networking layer
+is fully simulated: nodes are Python objects with direct in-memory access, and all model
+exchanges are virtual. This design allows for reproducible and controlled experiments
+without the overhead of a real network infrastructure.
+
+By default, Gossipy only supports static topologies defined ahead of time. To accommodate
+dynamic topologies, we integrated it with the PeerSim simulator @p2p09-peersim, which
+handles dynamic peer sampling and topology evolution. At each cycle, the graph generated
+by PeerSim is retrieved and passed to Gossipy, which uses it to determine the virtual
+connections between nodes and consequently the aggregation partners for that cycle.
+
+All simulations were run on 16 vCPU, using 64G of memory, on a cluster composed of 10 servers, already described in @table-cluster.
+
+==== Learning Tasks
 
 We evaluate our protocol on two learning tasks: 1) binary classification and 2) multinomial
 classification, as defined in the previous chapter (@def:binary-classification and
@@ -508,47 +512,92 @@ In both cases, the dataset is partitioned across the network nodes in an IID fas
   caption: [Summary of the learning tasks and models used in our experiments.],
 ) <tab:models-summary>
 
-// We assessed all protocols on two tasks: a binary classification task 
+==== Baselines
 
-// The logistic regression model used in our experiments consists of a single linear layer
-// mapping the input features to a scalar output, followed by a sigmoid activation function.
-// This model is well-suited to the Spambase dataset introduced in @sec:datasets, which
-// presents a binary classification task over $d = 57$ features. Formally, given an input
-// vector $bold(x) in RR^57$, the model produces a prediction $hat(y) in (0, 1)$ as
+The decentralised learning protocols considered in the literature were surveyed in
+@chap:learning. Revisiting them through the lens of HEAL's layered architecture reveals
+that a given protocol is in fact the result of two independent choices: a network topology
+and an aggregation strategy. Not all combinations are valid — some aggregation strategies
+presuppose a particular topology — but the decomposition clarifies the design space.
+Furthermore, a fundamental distinction exists between static and dynamic topologies.
+Static topologies are simpler to deploy but offer no resilience to node failures or churn.
+Dynamic topologies are more complex to maintain, yet they enable greater model mixing in
+gossip-based networks and provide inherent resilience to failures.
 
-// $
-// hat(y) = sigma(bold(w)^top bold(x) + b),
-// $
+@tab:baselines summarises the valid combinations of topology and aggregation strategy
+considered in our evaluation.
 
-// where $bold(w) in RR^57$ is the weight vector, $b in RR$ is the bias term, and $sigma$
-// is the sigmoid activation function defined in @def:sigmoid. The model is trained by
-// minimizing the binary cross-entropy loss via gradient descent. A binary prediction is
-// obtained by thresholding $hat(y)$ at $0.5$.
+#figure(
+  table(
+    columns: (auto, auto, auto, auto),
+    align: (left, center, center, center),
+    table.header(
+      [*Topology*], [*Central aggregation*], [*Gossip*], [*Epidemic*],
+    ),
+    [Star],     [#sym.checkmark (FL)], [#sym.times], [#sym.times],
+    [Ring],     [#sym.times], [#sym.checkmark], [#sym.checkmark],
+    [Random],   [#sym.times], [#sym.checkmark], [#sym.checkmark],
+    [Complete], [#sym.times], [#sym.checkmark], [#sym.checkmark],
+    [Elevator], [#sym.checkmark (HEAL)], [#sym.checkmark], [#sym.checkmark],
+  ),
+  caption: [Valid combinations of network topology and aggregation strategy. #sym.checkmark
+  indicates a supported combination and #sym.times an incompatible one. FL denotes
+  Federated Learning.],
+) <tab:baselines>
 
+The baselines retained for our evaluation cover a representative subset of this design
+space: Federated Learning @mcmahan2017communication (star topology with central aggregation), Gossip Learning @ormandi2013gossip and
+Epidemic Learning @de2024epidemic (dynamic random topology), Epidemic Learning on a Chord @stoica2001chord topology,
+Epidemic Learning on a ring topology, Gaia @hsieh2017gaia (multi-star static topology with central
+aggregation), and Fedlay @hua2024towards (dynamic topology). HEAL combines the
+Elevator dynamic topology with central aggregation at the hubs level, and is the only
+protocol in our evaluation that spans all three aggregation strategies.
 
-// (Logistic
-// Regression @hosmer2013applied on the Spambase dataset @spambase_94, with a
-// learning rate of 0.1) 
+==== Configuration
 
+Gossipy natively provides implementations of Federated Learning, Gossip Learning, and
+Epidemic Learning. We extended the simulator with the following contributions: Epidemic
+Learning on Chord and ring topologies, Gaia, Fedlay, and HEAL. The Elevator component
+of HEAL was implemented in PeerSim, while the aggregation logic was implemented directly
+in Gossipy. Static topologies (Federated Learning, ring, Chord, and Gaia) were generated
+using the NetworkX #footnote[https://networkx.org/] Python library.
 
+In Elevator (used by HEAL), the connections are directional. However,
+to compare them with other algorithms (which assume an undirected graph), we
+modified the underlying graph of the topology generated to make it undirected.
 
+All evaluations were conducted with a network of 100 nodes. For Elevator, we
+used 5 hubs, as we found this number to be a good balance between performance
+and resilience. For Gaia, we had 5 servers responsible for aggregation (to
+compare with the 5 hubs) and 19 nodes (or workers) attached to each server.
+Each algorithm was evaluated 5 times, and we present the average results
+obtained.
 
-// and on a multinomial classification task
-// (LeNet5 @lecun1989backpropagation on the MNIST dataset @lecun2010mnist, with a
-// learning rate of 0.001). The weight decay (regularization parameter) was fixed
-// at 0.01. 
+==== Fault scenarios
 
+HEAL is evaluated under five scenarios. The first is a fault-free baseline, against which
+all other scenarios are compared, allowing us to assess the performance of HEAL under
+normal operating conditions. The remaining scenarios follow the fault taxonomy introduced
+in @chap:elevator, with the exception of Byzantine failures, which are outside the scope
+of this thesis for the decentralised learning component.
 
-Our algorithm was evaluated under various conditions: the failure of
-20% of nodes, the failure of a hub, the failure of all 5 hubs, and during churn
-(where 10% of nodes disappear at each cycle and are replaced by new nodes).
+The second scenario simulates the failure of 20% of nodes, testing whether the protocol
+maintains acceptable learning performance when a non-negligible fraction of participants
+becomes unavailable. The third and fourth scenarios simulate the failure of a single hub
+and the failure of all 5 hubs respectively, verifying that HEAL does not exhibit a single
+point of failure — a key design requirement for any decentralised protocol. Finally, the
+fifth scenario introduces churn, where 10% of nodes leave the network and are replaced by
+new nodes at each cycle, testing whether the protocol remains functional under the
+dynamic membership conditions typical of real peer-to-peer networks.
 
-All simulations were run on 16 vCPU, using 64G of memory, on a cluster
-composed of 10 servers.
-
+For Federated Learning and Gaia, which are centralised by nature, node failures are
+applied exclusively to non-server nodes, as the failure of a server unconditionally halts
+training in these protocols. This asymmetry is inherent to their architecture and further
+motivates the need for fully decentralised alternatives such as HEAL.
 === Results
 
-_Crash-free, churn-free environment:_
+==== Learning in a crash-free, churn-free environment
+
 For simulations without failures and churn, we ran all algorithms over 1000
 cycles, on the two learning tasks (Spambase, MNIST). As shown in
 @fig:AccuracyMNIST, when there are no failures in the network, Federated
@@ -556,6 +605,11 @@ Learning performs best, which was expected. Surprisingly, the ring topology
 performs second best despite lower connectivity.
 Other topologies based on random graphs perform less well. HEAL, however,
 performs very well for both the Spambase and MNIST datasets.
+
+#figure(
+        image("../../Images/HEAL/normal_accuracy_MNIST_color.pdf", width: 95%),
+        caption: [Accuracy of various communication protocols, with a network of 100 nodes, during 1000 cycles. HEAL overlay has 5 hubs, each node sends its model to one hub, for the MNIST dataset, no failures],
+      ) <fig:AccuracyMNIST>
 
 In @tab:all_results we have compiled the results for all learning algorithms,
 for the two learning tasks, with the final accuracy obtained after 1000 cycles.
@@ -570,14 +624,15 @@ e.g. adjusting the learning rate.
 On MNIST, HEAL performs very well, even better than Federated Learning, and it
 converges to 0.95 accuracy in 76 cycles.
 
-_HEAL parameterized with number of hubs and number chosen hubs:_
+==== HEAL parameterized with number of hubs and number chosen hubs:
+
 We ran simulations of HEAL, changing the number of hubs over 2000 cycles. On
 @fig:AccuracyVariousNbHubs, we observe that increasing the number of hubs (and
 the number of hubs to which clients send their model) has almost no impact on
 accuracy, which is expected since hubs aggregate models. There is a slight drop
 in accuracy when the number of hubs is increased significantly, due to the fact
 that only non-hubs are learning, not hubs. Increasing the number of hubs to
-which we send our model, from 1 to $"nb\_hubs"/2$, slightly increases
+which we send our model, from 1 to $"nb_hubs"/2$, slightly increases
 convergence speed.
 
 _Crashes-prone environment:_
@@ -608,12 +663,6 @@ over, back to the level without failures.
 
 #grid(
     columns: 1,
-    [
-      #figure(
-        image("../../Images/HEAL/normal_accuracy_MNIST_color.pdf", width: 95%),
-        caption: [Without failures],
-      ) <fig:AccuracyMNIST>
-    ],
     [
       #figure(
         image("../../Images/HEAL/crash20peers_accuracy_MNIST_color.pdf", width: 95%),

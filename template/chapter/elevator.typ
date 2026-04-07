@@ -1424,7 +1424,7 @@ All simulations were run with a network of size *n* = 1000.
 As the Phenix network needs a growing network to work, we started the Phenix algorithm with a network size of 20 and capped the size of the network to 1000.
 The simulations were run during 1000 cycles, and we repeated each simulation 100 times.
 All simulations were started with a network initialized as a $k$-out random graph, with $k = c = 20$.
-All simulations were run on 16 vCPU, using 64G of memory, on a cluster composed of 10 servers, described in Table @table-cluster.
+All simulations were run on 16 vCPU, using 64G of memory, on a cluster composed of 10 servers, described in @table-cluster.
 
 #figure(
   table(
