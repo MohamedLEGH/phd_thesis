@@ -594,6 +594,7 @@ For Federated Learning and Gaia, which are centralised by nature, node failures 
 applied exclusively to non-server nodes, as the failure of a server unconditionally halts
 training in these protocols. This asymmetry is inherent to their architecture and further
 motivates the need for fully decentralised alternatives such as HEAL.
+
 === Results
 
 ==== Learning in a crash-free, churn-free environment
@@ -710,7 +711,7 @@ which we send our model, from 1 to $"nb_hubs"/2$, slightly increases
 convergence speed.
 
 #figure(
-  image("../../Images/HEAL/various_hub_accuracy_MNIST_color.pdf", width: 95%),
+  image("../../Images/HEAL/various_hub_accuracy_MNIST_color.pdf", width: 90%),
   caption: [HEAL with different numbers of hubs (_h_), from 1 to 25, each
   node sent its model to (_s_) hubs, with (_s_) equals to 1 or $h/2$,
   no failures, 2000 cycles],
@@ -741,7 +742,7 @@ We have computed the number of models exchanged by cycle for each algorithm. The
 // ==== Crashes-prone environment
 ==== Learning despite crashes
 
-We analyze the performance of the algorithms when the network suffers crashes (@tab:results-crash).
+We analyze the performance of the algorithms when the network suffers crashes.
 To simulate a brutal failure we disconnected 20% of the nodes chosen uniformly
 at random, just after the start of the learning process, i.e., in this case, we
 have disconnected 20 nodes at cycle 10, and we compared HEAL with Chord, Gaia
@@ -750,41 +751,16 @@ very close, as seen in @fig:AccuracyCrash20peers.
 
 #figure(
   image("../../Images/HEAL/crash20peers_accuracy_MNIST_color.pdf", width: 90%),
-  caption: [When 20% of the nodes fail at round 10],
+  caption: [Accuracy of various communication protocols, with a network of 100 nodes, during 1000 cycles. HEAL overlay has 5 hubs, each node sends its model to one hub. for the MNIST dataset, when 20\% of the nodes fail at cycle 10],
 ) <fig:AccuracyCrash20peers>
 
-We also compared HEAL subjected to different level of crashes (20%, 30%, 40%, 50%), as seen in the Figure @fig:AccuracyCrashVarious. HEAL remain resilient even under a crash level of 50%.
-We have summarized our results in Table @tab:results-crash. The final accuracy, at cycle n°200, is very close to the accuracy obtained without crashes for a crash level of 20\%. For greater crash level, the drop in accuracy is greater, but the algorithm still manages to converge. For a crash level of 40%, accuracy reaches 0.9, in a number of cycles of 107.
+We also compared HEAL subjected to different level of crashes (20%, 30%, 40%, 50%), as seen in the @fig:AccuracyCrashVarious. HEAL remain resilient even under a crash level of 50%.
+We have summarized our results in @tab:results-crash. The final accuracy, at cycle n°200, is very close to the accuracy obtained without crashes for a crash level of 20\%. For greater crash level, the drop in accuracy is greater, but the algorithm still manages to converge. For a crash level of 40%, accuracy reaches 0.9, in a number of cycles of 107.
 
-==== HEAL under churn environment and hub-targeted attacks
-We further analyzed the performance of HEAL under network churn conditions. To
-simulate churn, we disconnected 10% of the nodes at each cycle and replaced
-them with an equal number of new nodes, each connected to 20 nodes uniformly at
-random, between cycles 50 and 150.
-We also analyzed the performance of the main learning algorithms after a
-targeted attack on the hubs during the execution of the simulation. We tested
-two scenarios, one where we disconnected one of the 5 hubs, and another where
-we disconnected all 5 hubs at the same time. In both cases the failure happened
-in round 10. In @fig:AccuracyContexts, we have compared the execution of HEAL
-without failures, and with different failure scenarios (crash of 20 nodes, crash
-of one hub, crash of all 5 hubs, churn). As can be seen, there is no significant
-impact when 20 nodes or hubs crash. Indeed, thanks to the Elevator overlay, even
-when all the hubs are shutdown, 5 new nodes are elected very quickly as hubs,
-and the training job continues as if no catastrophic event had happened. During
-churn, model accuracy falls slightly, but rises again very quickly once churn is
-over, back to the level without failures.
-
-  #grid(
-    columns: 1,
-    [
-      #figure(
-        image("../../Images/HEAL/hub_learning_accuracy_allcontexts_color.pdf", width: 95%),
-        caption: [HEAL for all contexts (no failures, crash of 20 peers, crash
-        of 1 hub, crash of all hubs, churn), with 5 hubs, each node sent its
-        model to one hub, 200 cycles],
-      ) <fig:AccuracyContexts>
-    ],
-  ),
+#figure(
+  image("../../Images/HEAL/hub_learning_crash_accuracy_MNIST_color.pdf", width: 90%),
+  caption: [Accuracy of HEAL for the MNIST dataset for different levels of crash, with 100 nodes and 5 hubs, each node sent its model to one hub, 200 cycles],
+) <fig:AccuracyCrashVarious>
 
 #figure(
   table(
@@ -811,6 +787,41 @@ over, back to the level without failures.
   the target accuracy within the simulation.],
 ) <tab:results-crash>
 
+==== HEAL under churn environment and hub-targeted attacks
+
+We further analyzed the performance of HEAL under network churn conditions. To
+simulate churn, we disconnected 10% of the nodes at each cycle and replaced
+them with an equal number of new nodes, each connected to 20 nodes uniformly at
+random, between cycles 50 and 150.
+We also analyzed the performance of the main learning algorithms after a
+targeted attack on the hubs during the execution of the simulation. We tested
+two scenarios, one where we disconnected one of the 5 hubs, and another where
+we disconnected all 5 hubs at the same time. In both cases the failure happened
+in round 10. In @fig:AccuracyContexts, we have compared the execution of HEAL
+without failures, and with different failure scenarios (crash of 20 nodes, crash
+of one hub, crash of all 5 hubs, churn). As can be seen, there is no significant
+impact when 20 nodes or hubs crash. Indeed, thanks to the Elevator overlay, even
+when all the hubs are shutdown, 5 new nodes are elected very quickly as hubs,
+and the training job continues as if no catastrophic event had happened. During
+churn, model accuracy falls slightly, but rises again very quickly once churn is
+over, back to the level without failures.
+
+#figure(
+  image("../../Images/HEAL/hub_learning_accuracy_allcontexts_color.pdf", width: 90%),
+  caption: [HEAL for all contexts (no failures, crash of 20 peers, crash
+  of 1 hub, crash of all hubs, churn), with 5 hubs, each node sent its
+  model to one hub, 200 cycles],
+) <fig:AccuracyContexts>
+
+We also compared HEAL subjected to different level of churn (10%, 20%, 30%), as seen in the @fig:AccuracyChurnVarious. HEAL remain resilient even under a churn level of 30%. The accuracy level drops sharply during the churn phase, but rises again almost immediately when the churn is over.
+
+#figure(
+  image("../../Images/HEAL/hub_learning_churn_accuracy_MNIST_color.pdf", width: 90%),
+  caption: [Accuracy of HEAL for the MNIST dataset for different levels of churn, with 100 nodes and 5 hubs, each node sent its model to one hub, 200 cycles.],
+) <fig:AccuracyChurnVarious>
+
+We have summarized our results in @tab:results-churn. The final accuracy, at cycle n°200, is very close to the final accuracy obtained without churn, even for a churn level of 30%. We also computed the mean drop level of accuracy during churn. With a churn level of 30\%, the drop is 0.28, which is sharp, but the final accuracy is not affected.
+
 #figure(
   table(
     columns: (auto, auto, auto, auto),
@@ -828,25 +839,52 @@ over, back to the level without failures.
   caption: [Final accuracy at cycle 200 under churn conditions between cycles 50 and 150,
   on the MNIST dataset.],
 ) <tab:results-churn>
+
+=== Summary
+
+The experimental results demonstrate that HEAL achieves competitive learning performance
+whilst providing resilience properties that centralised and gossip-based approaches cannot
+offer simultaneously.
+
+In a fault-free environment, HEAL reaches a final accuracy of 0.90 on Spambase and 0.97
+on MNIST, comparable to Federated Learning (0.91 and 0.97) and significantly above
+gossip-based approaches such as Gossip Learning (0.83 and 0.71). In terms of convergence
+speed on MNIST, HEAL ($s=1$) reaches 0.95 accuracy in 76 cycles, faster than all
+gossip-based baselines, and HEAL ($s=3$) further reduces this to 33 cycles, outperforming
+even Federated Learning (91 cycles). The number of models exchanged per cycle remains
+low (210), close to Federated Learning (198) and far below Epidemic Learning (1000).
+
+Under crash conditions, HEAL maintains a final accuracy of 0.97 even after 20% of nodes
+fail, and remains functional up to a crash level of 50%. Crucially, hub-targeted attacks
+— including the simultaneous failure of all 5 hubs — have no measurable impact on
+accuracy, thanks to the hub re-election mechanism provided by the Elevator overlay. This
+confirms that HEAL has no single point of failure, in contrast to Federated Learning and
+Gaia, where server failure unconditionally halts training.
+
+Under churn, HEAL experiences a temporary accuracy drop during the churn phase, but
+recovers to its pre-churn level almost immediately once churn subsides. Even at a churn
+rate of 30%, the final accuracy at cycle 200 remains above 0.95, demonstrating the
+robustness of the protocol under the dynamic membership conditions typical of real
+peer-to-peer networks.
   
 == LEACH-FL: Alternative Architecture
 
 == Conclusion
 
-In this paper we introduced HEAL protocol for decentralized learning that
-combines the convergence speed of Federated Learning with the resilience to
-churn and failures of Gossip and Epidemic Learning. Our simulation results
-(summarized in @tab:all_results) show that, on the MNIST dataset, HEAL (with 5
-hubs) achieves an accuracy 136% higher than Gossip Learning, 106% higher than
-Epidemic Learning and 99% of the accuracy of the baseline Federated Learning.
-HEAL achieves an accuracy of 0.95 in 76 cycles, which is one cycle slower than
-Gaia, and much faster than random graph methods, which achieve this value in 5
-times as many cycles. By setting HEAL with 7 hubs and the number of hubs to
-which each node sends its model at 3, it is possible to reduce it to 33 cycles,
-which is 2.3 times faster than Gaia (the second best result). Our protocol
-continues to operate in the presence of faults, and in each fault scenario, the
-final accuracy is at most equal to 98% of the accuracy in a fault-free context.
-HEAL paves the way for a new approach to decentralized learning, featuring a
-cross-layer approach. Our future work will focus on adapting HEAL to
-heterogeneous environments, enhancing its robustness against various attacks
-(e.g. poisoning attacks, model attacks, etc).
+// In this paper we introduced HEAL protocol for decentralized learning that
+// combines the convergence speed of Federated Learning with the resilience to
+// churn and failures of Gossip and Epidemic Learning. Our simulation results
+// (summarized in @tab:all_results) show that, on the MNIST dataset, HEAL (with 5
+// hubs) achieves an accuracy 136% higher than Gossip Learning, 106% higher than
+// Epidemic Learning and 99% of the accuracy of the baseline Federated Learning.
+// HEAL achieves an accuracy of 0.95 in 76 cycles, which is one cycle slower than
+// Gaia, and much faster than random graph methods, which achieve this value in 5
+// times as many cycles. By setting HEAL with 7 hubs and the number of hubs to
+// which each node sends its model at 3, it is possible to reduce it to 33 cycles,
+// which is 2.3 times faster than Gaia (the second best result). Our protocol
+// continues to operate in the presence of faults, and in each fault scenario, the
+// final accuracy is at most equal to 98% of the accuracy in a fault-free context.
+// HEAL paves the way for a new approach to decentralized learning, featuring a
+// cross-layer approach. Our future work will focus on adapting HEAL to
+// heterogeneous environments, enhancing its robustness against various attacks
+// (e.g. poisoning attacks, model attacks, etc).
