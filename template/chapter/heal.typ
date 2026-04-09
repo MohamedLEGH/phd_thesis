@@ -866,8 +866,60 @@ recovers to its pre-churn level almost immediately once churn subsides. Even at 
 rate of 30%, the final accuracy at cycle 200 remains above 0.95, demonstrating the
 robustness of the protocol under the dynamic membership conditions typical of real
 peer-to-peer networks.
-  
-== LEACH-FL: Alternative Architecture
+
+== FLAIR: Alternative Protocol
+
+A key claim of HEAL's layered architecture is that each layer can be substituted
+independently, yielding a different protocol without redesigning the system from scratch.
+To validate this modularity, we present FLAIR (_Federated Learning with Adaptive
+Integrity-preserving Randomness_), an alternative instantiation of the same architecture
+targeting wireless edge networks.
+
+FLAIR departs from HEAL in all three layers. At the network layer, FLAIR operates over
+WiFi rather than a general-purpose internet overlay. At the overlay layer, nodes are
+organised into clusters using a protocol inspired by LEACH @heinzelman2000energy, a
+well-known cluster-based routing protocol designed for energy-constrained networks, in
+which cluster heads are elected periodically and rotate among nodes. At the aggregation
+layer, model aggregation is performed locally within each cluster, rather than globally
+across all hubs as in HEAL. This design reduces communication costs and is well-suited
+to scenarios where nodes are geographically or topologically grouped.
+
+#figure(
+cetz.canvas({
+  import cetz.draw: *
+  let w = 4
+  let h = 1.4
+  let spacing = 2
+  let colors = (
+    rgb(70%, 70%, 70%),
+    rgb(75%, 90%, 75%),
+    rgb(75%, 85%, 95%),
+    rgb(85%, 75%, 90%),
+  )
+  let labels = (
+    "Communication Layer",
+    "Clustering Layer",
+    "Aggregation Layer",
+    "Learning Task Layer",
+  )
+  let details = (
+    "Reliable packet delivery\nover wireless (IEEE 802.11)",
+    "Resource-aware cluster\nformation & head election",
+    "Local aggregation within\nclusters by cluster-heads",
+    "Supervised ML models\n(classification, regression, ...)",
+  )
+  for i in range(4) {
+    rect((0, i*spacing), (w, h + (i*spacing)), name: "rect_"+str(i), fill: colors.at(i))
+    content("rect_"+str(i), labels.at(i))
+    let mid_y = (i*spacing) + h/2
+    let arrow_x_start = w + 0.15
+    let arrow_x_end = w + 0.6
+    let text_x = w + 0.7
+    line((arrow_x_start, mid_y), (arrow_x_end, mid_y), mark: (end: ">"))
+    content((text_x, mid_y), anchor: "west", details.at(i))
+  }
+}), caption: [Layered architecture of FLAIR]
+) <fig:flair-architecture>
 
 == Conclusion
 
