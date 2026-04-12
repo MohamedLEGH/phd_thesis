@@ -1304,10 +1304,206 @@ is performed on the Watering the Plants dataset @nelakurthi2021plants.
 
 === Results
 
+==== Comparative evaluation in static networks
+
+#figure(
+  image("../../Images/FLAIR/test1.1.pdf", width: 90%),
+  caption: [Accuracy evolution of FLAIR and baselines in static networks (100 nodes).],
+) <fig:flair-test1>
+
+@fig:flair-test1 shows the accuracy evolution over training cycles in a static network
+of 100 nodes. FLAIR achieves the highest final accuracy ($approx 0.91$), surpassing
+C-FL, HEAL, and Gossip Learning ($approx 0.90$), and clearly outperforming Gaia
+($approx 0.88$). These results demonstrate that the clustering-based design of FLAIR
+accelerates convergence whilst sustaining higher steady-state accuracy. Compared to
+Gaia, convergence is up to $2.5 times$ faster, and compared to Gossip Learning, the
+protocol requires significantly fewer cycles to stabilize. Overall, FLAIR combines the
+scalability of decentralized designs with the efficiency of clustering, providing
+superior performance in static deployments.
+
+==== Resilience to node dropouts <sec:flair-dropouts>
+
+#figure(
+  image("../../Images/FLAIR/test2.pdf", width: 95%),
+  caption: [Accuracy evolution of FLAIR under different node dropout conditions.],
+) <fig:flair-test2>
+
+@fig:flair-test2 reports the average accuracy evolution under permanent, temporary, and
+random crashes for both round duration settings ($E_"round" = 1$ and $E_"round" = 3$).
+In the baseline case without dropout, FLAIR stabilized around $0.90$ accuracy.
+
+Under permanent crashes, even when 90% of nodes were removed, the system still converged
+above $0.88$, as summarized in @tab:flair-test2, demonstrating graceful degradation.
+Convergence was slightly faster with longer rounds, as multiple local epochs helped
+amortize the impact of node removals.
+
+Temporary crashes caused only short-lived perturbations, with accuracy rapidly recovering
+once nodes rejoined and maintaining a trajectory close to the baseline. With
+$E_"round" = 3$, the system quickly returned to baseline accuracy, whilst with
+$E_"round" = 1$, perturbations persisted longer and induced minor oscillations. An
+interesting observation is that once accuracy stabilized, subsequent temporary crashes
+had only a marginal effect.
+
+Random crashes proved the most disruptive, especially under the short-round
+configuration. At high dropout rates (e.g., 90%), convergence was significantly delayed
+and oscillations were frequent. In contrast, with $E_"round" = 3$, the dynamics were
+smoother and recovery more stable, since longer aggregation intervals absorbed much of
+the instability. Overall, FLAIR consistently maintained accuracy above $0.85$ across all
+scenarios, confirming strong resilience even under extreme dropout conditions.
+
+#figure(
+  table(
+    columns: (auto, auto, auto, auto, auto),
+    align: (left, center, center, center, center),
+    table.header(
+      [*Scenario*],
+      table.cell(colspan: 2)[$bold(E_"round" = 3)$],
+      table.cell(colspan: 2)[$bold(E_"round" = 1)$],
+    ),
+    table.header(
+      [],
+      [*0.80*], [*0.85*],
+      [*0.80*], [*0.85*],
+    ),
+    [Permanent crashes (80%)], [3],  [4],  [5],  [9],
+    [Temporary crashes (80%)], [4],  [8],  [6],  [9],
+    [Random crashes (80%)],    [4],  [10], [39], [55],
+    [Permanent crashes (90%)], [4],  [6],  [8],  [13],
+    [Temporary crashes (90%)], [5],  [8],  [7],  [10],
+    [Random crashes (90%)],    [12], [29], [/],  [/],
+  ),
+  caption: [Number of rounds required to reach 0.80 and 0.85 accuracy under different
+  dropout scenarios and round duration settings.],
+) <tab:flair-test2>
+
+==== Impact of mobility on learning performance
+
+#figure(
+  image("../../Images/FLAIR/test3_combined.pdf", width: 90%),
+  caption: [Accuracy evolution of FLAIR under five mobility patterns, comparing perfect
+  and range-limited connectivity.],
+) <fig:flair-test3>
+
+@fig:flair-test3 shows the accuracy evolution under both connectivity scenarios across
+five mobility models. Under perfect connectivity, mobility had no measurable impact on
+convergence speed or final accuracy, which remained comparable to the static network
+baseline. When communication was range-limited, occasional disconnections caused minor
+perturbations and slightly slower convergence, yet overall accuracy remained within 2%
+of the static case, staying above $0.88$ for all mobility patterns. These results
+indicate that FLAIR is resilient to mobility effects and that its clustering mechanism
+effectively adapts to dynamic topologies.
+
+==== Smart farming with heterogeneous nodes
+
+#figure(
+  image("../../Images/FLAIR/test4.1.1.pdf", width: 90%),
+  caption: [Accuracy evolution on the Watering the Plants dataset under the smart
+  farming setup (80 fixed sensors + 20 mobile robots). Two local update settings
+  ($E_"round" = 1$ vs. $E_"round" = 3$) are compared against the centralized baseline
+  (71.9%).],
+) <fig:flair-test4>
+
+@fig:flair-test4 shows the accuracy evolution under two local update settings. With
+$E_"round" = 3$, convergence is faster in early stages, exceeding 70% within 10 epochs,
+whilst $E_"round" = 1$ initially converges more slowly but eventually closes the gap.
+Both configurations converge near the centralized baseline of 71.9%, with final
+accuracies of 71.2% and 71.4% respectively.
+
+#figure(
+  image("../../Images/FLAIR/test4.2.pdf", width: 95%),
+  caption: [Accuracy evolution of FLAIR under different node dropout conditions in the
+  smart farming scenario.],
+) <fig:flair-test4-dropout>
+
+To further validate robustness in realistic deployments, the dropout experiments from
+@sec:flair-dropouts were extended to the smart farming setup. The same failure types —
+permanent, temporary, and random crashes — were injected under the $E_"round" = 3$
+setting, as shown in @fig:flair-test4-dropout. These results confirm that the resilience
+properties identified in controlled static networks extend to heterogeneous,
+application-driven scenarios. Even in the presence of mobility and partial connectivity,
+FLAIR demonstrates graceful degradation and rapid recovery, underscoring its
+practicality for real-world IoT deployments.
+
 === Summary
+
+FLAIR demonstrates that the layered architecture introduced in this thesis is genuinely
+modular: by substituting the network layer, the overlay protocol, and the aggregation
+strategy independently of one another, a protocol well-suited to resource-constrained
+ad-hoc wireless networks emerges naturally from the same architectural foundations as
+HEAL.
+
+The core contribution of FLAIR lies in its dynamic, resource-aware, and verifiable
+cluster-head election mechanism, which facilitates load balancing and enhances system
+robustness without requiring any fixed infrastructure. By confining aggregation to the
+cluster level and rotating cluster-heads at every round, FLAIR achieves progressive
+global model mixing without inter-cluster communication, keeping communication overhead
+low whilst preserving convergence.
+
+The experimental evaluation conducted in ns-3 validated these properties across four
+scenarios. In static networks, FLAIR achieved faster convergence and higher final
+accuracy than C-FL, Gaia, HEAL, and Gossip Learning. Under extreme node dropout
+conditions — up to 90% of nodes failing — the protocol demonstrated graceful
+degradation, consistently maintaining accuracy above $0.85$. Under all five mobility
+models considered, accuracy remained within 2% of the static baseline, confirming
+resilience to dynamic topologies. Finally, the smart farming experiment showed that
+FLAIR achieves performance near the centralized baseline (71.9%) in a heterogeneous
+IoT deployment with fixed sensors and mobile robots.
+
+// Several directions remain open for future investigation. Extending FLAIR to non-IID
+// data distributions — through personalized learning or adaptive aggregation rules —
+// is a natural next step, as real-world edge deployments rarely satisfy the IID
+// assumption. Reinforcing the protocol against Byzantine and malicious nodes is equally
+// important, given the open nature of ad-hoc wireless environments. Finally, scaling
+// FLAIR to ultra-large networks and exploring hybrid paradigms such as blockchain-based
+// aggregation or over-the-air model fusion would broaden its applicability further.
 
 == Conclusion
 
+This chapter presented two original contributions to decentralized learning: HEAL and
+FLAIR. Both protocols were designed and evaluated as part of this thesis, and both
+instantiate the same layered architecture, demonstrating that cross-layer design is a
+principled and productive approach to building decentralized learning systems.
+
+HEAL addresses the fundamental tension between convergence speed and fault resilience by
+leveraging the Elevator overlay to dynamically elect hub nodes as distributed
+aggregators. Simulation results on the MNIST dataset show that HEAL achieves 99% of the
+accuracy of Federated Learning whilst remaining fully decentralized and fault-tolerant.
+With 5 hubs, HEAL reaches 0.95 accuracy in 76 cycles — comparable to Gaia and
+significantly faster than all gossip-based baselines. With 7 hubs and $s = 3$, this
+reduces to 33 cycles, making HEAL $2.3 times$ faster than the second-best result.
+HEAL continues to operate in the presence of node crashes, hub failures, and churn,
+with final accuracy remaining above 98% of the fault-free baseline in all tested
+scenarios. The communication overhead (210 messages per cycle) remains close to that of
+Federated Learning (198), and far below gossip-based alternatives.
+
+FLAIR validates the modularity claim of the layered architecture by instantiating it in
+a different operational context: resource-constrained ad-hoc wireless networks. By
+substituting the Elevator overlay with a resource-aware, verifiable clustering protocol
+and confining aggregation to the cluster level, FLAIR yields a protocol with no fixed
+infrastructure and no inter-cluster coordination, yet competitive learning performance.
+In static networks, FLAIR surpasses all baselines in final accuracy. Under extreme
+dropout conditions of up to 90% node failures, it consistently maintains accuracy above
+$0.85$. Under five mobility models, accuracy remains within 2% of the static baseline.
+In the smart farming scenario, FLAIR approaches the centralized baseline (71.9%) with
+final accuracies of 71.2% and 71.4% for $E_"round" = 1$ and $E_"round" = 3$
+respectively.
+
+The central finding of this chapter is that the layered architecture itself is the
+primary contribution: HEAL and FLAIR are two existence proofs that the same design
+principles — separation of concerns, modular substitution, and cross-layer composability
+— can yield protocols adapted to fundamentally different deployment contexts without
+redesigning the system from scratch. This opens a broad research avenue, as future
+protocols targeting other network environments (satellite networks, vehicular networks,
+underwater sensor networks) could be designed by composing existing or new layer
+implementations within the same framework.
+
+Several directions remain open. Both protocols currently assume IID data distributions;
+extending them to non-IID settings through personalized aggregation or adaptive
+weighting is a natural next step. Reinforcing both protocols against Byzantine and
+adversarial nodes — including model poisoning and inference attacks — is equally
+important for real-world deployments. Finally, a formal convergence analysis of FLAIR
+under non-stationary cluster topologies, and of HEAL under non-IID data, would
+strengthen the theoretical foundations of both contributions.
 // In this paper we introduced HEAL protocol for decentralized learning that
 // combines the convergence speed of Federated Learning with the resilience to
 // churn and failures of Gossip and Epidemic Learning. Our simulation results
