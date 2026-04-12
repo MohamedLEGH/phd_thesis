@@ -448,13 +448,17 @@ The total per-cycle overhead for HEAL is therefore $2(n-h) dot s + h(h-1)$.
   number of hubs to which each node sends its model.],
 ) <tab:nb-messages>
 
-== Simulation-Based Evaluation
+// == Simulation-Based Evaluation
+
+// Having established the design and theoretical properties of HEAL, we now turn to its empirical
+// evaluation. The protocol is assessed through simulation, which allows us to control network
+// conditions, vary key parameters, and measure convergence behavior in a reproducible setting. This section describes the experimental setup and results.
+
+=== Experimental setup
 
 Having established the design and theoretical properties of HEAL, we now turn to its empirical
 evaluation. The protocol is assessed through simulation, which allows us to control network
-conditions, vary key parameters, and measure convergence behavior in a reproducible setting. This section describes the experimental setup and results.
-
-=== Experimental setup
+conditions, vary key parameters, and measure convergence behavior in a reproducible setting. 
 
 This section describes the experimental setup used to evaluate HEAL. We detail the
 simulation environment, the learning tasks, the baselines, the configuration of each
@@ -867,7 +871,7 @@ rate of 30%, the final accuracy at cycle 200 remains above 0.95, demonstrating t
 robustness of the protocol under the dynamic membership conditions typical of real
 peer-to-peer networks.
 
-== FLAIR: Alternative Protocol
+== FLAIR Protocol
 
 A key claim of HEAL's layered architecture is that each layer can be substituted
 independently, yielding a different protocol without redesigning the system from scratch.
@@ -875,7 +879,7 @@ To validate this modularity, we present FLAIR (_Federated Learning with Adaptive
 Integrity-preserving Randomness_), an alternative instantiation of the same architecture
 targeting wireless edge networks.
 
-FLAIR departs from HEAL in all three layers. At the network layer, FLAIR operates over
+FLAIR departs from HEAL in three layers. At the network layer, FLAIR operates over
 WiFi rather than a general-purpose internet overlay. At the overlay layer, nodes are
 organised into clusters using a protocol inspired by LEACH @heinzelman2000energy, a
 well-known cluster-based routing protocol designed for energy-constrained networks, in
@@ -897,8 +901,8 @@ cetz.canvas({
     rgb(85%, 75%, 90%),
   )
   let labels = (
-    "Communication Layer",
-    "Clustering Layer",
+    "Network Layer",
+    "Overlay Layer",
     "Aggregation Layer",
     "Learning Task Layer",
   )
@@ -920,6 +924,386 @@ cetz.canvas({
   }
 }), caption: [Layered architecture of FLAIR]
 ) <fig:flair-architecture>
+
+=== FLAIR Architecture
+
+==== Network Layer
+
+The Network Layer forms the foundation of the FLAIR protocol stack. It is
+responsible for low-level wireless communication, providing the basic message passing
+primitives upon which all higher layers depend. Unlike HEAL, which operates over a
+standard TCP/IP infrastructure, FLAIR targets infrastructure-less ad-hoc wireless
+networks where nodes communicate over a shared wireless medium, without relying on any
+fixed network infrastructure.
+
+Each node is equipped with a wireless interface compliant with the IEEE 802.11 standard @ieee802.11-2024
+and can only communicate directly with nodes within its transmission range. Communication
+is therefore inherently single-hop: a node cannot relay messages through intermediaries
+at this layer. This constraint shapes the overlay design, as cluster members communicate
+directly with their cluster-head, and cluster-heads broadcast directly to their members,
+without any inter-cluster coordination at the communication level.
+
+Nodes are heterogeneous in both their computational resources (CPU, memory) and their
+communication capabilities (bandwidth, transmission range). Each node is identified by its wireless interface address. The Network Layer exposes the same two primitive operations as in HEAL:
+
+#list(
+  [`send(peer_id, message)`: transmits a message to a peer within direct wireless range,],
+  [`receive()`: listens for incoming messages and delivers them to the upper layer for processing.],
+)
+
+==== Overlay Layer
+
+The Overlay Layer implements the logical topology that enables efficient decentralized
+learning in FLAIR. Rather than relying on a pre-configured or manually maintained
+topology, this layer provides a fully decentralized and automatic clustering mechanism
+inspired by LEACH @heinzelman2000energy. Built on top of the Network Layer, it
+dynamically organizes nodes into clusters and elects a subset of nodes as
+*cluster-heads* (CHs), which serve as local aggregation points. The entire process
+— from CH election to cluster formation — proceeds autonomously at each round, without
+any central coordinator or global knowledge.
+
+The protocol operates in rounds. Two mechanisms are central to its design. First, a
+target fraction $p in (0,1)$ of nodes is expected to serve as CHs in each round,
+ensuring probabilistic load balancing across the network. Second, every node evaluates a
+Verifiable Random Function (VRF) @micali1999verifiable, which produces a publicly verifiable random value in
+$[0,1]$. This primitive prevents manipulation of elections and guarantees fairness, while
+remaining lightweight enough for resource-constrained environments.
+
+_Phase 1: Cluster-head selection_
+
+Let $G$ be the set of eligible nodes at round $r$. A node $n$ is eligible to become a CH
+only if it has not acted as one during the last $1\/p$ rounds. Each eligible node computes
+a threshold $T(n)$ and samples $x tilde "Uniform"(0,1)$ through a VRF. Node $n$ elects
+itself as CH if $x < T(n)$, where
+
+$
+T(n) = cases(
+  display(frac(p dot R_n, 1 - p dot (r mod 1/p))) & "if" n in G\,,
+  0 & "otherwise,"
+)
+$
+
+and the resource score $R_n$ is defined as
+
+$
+R_n = alpha dot "CPU"_n + beta dot "RAM"_n + gamma dot "GPU"_n + delta dot "BW"_n,
+$
+
+with $alpha + beta + gamma + delta = 1$. The four components of $R_n$ are normalized
+indicators collected locally by each node from kernel-level system metrics, without
+requiring any external coordination:
+
+- $"CPU"_n in [0,1]$: the fraction of CPU capacity currently available on node $n$,
+  derived from processor utilization statistics exposed by the operating system kernel,
+- $"RAM"_n in [0,1]$: the fraction of available memory on node $n$, obtained from
+  the kernel memory subsystem,
+- $"GPU"_n in [0,1]$: the fraction of GPU capacity available on node $n$, when a GPU
+  is present; set to $0$ otherwise,
+- $"BW"_n in [0,1]$: the available wireless bandwidth of node $n$, estimated from
+  link-layer statistics reported by the network interface.
+
+Each node computes its own resource score $R_n$ independently and autonomously, using
+only local information from its operating system. No global resource monitoring or
+centralized collection is required. This weighted combination biases elections toward
+resource-rich nodes while preserving the probabilistic load-balancing properties of
+LEACH. The use of VRF guarantees that elections remain tamper-resistant and publicly
+verifiable.
+#figure(
+  pseudocode-list(booktabs: true)[
+    - target CH ratio: *p*
+    - current round: *r*
+    - eligibility set: *G*
+    - resource vector: *$("CPU"_n, "RAM"_n, "GPU"_n, "BW"_n)$*
+    - weights: *alpha, beta, gamma, delta*
+    + *for each* node $n in cal(N)$ *in parallel do*
+      + *if* $n in.not G$ *then*
+        + $T(n) arrow.l 0$
+      + *else*
+        + $R_n arrow.l alpha dot "CPU"_n + beta dot "RAM"_n + gamma dot "GPU"_n + delta dot "BW"_n$
+        + $T(n) arrow.l display(frac(p dot R_n, 1 - p dot (r mod 1/p)))$
+      + *end if*
+      + $x arrow.l "VRF\_Uniform"(0,1)$
+      + *if* $x < T(n)$ *then*
+        + broadcast `CH-ADV`
+        + mark $n$ as CH
+      + *end if*
+    + *end for*
+  ],
+  caption: [Resource-aware CH selection with verifiable randomness.],
+) <alg:ch-selection>
+
+_Phase 2: Cluster formation_
+
+Once CHs have been elected, each CH broadcasts a cluster-head advertisement
+(`CH-ADV`) within its transmission range. Non-CH nodes listen for incoming
+advertisements, evaluate a distance-based cost for each candidate CH, and join
+the most suitable one by sending a `JOIN-REQ` message. The CH responds with a
+`JOIN-ACK` and updates its membership list. The outcome is a stable partition of
+the network into clusters with balanced resource allocation and minimized
+communication costs.
+
+#figure(
+  pseudocode-list(booktabs: true)[
+    + *for each* non-CH node $u$ *in parallel do*
+      + listen for `CH-ADV` beacons; collect candidate set $cal(C)$
+      + compute $"cost"(u, c)$ for all $c in cal(C)$
+      + $c^* arrow.l arg min_(c in cal(C)) "cost"(u, c)$
+      + send `JOIN-REQ` to $c^*$
+    + *end for*
+    + *for each* CH $c$ *do*
+      + *for each* `JOIN-REQ` from $u$ *do*
+        + *if* capacity allows *then*
+          + send `JOIN-ACK` to $u$
+          + update membership list
+        + *end if*
+      + *end for*
+    + *end for*
+  ],
+  caption: [Cluster formation.],
+) <alg:cluster-formation>
+
+The Overlay Layer exposes the following API to the Aggregation Layer above:
+
+#list(
+  [`isCH()`: returns `true` if the local node is currently elected as a cluster-head,],
+  [`getMembers()`: returns the list of member nodes in the local cluster (CH only),],
+  [`getCH()`: returns the address of the cluster-head the local node has joined,],
+  [`broadcast(message)`: sends a message to all members of the local cluster (CH only),],
+)
+
+==== Aggregation Layer
+
+Once clusters are formed, decentralized learning begins within each cluster
+independently, removing the need for any global coordination between clusters. Unlike
+HEAL, where hubs exchange aggregated models with one another before redistribution,
+FLAIR performs aggregation exclusively at the cluster-head level, with no inter-cluster
+communication. Each cluster thus runs a fully self-contained learning process.
+
+_Phase 1: Local training_
+
+Every node $u$ trains the current model $bold(w)^((t))$ on its private dataset
+$cal(D)_u$ for $E$ local epochs, producing a locally updated model
+$bold(w)_u^((t+1))$. Only model updates are shared; raw data always remains private.
+
+_Phase 2: Model aggregation_
+
+Each CH aggregates the updates received from its members using a simple averaging rule (see @def:average-sgd):
+
+$
+bold(w)^((t+1)) = frac(1, |cal(S)_c|) sum_(u in cal(S)_c) bold(w)_u^((t+1)),
+$
+
+where $cal(S)_c$ is the set of members of cluster $c$. The aggregated model is then
+redistributed to all cluster members for the next iteration.
+
+Phases 1 and 2 are repeated for a fixed number of in-cluster learning epochs per round,
+denoted $E_"round"$. After each iteration, members receive the aggregated model from
+their CH, perform local training, and send updated weights back. This iterative loop
+continues until all $E_"round"$ epochs are completed, forming one full round of
+in-cluster decentralized learning.
+
+#figure(
+  pseudocode-list(booktabs: true)[
+    - initial model: *$bold(w)^((0))$*
+    - batch size: *$B$*
+    - in-cluster epochs: *$E_"round"$*
+    + *for each* cluster $c$ *in parallel do*
+      + $t arrow.l 0$
+      + *for* $e = 1$ *to* $E_"round"$ *do*
+        + *for each* member $u in cal(S)_c$ *in parallel do*
+          + $bold(w)_u^((t+1)) arrow.l "LocalTrain"(bold(w)^((t)), cal(D)_u, B)$
+          + send $bold(w)_u^((t+1))$ to CH
+        + *end for*
+        + CH computes $bold(w)^((t+1)) arrow.l display(frac(1, |cal(S)_c|)) sum_(u in cal(S)_c) bold(w)_u^((t+1))$
+        + CH broadcasts $bold(w)^((t+1))$ to $cal(S)_c$
+        + $t arrow.l t + 1$
+      + *end for*
+    + *end for*
+  ],
+  caption: [In-cluster decentralized learning.],
+) <alg:fl>
+
+=== Architectural properties
+
+The layered architecture of FLAIR directly supports a set of desirable properties for
+decentralized learning over wireless networks. Several of these properties are shared
+with HEAL, whilst others are specific to the wireless and cluster-based setting.
+
+Model convergence is promoted by the iterative in-cluster aggregation design: within
+each cluster, the CH performs repeated averaging over member updates across
+$E_"round"$ epochs per round, driving local consensus. Although no global aggregation
+occurs between clusters, convergence across the full network is achieved through the
+rotation of cluster-heads at every round. Since any node may become a CH in a
+subsequent round, locally aggregated models are progressively redistributed across
+the network, causing models from different clusters to merge over time without
+requiring explicit inter-cluster communication.
+
+The number of in-cluster epochs $E_"round"$ introduces a tunable trade-off: a large
+value of $E_"round"$ accelerates local convergence within each cluster but delays
+inter-cluster model mixing, as cluster-heads rotate less frequently relative to the
+amount of training performed. Conversely, a small value of $E_"round"$ favors rapid
+cluster-head rotation and therefore faster global mixing, at the cost of slower local
+convergence per round. This parameter allows FLAIR to be adapted to the requirements
+of a given deployment.
+
+Fast dissemination is achieved through the combination of in-cluster broadcasting and
+CH rotation. Within a cluster, the CH redistributes the aggregated model to all members
+in a single broadcast step. Across clusters, the rotation mechanism ensures that
+aggregated models gradually propagate throughout the network over successive rounds.
+
+Model agnosticism is preserved by the Aggregation Layer interface, which imposes no
+structural constraints on the learning model beyond gradient-based trainability and a
+compatible parameter format. FLAIR accommodates any supervised learning model, from
+linear classifiers to deep neural networks, in the same manner as HEAL.
+
+Resilience to failures and churn is provided by the clustering protocol. Since
+cluster-heads are re-elected at every round using a probabilistic, resource-aware
+mechanism, the failure of any individual node — including a current CH — only affects
+the current round. A new CH is elected at the start of the following round, and the
+learning process resumes automatically without manual intervention or global
+coordination.
+
+Scalability and wireless compatibility are native properties of FLAIR's architecture.
+The protocol operates entirely over IEEE 802.11 @ieee802.11-2024 wireless links and
+requires only single-hop communication within each cluster, making it deployable on
+standard Wi-Fi hardware without any additional infrastructure. Since each cluster
+operates independently, the protocol scales naturally with the number of nodes:
+adding nodes to the network increases the number of clusters or their size, without
+introducing any centralised bottleneck.
+
+=== Experimental setup
+
+This section describes the experimental setup used to evaluate FLAIR. We detail the
+simulation environment, the learning tasks, the baselines, and the experimental
+scenarios considered.
+
+==== Simulation environment
+
+All experiments were conducted using ns-3 @riley2010ns, a discrete-event network simulator that provides faithful modeling of IEEE 802.11 wireless communications, including ad-hoc mode and single-hop transmissions. Unlike Gossipy, which simulates the networking layer whilst performing real model training, ns-3 simulates the full network stack, including wireless channel conditions, interference, and packet scheduling. All baseline protocols were re-implemented in ns-3 (in C++) to ensure strict comparability under identical network conditions.
+
+All simulations were run on a dedicated server equipped with two Intel Xeon E5-2660 v3
+processors (10 cores, 2 threads per core, 2.6 GHz base frequency), 125 GB of RAM, and
+456 GB of storage, running Arch Linux (kernel 6.12.4-arch1-1).
+
+==== Learning tasks
+
+We evaluate FLAIR on two binary classification tasks. Both tasks use a logistic
+regression model @hosmer2013applied with cross-entropy loss, and data is partitioned
+across nodes such that each node holds a private local subset that never leaves the
+device.
+
+The first task uses the Spambase dataset (@sec:datasets), which comprises 4,601 email
+samples described by 57 numerical features, with spam messages representing 39.4% of
+the corpus. This dataset was chosen for its lightweight nature and wide adoption in
+decentralized learning benchmarks.
+
+The second task uses the "Predicting Watering the Plants" dataset @nelakurthi2021plants,
+a Kaggle dataset tailored for intelligent irrigation systems. It contains 100,000 samples
+described by features capturing soil state and ambient conditions (e.g., soil moisture,
+temperature, humidity), with a binary label indicating whether watering is required. The
+class distribution is 53.6% positive and 46.4% negative, representing a mildly imbalanced
+scenario. This dataset was selected to demonstrate the applicability of FLAIR to
+real-world edge deployments such as smart farming.
+
+#figure(
+  table(
+    columns: (auto, auto, auto, auto),
+    align: (left, left, left, right),
+    table.header(
+      [*Task*], [*Dataset*], [*Model*], [*Samples*],
+    ),
+    [Binary classification], [Spambase],              [Logistic regression], [4,601],
+    [Binary classification], [Watering the Plants],   [Logistic regression], [100,000],
+  ),
+  caption: [Summary of the learning tasks used in the FLAIR experiments.],
+) <tab:flair-datasets>
+
+==== Baselines
+
+FLAIR is compared against four representative protocols, each capturing a different
+architectural paradigm. Centralized Federated Learning @mcmahan2017communication (C-FL)
+serves as the canonical client–server baseline, with a single global server aggregating
+all updates at each round. Gaia @hsieh2017gaia represents the hierarchical paradigm,
+with 5 local servers each coordinating 20 clients. HEAL provides a hybrid
+decentralized reference point, with 5 dynamically elected hubs per round performing
+two-stage aggregation. Finally, Gossip Learning @ormandi2013gossip represents the fully
+decentralized paradigm, where each node contacts 3 random peers per round.
+
+#figure(
+  table(
+    columns: (auto, auto, auto),
+    align: (left, left, left),
+    table.header(
+      [*Protocol*], [*Aggregation*], [*Configuration*],
+    ),
+    [C-FL],          [Global averaging],       [$E=3$, $eta = 0.01$],
+    [Gaia],          [Local + global averaging],[5 local servers, $E=3$],
+    [HEAL],          [Hub + inter-hub],         [5 hubs per round],
+    [Gossip Learning],[Pairwise averaging],     [3 peers per round],
+    [*FLAIR*],       [In-cluster averaging],    [$E_"round"=3$],
+  ),
+  caption: [Configuration of protocols in Experiment 1.],
+) <tab:flair-baselines>
+
+==== Experimental scenarios
+
+Four experiments were designed to assess different aspects of FLAIR's performance.
+Performance was assessed in terms of final accuracy, recovery speed, and stability of
+convergence. To capture the effect of round duration, two configurations were
+considered: longer rounds of $E_"round" = 3$ FL epochs per round, and shorter rounds
+of $E_"round" = 1$ FL epoch per round.
+
+#figure(
+  table(
+    columns: (auto, auto, auto),
+    align: (left, left, left),
+    table.header(
+      [*Experiment*], [*Objective*], [*Setup*],
+    ),
+    [Experiment 1],
+      [Comparative evaluation in static networks],
+      [100 static nodes; comparison with C-FL, Gaia, HEAL, Gossip Learning],
+    [Experiment 2],
+      [Resilience to node dropouts],
+      [Permanent, temporary, and random crashes (up to 90% nodes); $E_"round"=1$ and $E_"round"=3$],
+    [Experiment 3],
+      [Impact of mobility on learning performance],
+      [5 mobility models; perfect vs. range-limited connectivity],
+    [Experiment 4],
+      [Smart farming with heterogeneous nodes],
+      [80 fixed sensors + 20 mobile robots; Watering the Plants dataset],
+  ),
+  caption: [Overview of experimental scenarios for FLAIR evaluation.],
+) <tab:flair-experiments>
+
+Experiment 1 evaluates learning performance in a static network of 100 nodes under
+fault-free conditions, serving as the primary comparative benchmark against C-FL, Gaia,
+HEAL, and Gossip Learning.
+
+Experiment 2 examines resilience under three types of node dropout: permanent crashes,
+where nodes leave the system at the start of the second round and do not return;
+temporary crashes, where nodes remain inactive for 15 time units (equivalent to 3 rounds
+of 5 epochs) before resuming, with repeated failures injected once accuracy begins to
+stabilize; and random dropouts, where nodes intermittently disconnect and reconnect
+throughout training, creating highly unpredictable availability patterns.
+
+Experiment 3 investigates the effect of node mobility on learning performance. Two
+connectivity scenarios are considered. In the perfect connectivity scenario, all nodes
+communicate regardless of their physical positions. In the range-limited connectivity
+scenario, nodes can only communicate within a fixed transmission radius,
+resulting in temporary disconnections as nodes move. Five well-known mobility models
+@bai2004survey are simulated: RandomWaypoint, RandomWalk, RandomDirection,
+Gauss-Markov, and ConstantVelocity.
+
+Experiment 4 demonstrates FLAIR in a realistic smart farming application. The network
+consists of 80 fixed sensors that continuously sample environmental parameters (soil
+moisture, temperature, humidity) and 20 mobile robotic nodes that autonomously navigate
+the field and relay model updates between clusters, bridging connectivity gaps. Learning
+is performed on the Watering the Plants dataset @nelakurthi2021plants.
+
+=== Results
+
+=== Summary
 
 == Conclusion
 
