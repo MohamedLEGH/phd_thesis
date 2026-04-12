@@ -8,7 +8,8 @@
 #import cosmos.fancy: *
 #show: show-theorion
 
-= Hub-Based Decentralized Learning <chap:heal>
+// = Hub-Based Decentralized Learning <chap:heal>
+= Efficient and Resilient Decentralized Learning Protocols <chap:heal>
 
 // Decentralized learning enhances privacy, scalability, and fault tolerance by distributing data and computation across nodes. 
 // A popular approach is Federated learning, which relies on a central aggregator, yet faces challenges such as server vulnerabilities, scalability issues, privacy risks and most importantly, the single point of failure. Alternatively Gossip Learning and Epidemic Learning  offer fully decentralization through peer-to-peer exchanges of model updates, ensuring robustness and privacy, at the price of slower model convergence. 
