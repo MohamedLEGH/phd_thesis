@@ -1504,6 +1504,7 @@ adversarial nodes — including model poisoning and inference attacks — is equ
 important for real-world deployments. Finally, a formal convergence analysis of FLAIR
 under non-stationary cluster topologies, and of HEAL under non-IID data, would
 strengthen the theoretical foundations of both contributions.
+
 // In this paper we introduced HEAL protocol for decentralized learning that
 // combines the convergence speed of Federated Learning with the resilience to
 // churn and failures of Gossip and Epidemic Learning. Our simulation results

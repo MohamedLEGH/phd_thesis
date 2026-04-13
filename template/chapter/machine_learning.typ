@@ -1793,15 +1793,13 @@ dynamic properties of decentralized learning protocols under the
 assumption of fully cooperative participants, and leave the study
 of robustness to adversarial settings as a direction for future work.
 
-==== Decentralized learning node
+==== Abstract learning node
 
 Building on the abstract node model introduced in @def:node-entity and
-@def:node-system, we now define the notion of a *decentralized learning
-node* by enriching the general peer-to-peer node with machine learning
-components.
+@def:node-system, we now define the notion of an *abstract learning node* by enriching the general peer-to-peer node with machine learning components.
 
-#definition(title: "Decentralized Learning Node")[
-A *decentralized learning node* is a node (see @def:node-entity)
+#definition(title: "Learning Node")[
+A *learning node* is an abstract node (see @def:node-entity)
 whose local state $s_i$ is extended with two additional components:
 
 1. a *local dataset* $cal(D)_i = {(x_j, y_j)}_(j=1)^(n_i)$, where
@@ -1822,6 +1820,10 @@ contrast, constitute the dynamic component of the state and are updated
 at each protocol step.
 ] <def:dl-node>
 
+#remark[
+  From a multi-agent systems perspective @marl-book, each decentralized learning node can be viewed as an autonomous agent: its local state $s_i$ corresponds to the agent's internal memory, its neighbourhood $P(i)$ and the evolving overlay topology constitute its local environment, and the empirical loss defines the objective to be minimised. Although this multi-agent framing establishes a natural conceptual bridge to cooperative reinforcement learning and decentralized control, formalising our nodes as agents within a multi-agent learning framework lies explicitly outside the scope of this work.
+]
+
 // #remark[
 // The local dataset $cal(D)_i$ can be seen as a global parameter of the
 // node in the sense of @def:node-system: it is fixed at initialization
@@ -1831,23 +1833,16 @@ at each protocol step.
 
 ==== Decentralized learning objective
 
-Having defined the decentralized learning node, we can now state the
-global learning objective. Each node $i$ defines a local empirical loss:
-$
-L_i (theta) = 1/n_i sum_(j=1)^(n_i) ell(f(x_j ; theta), y_j),
-$
-where $ell$ is a task-specific loss function (see @def:loss-function).
+Having defined the learning node, we can now state the
+global learning objective. Each learning node $i$ defines a local empirical loss $L_i (theta)$ (see @def:loss-function).
 
 The global objective of the decentralized learning system is to
 collectively minimise the aggregate loss over all nodes, in the sense
 of @def:global-objective:
 $
 min_(theta in RR^p) L_"global" (theta), quad
-L_"global" (theta) = sum_(i=1)^N alpha_i L_i (theta),
+L_"global" (theta) = 1/N sum_(i=1)^N L_i (theta),
 $
-where $alpha_i > 0$ are aggregation weights satisfying
-$sum_(i=1)^N alpha_i = 1$, typically set to
-$alpha_i = n_i \/ sum_j n_j$.
 
 #remark[
 No single node has access to the full loss $L_"global" (theta)$, since
@@ -2541,7 +2536,7 @@ and the practical deployment of such systems remains an open
 challenge @wang2021systematic.
 
 
-==== Gossip Learning
+==== Gossip learning
 
 Gossip Learning @ormandi2013gossip is a fully decentralized learning paradigm in which nodes exchange models 
 through randomized peer-to-peer interactions. At each communication round, a node selects 
@@ -2842,7 +2837,8 @@ epidemic learning to scale to larger networks. Mosaic Learning
 disseminates the fragments that differ most across nodes, exploiting
 model diversity to accelerate convergence time.
 
-==== Decentralized Learning on Ring Topology
+==== Ring-based decentralized learning
+
 Decentralized learning can also be implemented over a ring topology  @hua2024towards, although this approach 
 is relatively uncommon in the machine learning literature. In a ring-based system, each node 
 maintains connections with exactly two neighbors, typically referred to as its left and right neighbors, forming a closed cycle. This topology is simple, deterministic, and requires each node to store only a constant number of connections, which makes it attractive from a 
@@ -2936,9 +2932,9 @@ table(
   [Hierarchical federated learning],
   [Tree / hierarchical topology],
   [Blockchain-based federated learning],
-  [Complete graph or star],
+  [Complete graph],
   [Gossip learning],
-  [Random graph],
+  [Random graph or complete graph],
   [Epidemic learning],
   [Random graph or complete graph],
   [Ring-based decentralized learning],

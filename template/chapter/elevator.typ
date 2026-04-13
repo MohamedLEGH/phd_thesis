@@ -19,7 +19,7 @@
 == Introduction
 The growing usage of decentralized systems such as blockchain @nakamoto2008bitcoin and federated learning @mcmahan2017communication in recent years has sparked considerable interest in peer-to-peer (P2P) communication protocols. While existing P2P protocols have demonstrated significant utility across various applications, emerging demands for enhanced performance, scalability, and robustness necessitate the development of innovative solutions.
 
-Peer-to-peer (P2P) protocols have undergone extensive research and development to facilitate efficient decentralized communication among networked devices. Foundational P2P protocols like Napster, Gnutella @frankel2003gnutella, and BitTorrent paved the way for distributed file sharing and content distribution across the Internet. Typically, P2P overlay networks are categorized as either structured (e.g. CAN @ratnasamy2001scalable, Chord @stoica2001chord, or Kademlia @maymounkov2002kademlia) or unstructured (e.g. Gnutella @frankel2003gnutella). More comprehensive details about peer-to-peer overlays can be found in recent surveys @malatras2015state, @naik2020next. 
+Peer-to-peer (P2P) protocols have undergone extensive research and development to facilitate efficient decentralized communication among networked devices. Foundational P2P protocols like Napster @carlsson2001rise, Gnutella @frankel2003gnutella, and BitTorrent @cohen2003incentives paved the way for distributed file sharing and content distribution across the Internet. Typically, P2P overlay networks are categorized as either structured (e.g. CAN @ratnasamy2001scalable, Chord @stoica2001chord, or Kademlia @maymounkov2002kademlia) or unstructured (e.g. Gnutella @frankel2003gnutella). More comprehensive details about peer-to-peer overlays can be found in recent surveys @malatras2015state, @naik2020next. 
 
 Structured overlays come with a maintenance cost @malatras2015state, and are more susceptible to Byzantine attacks (that is, attacks performed by the peers themselves) @naik2020next and churn @malatras2015state (that is, the unexpected departure and arrival process of the peers). 
 Unstructured networks exhibit advantages in resilience to node failures and adaptability to shifting network conditions @jelasity2007gossip, rendering them well-suited for dynamic and heterogeneous environments when compared to their structured counterparts. Their shortcomings are that the quality of services built on top of the network is difficult to assess. 
@@ -425,34 +425,53 @@ Commonly used metrics include the indegree and outdegree distributions, the clus
 
 ==== Degree Distribution
 
-The *indegree* and *outdegree* distributions are fundamental metrics that describe how connections are distributed among nodes at a given time. 
-They are derived from the notions of degree introduced in @def:degree and @def:inoutdegree.
+The *indegree* and *outdegree* distributions are fundamental metrics that describe how
+connections are distributed among nodes at a given time. They are derived from the
+notions of degree introduced in @def:degree and @def:inoutdegree. Formally, given a
+directed overlay graph $G = (V, E)$ at time $t$, the outdegree distribution is the
+distribution of $"outdegree"_G (v)$ over all $v in V$, while the indegree distribution
+is the distribution of $"indegree"_G (v)$ over all $v in V$.
 
-Formally, given a directed overlay graph $G = (V, E)$ at time $t$, the outdegree distribution is the distribution of $"outdegree"_G (v)$ over all $v in V$, while the indegree distribution is the distribution of $"indegree"_G (v)$ over all $v in V$.
+Degree distributions serve as a primary tool for characterising the topology produced
+by an overlay management protocol. As the number of nodes may reach several thousands,
+direct graph visualisation becomes impractical; degree distributions provide a compact
+summary of the structural properties of the network. Moreover, deviations from the
+expected distribution — such as an unexpected concentration of indegree on a small
+subset of nodes — may signal undesired behaviour in the overlay protocol, such as load
+imbalance or the unintended emergence of bottlenecks.
 
-In most unstructured peer-to-peer overlays, the outdegree is constrained by design and remains approximately constant, as it corresponds to the fixed size of the partial view maintained by each node. Consequently, structural heterogeneity primarily appears in the indegree distribution.
-
-In overlays that approximate random graphs, the indegree distribution typically follows a binomial distribution. In contrast, in scale-free or power-law overlays, the indegree distribution follows a power-law of the form $P(k) ~ k^(gamma)$, leading to the emergence of highly connected nodes (hubs).
+In most unstructured peer-to-peer overlays, the outdegree is constrained by design and
+remains approximately constant, as it corresponds to the fixed size of the partial view
+maintained by each node. Consequently, structural heterogeneity primarily appears in the
+indegree distribution. In overlays that approximate random graphs, the indegree
+distribution typically follows a binomial distribution. In contrast, in scale-free or
+power-law overlays, the indegree distribution follows a power-law of the form
+$P(k) tilde k^gamma$, leading to the emergence of highly connected nodes (hubs).
 
 ==== Clustering Coefficient
-The *clustering coefficient* measures the tendency of nodes to form tightly connected groups. It quantifies how likely it is that the neighbors of a node are also connected to each other. In a dynamic peer-to-peer network, the clustering coefficient can be computed at each time step on the snapshot $G(t)$, yielding a time-dependent metric that reflects the local cohesiveness of the network as it evolves. This metric is particularly useful for identifying the emergence of clusters or community structures.
 
-#definition(title: "Clustering Coefficient")[
-The clustering coefficient $C_i (t)$ of a node $i$ at time $t$ is defined as:
-$ C_i (t) = (2 e_i (t)) / (k_i (t)(k_i (t) - 1)) $
+The clustering coefficient (see @def:clusteringcoef) measures the tendency of nodes to
+form tightly connected groups, quantifying how likely it is that the neighbours of a
+node are also connected to each other. In a dynamic peer-to-peer network, the clustering
+coefficient can be computed at each time step on the snapshot $G(t)$, yielding a
+time-dependent metric that reflects the local cohesiveness of the network as it evolves.
+This metric is particularly useful for identifying the emergence of clusters or community
+structures.
 
-Where:
-- $e_i (t)$ is the number of edges between the neighbors of node $i$ in $G(t)$,
-- $k_i (t)$ is the degree of node $i$ at time $t$.
-
-The average clustering coefficient of the network at time $t$ is:
-$ C(t) = 1 /(|V(t)|) sum_(i in V(t)) C_i(t) $
-] <def:clusteringcoef>
+In the context of overlay management, monitoring the clustering coefficient provides
+critical insights into the trade-offs between connectivity, routing efficiency, and
+maintenance overhead. A low clustering coefficient typically indicates a topology
+approaching a random graph, which favours uniform load distribution and short average
+path lengths. Conversely, a high clustering coefficient suggests
+denser, more locally interconnected structures that can enhance neighbourhood discovery and fault tolerance through redundant alternative paths, at the
+cost of increased link maintenance overhead and potential routing bottlenecks.
 
 ==== Average Path Length
 
 The average path length, formally defined in @def:averagepathlength, measures the mean shortest-path distance between all pairs of distinct nodes in the overlay graph.
 In the context of time-varying overlays, this metric is computed at each time step on the current graph snapshot $G(t)$, yielding a time-dependent quantity $a(G(t))$ that reflects the evolution of the network's structural efficiency. A smaller average path length indicates a more efficient topology, as it implies that messages can traverse the network in fewer hops on average. Consequently, overlays with low average path length enable faster information dissemination, improved responsiveness, and better scalability.
+
+Beyond raw routing efficiency, monitoring the average path length is crucial for assessing the robustness and adaptability of overlay management protocols under churn. A sudden increase in $a(G(t))$ often signals topological degradation, such as emerging bottlenecks, inadequate neighbor-replacement strategies, or early stages of network partitioning. Tracking this metric over time thus allows protocol designers to verify convergence toward theoretical routing guarantees and detect structural anomalies.
 
 ==== Diameter
 
@@ -460,7 +479,21 @@ The diameter of a graph, formally defined in @def:diameter, captures the maximum
 
 Similarly to the average path length, the diameter is computed at each time step on the current snapshot $G(t)$, yielding a time-dependent quantity $"diam"(G(t))$ that reflects the worst-case communication distance in the network.
 
-A small diameter is desirable, as it guarantees that even in the worst case, any node can reach another within a limited number of hops. Overlays exhibiting small diameters provide strong upper bounds on message dissemination delay and improve robustness against network fragmentation. In contrast, a large diameter may indicate structural inefficiencies or poor connectivity.
+A small diameter is highly desirable, as it guarantees that even in the worst case, any node can reach another within a bounded number of hops. Overlays exhibiting small diameters provide strict upper bounds on message dissemination delay and improve robustness against network fragmentation. In contrast, a large or rapidly increasing diameter may signal structural inefficiencies, degraded connectivity, or early-stage partitioning.
+
+In the context of overlay management, monitoring the diameter is essential for verifying worst-case routing guarantees and assessing the convergence speed of maintenance mechanisms under churn. While the average path length characterises typical communication latency, the diameter exposes tail-latency risks and worst-case bottlenecks that can critically impact time-sensitive applications, consensus protocols, or structured lookups. Together with the average path length, the diameter provides a complete picture of the overlay's latency distribution and structural resilience.
+
+==== Metrics for Byzantine Resilience
+
+Unlike crash failures, where topological and structural metrics (e.g., diameter, average path length, clustering coefficient, degree distribution) directly quantify network degradation, Byzantine failures do not admit a universal set of graph-theoretic indicators. Byzantine nodes can behave arbitrarily---sending malformed messages, lying about their state, or selectively connecting to honest peers---which means that standard overlay metrics may remain nominally stable while the protocol's correctness is silently compromised. Consequently, assessing Byzantine resilience requires metrics that are explicitly tied to the protocol's threat model, safety guarantees, and convergence properties.
+
+In the context of overlay management, three complementary dimensions are typically monitored:
+
+1. *Protocol Liveness and Convergence:* The most fundamental metric is whether the overlay protocol continues to operate and eventually reaches a stable, desired configuration despite the presence of Byzantine nodes. This can be quantified by tracking the time-to-convergence, the success rate of membership operations (joins, leaves, repairs), or the fraction of protocol cycles that complete without deadlocks or livelocks. A resilient system should maintain bounded convergence times and preserve its target topology invariants under adversarial conditions.
+
+2. *Byzantine Infiltration in Partial Views:* Since Byzantine nodes aim to remain embedded in the network to influence routing, data aggregation, or consensus, monitoring their representation in honest nodes' partial views provides a direct measure of containment. Relevant indicators include the average proportion of Byzantine peers in $P(i)$ across honest nodes $i$, the maximum Byzantine degree observed in the overlay, or the eviction rate of suspicious neighbours by honest participants.
+
+3. *Overhead of Resilience Mechanisms:* When Byzantine-tolerant countermeasures are deployed (e.g., redundant messaging, consistency checks, reputation systems, or secure neighbour selection), their impact on system efficiency must be quantified. Key metrics include the relative increase in convergence time compared to the benign baseline, the additional state or bandwidth consumed per node, and the algorithmic complexity introduced in message routing or view maintenance. An effective resilience strategy minimises this overhead while guaranteeing safety, reflecting the classic trade-off between security and performance in distributed systems.
 
 === Open Questions
 
@@ -468,7 +501,7 @@ The existing literature on peer sampling and overlay management largely focuses 
 
 In contrast, relatively few works explore the opposite direction: namely, the deliberate convergence of the overlay topology toward a controlled number of hubs. In particular, the problem of steering a decentralized system toward a target number of hubs, defined by an explicit parameter and selected in a fully decentralized manner, remains largely underexplored.
 
-Moreover, existing approaches rarely address the resilience of such hub-oriented topologies to churn and failures. The ability of the network to autonomously recover from hub disappearance, by allowing new hubs to emerge and take over their role, is a crucial requirement for long-lived decentralized systems. Designing peer sampling and overlay management protocols that jointly enable controlled hub formation, decentralized parameterization, and resilience to failures therefore constitutes an open and important research direction, which this work aims to address.
+Moreover, existing approaches rarely address the resilience of such hub-oriented topologies to churn and failures. The ability of the network to autonomously recover from hub disappearance, by allowing new hubs to emerge and take over their role, is a crucial requirement for long-lived decentralized systems. Designing peer sampling and overlay management protocols that jointly enable controlled hub formation, decentralized parameterization, and resilience to failures therefore constitutes an open and important research direction, which the contribution presented in this chapter aims to address.
 
 // == Description & Properties
 // The key desired properties we expect from our protocol are _connectivity_ (the overlay remains connected), _low-diameter_ (for efficient communication), _convergence_ (properties are obtained in an autonomous manner), _stability_ (structural overlay properties are maintained throughout execution), and _robustness_ (resilience to churn and targeted attacks). They will serve as metrics during simulation experiments to ascertain the efficacy of our algorithm.
@@ -546,7 +579,8 @@ Having established a formal definition of hubs and of a hub sampling service,
 we now turn to the desired properties of the Elevator protocol, which 
 characterize its behavior and performance beyond the aspect of hub emergence.
 
-=== Desired Properties for our protocol
+// === Desired Properties for our protocol
+=== Desired Properties
 
 The Elevator protocol is designed to satisfy a set of fundamental structural and dynamical properties that characterize the quality and usefulness of the maintained overlay.
 
@@ -562,7 +596,9 @@ Finally, *Robustness* captures the resilience of the protocol to churn and targe
 
 Some of these properties will be formally analyzed in the theoretical study preceding the simulation section, where we provide analytical arguments and proofs for key structural guarantees. The remaining aspects will be empirically evaluated through simulation experiments to assess the overall effectiveness and reliability of the Elevator protocol.
 
-=== How to achieve the desired properties ?
+// === How to achieve the desired properties ?
+=== Approach
+
 To achieve both robustness and a low network diameter, we integrate two fundamental concepts: preferential attachment and random attachment, each serving distinct yet complementary roles in shaping the network topology.
 
 *Preferential Attachment.* Drawing from the concept pioneered by Barabási and Albert @barabasi1999emergence, preferential attachment dictates that new connections in the network are established preferentially with nodes possessing a higher number of existing connections. In our adaptation, we modify this concept to elevate certain nodes to the status of hubs without requiring the network to continuously grow. Instead of new nodes joining and preferentially connecting to highly connected nodes, each existing node leverages information from its neighbors to identify and connect to the most frequently connected nodes (up to a predefined number _h_). This mechanism enables the organic emergence of hubs within the network, with selected nodes naturally assuming central roles based on their connectivity without any explicit distinction other than their number of incoming links.
@@ -855,36 +891,14 @@ In terms of pseudo-code for the Byzantine nodes, this amounts to replacing the b
   ],
   caption: [Coordinated attack.],
 ) <CoordinatedAttack>
-
-// It is therefore necessary to consider an alternative algorithm, based on Elevator but which takes into account the possibility of Byzantine attacks, while remaining decentralized.
   
 === Lift protocol
-
-#definition(title: "Pseudo-Random Number Generator")[
-Let $λ in NN$ be a security parameter.
-
-A pseudo-random number generator (PRNG) is a deterministic algorithm
-
-$
-G : {0,1}^λ -> {0,1}^*
-$
-
-such that:
-
-- (Determinism) For any seed $s in {0,1}^λ$, the output $G(s)$ is uniquely determined.
-  In particular, two executions of $G$ on the same seed produce the same output.
-
-- (Pseudo-randomness) When the seed $s$ is sampled uniformly at random from
-  ${0,1}^λ$, the output $G(s)$ is computationally indistinguishable from
-  a truly random bitstring of the same length.
-] <def:prng>
 
 To address Elevator's vulnerability to Byzantine attacks, we propose a deterministic hub redistribution mechanism (that we name Lift) that activates after the network has converged to its initial hub configuration. Our approach leverages the fact that node identifiers are assigned randomly and cannot be modified by Byzantine nodes. If Byzantine nodes are active, we hope that our new protocol will be more efficient than Elevator in terms of resilience, and if Byzantine nodes are not active, we hope that the protocol will have no impact on protocol performance and convergence towards hubs.
 
 The counter-attack operates in two phases: an initial convergence phase using standard Elevator, followed by a deterministic hub redistribution phase.
 
 *Phase 1 – Initial Convergence:*  
-// The network runs the standard Elevator protocol for a predetermined number of cycles (100 cycles in our implementation) to allow hub formation. We would like to point out that, according to simulation results, the Elevator protocol converges on average in 4 cycles. Therefore, 100 cycles is more than enough time to ensure convergence, corresponding to a network topology with _h_ nodes present in everyone's cache, and the remaining cache entries filled with uniformly random identifiers of other nodes.  
 The network runs the standard Elevator protocol for a predetermined number of cycles to allow hub formation. During this phase, Byzantine nodes may successfully infiltrate hub positions through coordinated attacks.
 
 *Phase 2 – Hub Redistribution:*  
@@ -894,7 +908,7 @@ After convergence, all correct nodes simultaneously execute the following determ
 
 + Each node builds a seed by concatenating the _h_ hub identifiers. Because these identifiers are already sorted, the resulting seed is identical for every correct node.
 
-+ Each node initializes a pseudo-random number generator (PRNG) using this seed. The PRNG used is Java’s default implementation, namely a linear congruential generator @knuth1997taocp3. Since both the seed and the PRNG are identical for all correct nodes, the generated sequence is identical, effectively creating a shared random list of values.
++ Each node initializes a pseudo-random number generator (see @def:prng) using this seed. The PRNG used is Java’s default implementation, namely a linear congruential generator @knuth1997taocp3. Since both the seed and the PRNG are identical for all correct nodes, the generated sequence is identical, effectively creating a shared random list of values.
 
 + Each correct node generates _h_ new random values using the PRNG, corresponding to _h_ node identifiers in the network. If a generated value has already been selected, the PRNG is invoked again until a fresh identifier is obtained.
 
@@ -1221,8 +1235,8 @@ From @prop:convergence4, we know that once the network contains at least one hub
 
 Combining these two results, we conclude that:
 
-- Starting from a random network, the algorithm generates the first hub with high probability (Proposition 6).
-- Once at least one hub exists, the network remains strongly connected, and additional hubs appear until the number of hubs reaches $h$ without decreasing (Proposition 5).
+- Starting from a random network, the algorithm generates the first hub with high probability.
+- Once at least one hub exists, the network remains strongly connected, and additional hubs appear until the number of hubs reaches $h$ without decreasing.
 - Therefore, the system converges with high probability to the desired stable state containing exactly $h$ hubs.
 ]
 
@@ -1695,7 +1709,7 @@ Overall, our simulation results demonstrate that Elevator achieves the targeted 
 // make repository public
 // add link to repository
 
-To complement the simulation-based evaluation presented earlier, we implemented a fully operational version of the Elevator protocol over real TCP/IP networks. This implementation was carried out in collaboration with an undergraduate intern and serves two main purposes: (i) validating the feasibility of Elevator in a realistic peer-to-peer environment, and (ii) assessing its behavior under asynchronous execution, failures, and heterogeneous deployment conditions.
+To complement the simulation-based evaluation presented earlier, we implemented a fully operational version of the Elevator protocol over real TCP/IP networks. This implementation (available at https://github.com/MohamedLEGH/elevator-algorithm) serves two main purposes: (i) validating the feasibility of Elevator in a realistic peer-to-peer environment, and (ii) assessing its behavior under asynchronous execution, failures, and heterogeneous deployment conditions.
 
 === Implementation choices and technological stack
 
@@ -1801,10 +1815,10 @@ For the single-machine experiments, three configurations of the Elevator protoco
 ) <fig:Victor100nodes>],
   [#figure(
   image("../../Images/Victor/graphe_test_V2_5_HUBS.pdf", width: 90%),
-  caption: [Number of hubs, synchronous mode, with $N=100$, $c=20$ and $h=10$],
+  caption: [Number of hubs, synchronous mode, with $N=100$, $c=20$ and $h=5$],
 ) <fig:Victor100nodesSynchrone>],
   [#figure(
-  image("../../Images/Victor/graphe_test_V2_5_HUBS.pdf", width: 90%),
+  image("../../Images/Victor/graphe_test_V3_1_HUBS.pdf", width: 90%),
   caption: [Number of hubs, asynchronous mode, with $N=100$, $c=20$ and $h=1$],
 ) <fig:Victor100nodesAsynchrone>],
 )
@@ -1842,4 +1856,4 @@ Beyond simulations, we implemented Elevator on real peer-to-peer networks, confi
 
 We also investigated the vulnerability of Elevator to Byzantine attacks. Our analysis shows that, while the protocol is resilient to failures and churn, it remains vulnerable to coordinated Byzantine strategies aiming at capturing hub positions. To address this limitation, we proposed a modification of the algorithm, Lift, which increases resilience against Byzantine behavior through a deterministic redistribution mechanism. Importantly, this countermeasure improves robustness without compromising decentralization or degrading the performance of the protocol.
 
-Elevator opens the way to a new class of algorithms that we refer to as hub sampling algorithms, where structural centrality is deliberately engineered within unstructured overlays. One particularly promising application domain is artificial intelligence, and federated learning in particular, where controlled hub structures may accelerate model aggregation and dissemination. This use case will be studied in detail in the next chapter.
+Elevator opens the way to a new class of algorithms that we refer to as hub sampling algorithms, where structural centrality is deliberately engineered within unstructured overlays. One particularly promising application domain is artificial intelligence, and federated learning in particular, where controlled hub structures may accelerate model aggregation and dissemination. This use case will be studied in detail in @chap:heal.

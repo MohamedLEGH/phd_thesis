@@ -175,7 +175,6 @@ Let $G = (V, E)$ be a directed graph.
 - A *weakly connected component (WCC)* is a maximal subset of nodes $C subset.eq V$ such that the underlying undirected graph obtained by ignoring edge directions is connected.
 ]
 
-
 #definition(title: "Distance")[
 Let $G = (V, E)$ be a graph.  
 For any two vertices $u, v in V$, the distance between $u$ and $v$, denoted by
@@ -244,6 +243,7 @@ $
 $
 ]
 
+
 #definition(title: "Successors and Predecessors (Directed Graphs)")[
 Let $G = (V, E)$ be a directed graph and let $v in V$ be a vertex.
 
@@ -310,8 +310,32 @@ $
 $
 ]
 
+#definition(title: "Clustering Coefficient")[
+Let $G = (V, E)$ be a graph. For any vertex $v in V$ with $"degree"_G (v) >= 2$,
+the local clustering coefficient of $v$, denoted $C(v)$, is defined as the fraction
+of pairs of neighbours of $v$ that are themselves connected:
+
+$
+C(v) = frac(|{ {u, w} in E | u in "neigh"_G (v), w in "neigh"_G (v) }|, binom("degree"_G (v), 2))
+$
+
+For vertices with $"degree"_G (v) < 2$, the clustering coefficient is conventionally
+set to $C(v) = 0$.
+
+The global clustering coefficient of $G$, denoted $C(G)$, is defined as the average
+local clustering coefficient over all vertices:
+
+$
+C(G) = frac(1, |V|) sum_(v in V) C(v)
+$
+
+The global clustering coefficient takes values in $[0, 1]$, where $C(G) = 0$ indicates
+that no two neighbours of any node are connected, and $C(G) = 1$ indicates that every
+neighbourhood forms a complete subgraph.
+] <def:clusteringcoef>
+
 Having established the formal vocabulary of graph theory --- vertices,
-edges, paths, distances, and degree --- we now turn to the study of
+edges, paths, distances, degree and clustering coefficient --- we now turn to the study of
 specific network models. The following section surveys the principal
 graph structures and generative models encountered in the peer-to-peer
 and distributed systems literature, ranging from deterministic
@@ -995,7 +1019,6 @@ In the *sequential cycle model*, nodes execute their protocol steps one after an
 Each node updates its local state immediately upon execution and may emit messages that can be observed by nodes executing later in the same cycle.  
 As a result, the state of the system may evolve during the cycle itself.
 
-// === Emergent Behaviour
 === Self Organization
 
 Beyond local execution semantics, many peer-to-peer protocols are designed to achieve 
@@ -1030,8 +1053,33 @@ probability, depending on the assumptions made on the protocol execution and the
 network dynamics.
 ] <def:convergence>
 
+=== Randomness
+
+Our system model is fundamentally deterministic: nodes execute protocol logic based on local state and received messages, without access to external sources of entropy or true random oracles. This design choice ensures reproducibility of executions, simplifies formal reasoning about protocol correctness, and avoids reliance on potentially biased or manipulable randomness sources in adversarial environments.
+
+However, certain protocol mechanisms benefit from behaviors that *appear* random. To support such use cases without introducing non-determinism, we allow nodes to locally instantiate a pseudo-random number generator (PRNG, see @def:prng) when the protocol specification explicitly requires randomized choices.
+
+#definition(title: "Pseudo-Random Number Generator")[
+Let $λ in NN$ be a security parameter.
+
+A pseudo-random number generator (PRNG) is a deterministic algorithm
+
+$
+G : {0,1}^λ -> {0,1}^*
+$
+
+such that:
+
+- (Determinism) For any seed $s in {0,1}^λ$, the output $G(s)$ is uniquely determined.
+  In particular, two executions of $G$ on the same seed produce the same output.
+
+- (Pseudo-randomness) When the seed $s$ is sampled uniformly at random from
+  ${0,1}^λ$, the output $G(s)$ is computationally indistinguishable from
+  a truly random bitstring of the same length.
+] <def:prng>
+
+
 === Dynamic Network
-// The execution model described above directly induces a dynamic evolution of the peer-to-peer network. 
 
 So far, we have considered the overlay network as a static structure on which nodes execute a protocol over time.  
 However, in many peer-to-peer systems, the network topology itself evolves as the system runs. As nodes repeatedly execute the protocol, both the local views of nodes and the global network topology may change over time.
@@ -1074,7 +1122,7 @@ In this work, we explicitly situate our analysis within standard fault models fr
 
 We distinguish two main classes of failures in peer-to-peer systems: crash failures and Byzantine failures.
 
-==== Crash Failures
+=== Crash Failures
 
 A *crash failure* occurs when a node permanently stops executing the protocol. This may result from hardware faults, software errors, or permanent network disconnection. From the perspective of our abstract model, the specific cause is irrelevant; what matters is the observable effect: a crashed node ceases all activity.
 
@@ -1101,7 +1149,7 @@ A node can detect that one of its neighbors has crashed if the neighbor does not
 Since message transmission is assumed to be instantaneous and reliable, the absence of an immediate response is interpreted as a crash.
 ]
 
-==== Byzantine Failures
+=== Byzantine Failures
 
 In contrast to crash failures, a Byzantine node remains active but no longer follows the prescribed protocol. Instead, it behaves according to an arbitrary (Byzantine) strategy.
 
@@ -1114,107 +1162,6 @@ Byzantine failures are modeled using the *Byzantine Synchronous Message-Passing 
 - [∅] indicates that no additional assumptions (such as authentication, signatures, or trusted components) are made beyond synchrony and reliable communication.
 
 Unless stated otherwise, Byzantine nodes are assumed to have full control over their local state and outgoing messages, while still being subject to the constraints of the underlying communication network.
-
-// == Time Assumptions
-
-
-// Regarding time and node synchronization, we distinguish two execution models.
-
-// In the first model, nodes are fully asynchronous. Each node executes independently and may send messages at arbitrary times, without any form of global synchronization. There is no notion of a shared clock or execution step, and nodes progress according to their own local pace.
-
-// In the second model, nodes execute their actions according to a global notion of time, structured into discrete steps called cycles. In this setting, all nodes conceptually perform their actions once per cycle. Two variants of this model can be considered. In the first variant, nodes execute sequentially within a cycle: each node performs its actions one after another, and a cycle is completed once all nodes have finished their execution. While this assumption is not realistic in practical systems, it greatly simplifies modeling and simulation. In the second variant, all nodes execute simultaneously and instantaneously within each cycle. This assumption is also unrealistic in practice, but is commonly adopted to facilitate theoretical analysis and simulation.
-
-// - Nodes execute asynchronously and do not share a global clock.
-
-
-
-// == Metrics
-// In an overlay network, the state of the system at a given instant can be represented as a graph snapshot of the underlying time-varying graph. Various metrics can then be computed on this graph in order to characterize the structure of the network, monitor its evolution over time, and compare different protocols.
-
-// Metrics provide insights into connectivity, resilience, efficiency, and overall behavior of the network. In the context of time-varying graphs, these metrics can be computed either on a single snapshot $G(t)$ or observed as time-dependent quantities $m(t) = m(G(t))$ that evolve as the network topology changes.
-
-// Commonly used metrics include the indegree and outdegree distributions, the clustering coefficient, the average path length, and the network diameter.
-
-// The *indegree* and *outdegree* distributions are fundamental metrics that describe how connections are distributed among nodes at a given time.
-
-// In a time-varying graph $G = (V, E, T)$, these distributions are computed on a snapshot $G(t) = (V(t), E(t))$ of the network. The outdegree of a node corresponds to the number of outgoing edges it maintains at time $t$, which in most peer-to-peer protocols reflects the size of the node's partial view. As a result, the outdegree is often bounded and relatively stable over time.
-
-// In contrast, the indegree represents the number of incoming edges a node receives and may vary significantly across nodes. Monitoring the indegree distribution over time provides valuable insights into how the network adapts, which nodes become highly connected, and whether hubs or imbalances emerge.
-// #definition(title: "Indegree and Outdegree Distributions")[
-// The *indegree (resp. outdegree) distribution* of a network at time $t$ is the probability distribution of the number of incoming (resp. outgoing) edges of nodes in the graph snapshot $G(t)$.
-
-// - For a network following a random graph distribution (Erdős–Rényi model), the degree distribution follows:
-//   $P(k) = binom(n-1, k) p^k (1-p)^(n-1-k)$.
-
-// - For a network following a scale-free distribution (Barabási–Albert model), the degree distribution follows:
-//   $P(k) = C k^(-gamma)$,
-//   where $gamma$ is the power-law exponent and $C$ is a normalization constant.
-// ] <def:degree-distribution>
-
-// The *clustering coefficient* measures the tendency of nodes to form tightly connected groups. It quantifies how likely it is that the neighbors of a node are also connected to each other.
-
-// In a dynamic peer-to-peer network, the clustering coefficient can be computed at each time step on the snapshot $G(t)$, yielding a time-dependent metric that reflects the local cohesiveness of the network as it evolves. This metric is particularly useful for identifying the emergence of clusters or community structures.
-
-// #definition(title: "Clustering Coefficient")[
-// The clustering coefficient $C_i(t)$ of a node $i$ at time $t$ is defined as:
-// $ C_i(t) = (2 e_i(t)) / (k_i(t)(k_i(t) - 1)) $
-
-// Where:
-// - $e_i(t)$ is the number of edges between the neighbors of node $i$ in $G(t)$,
-// - $k_i(t)$ is the degree of node $i$ at time $t$.
-
-// The average clustering coefficient of the network at time $t$ is:
-// $ C(t) = 1 /(|V(t)|) sum_(i in V(t)) C_i(t) $
-// ]
-
-// The *average path length* characterizes the efficiency of information dissemination in the network. It corresponds to the mean of the shortest path lengths between all pairs of nodes.
-
-// In time-varying graphs, the average path length is computed on each snapshot $G(t)$, allowing the observation of its evolution over time. A decreasing average path length may indicate improved connectivity or the emergence of highly connected nodes.
-
-// #definition(title: "Average Path Length")[
-// The average path length $a(t)$ of the network at time $t$ is defined as:
-// $ a(t) = sum_(s, t' in V(t), s eq.not t') d(s, t') / (|V(t)| (|V(t)| - 1)) $
-
-// Where:
-// - $d(s, t')$ is the length of the shortest path between nodes $s$ and $t'$ in $G(t)$.
-// ]
-
-// // The *diameter* of a graph is a measure of the longest distance between any two vertices (nodes) in the graph, measured in terms of the number of edges. In other words, the diameter of a graph is the maximum shortest path between any pair of nodes in the network.
-
-// // While the average path length provides a basic measure of information dissemination efficiency in algorithms, it may overlook disparities in dissemination speed across different nodes within the network. An algorithm could potentially have a favorable average path length but still exhibit uneven dissemination speeds among nodes due to varying distances. Calculating the network's diameter, however, offers a more comprehensive assessment.
-
-// // #definition(title: "Diameter")[
-// // The diameter of a network at time $t$ is defined as the length of the longest shortest path between any pair of nodes in the snapshot $G(t)$:
-
-// // $
-// // "diam"(G(t)) = max_(u, v in V(t)) d(u, v)
-// // $
-
-// // Where:
-// // - $V(t)$ is the set of nodes in the network at time $t$.
-// // - $d(u,v)$ is the length of the shortest path between nodes $u$ and $v$.
-// // ]
-
-// Beyond local and global structural metrics, connectivity properties play a central role in the analysis of peer-to-peer networks.  Connectivity metrics computed on $G(t)$ allow us to characterize whether the network remains operational, how information can propagate, and how resilient the topology is to node failures or churn.
-
-
-// // #definition(title: "Weakly and Strongly Connected Components")[
-// // Let $G(t) = (V(t), E(t))$ be a directed graph representing a snapshot of a peer-to-peer network at time $t$.
-
-// // - A *strongly connected component (SCC)* is a maximal subset of nodes $C subset.eq V(t)$ such that for every pair of nodes $u, v in C$, there exists a directed path from $u$ to $v$ and from $v$ to $u$.
-
-// // - A *weakly connected component (WCC)* is a maximal subset of nodes $C subset.eq V(t)$ such that the underlying undirected graph obtained by ignoring edge directions is connected.
-
-// // The set of weakly or strongly connected components induces a partition of the vertex set $V(t)$. The number of such components characterizes the fragmentation level of the network at time $t$.
-// // ] <def:connectivity>
-
-// In typical operating conditions, peer-to-peer protocols aim to maintain a connected topology, and the snapshot graph $G(t)$ usually consists of a single weakly connected component. To assess the robustness of the network, we study how connectivity degrades under node removals.
-
-// Starting from a connected snapshot, nodes are removed uniformly at random, one by one, simulating failures or departures. After each removal, we recompute the number of weakly and strongly connected components. The evolution of these quantities provides a quantitative measure of the network’s resilience: a topology is considered robust if it remains weakly connected, or fragments slowly, despite node failures.
-
-// This analysis allows us to compare protocols in terms of fault tolerance and structural stability, independently of their specific message-passing behavior.
-
-
 
 == Conclusion
 
@@ -1231,65 +1178,3 @@ Modeling failures explicitly, and in particular crash failures, further grounds 
 Having established this unified and abstract modeling framework—where a peer-to-peer system is viewed as a temporal graph whose nodes are state machines—we are now in a position to present our contribution.  
 In the following chapter, we introduce a novel peer-to-peer protocol for unstructured networks.  
 This protocol leverages the local execution model described above to induce desirable global properties, and exhibits innovative features in terms of organization, robustness, and emergent behavior.
-
-// In this chapter, we have presented a comprehensive model of a decentralized learning system, 
-// structured in multiple layers, as illustrated in Figure <fig:system-architecture>. 
-
-// The system is organized into four main layers:
-
-// - *Network Layer*: represents the underlying physical or logical network. In our study, 
-//   we do not model the network in detail; we only make high-level assumptions regarding 
-//   connectivity, latency, and node availability.
-
-// - *Overlay Layer*: implements the peer-to-peer system on top of the network. This layer 
-//   defines the topology and dynamics of the overlay, such as neighbor selection, churn, 
-//   and connectivity maintenance.
-
-// - *Aggregation Layer*: defines the logic of model aggregation. It abstracts the communication 
-//   and combination of local model updates according to various aggregation strategies, 
-//   including centralized, hierarchical, gossip-based, or blockchain-mediated approaches.
-
-// - *Application Layer*: hosts the machine learning models themselves, such as logistic 
-//   regression, and orchestrates local training, evaluation, and metrics computation.
-
-// By separating the system into these layers, we ensure that the model is adaptable both 
-// to different underlying network conditions and to various machine learning models. 
-// This modular design allows us to study the impact of aggregation strategies and overlay 
-// topologies on learning performance independently from the specific ML algorithms or 
-// network technologies.
-
-// Overall, this layered architecture provides a clear framework for analyzing decentralized 
-// learning systems, highlighting the interactions between network assumptions, overlay design, 
-// aggregation logic, and machine learning objectives.
-
-// #figure(
-// cetz.canvas({
-//   import cetz.draw: *
-//   // Dimensions
-//   let w = 4
-//   let h = 2  
-//   let spacing = 2
-
-//   // Couleurs
-//   let colors = (
-//     rgb(70%, 70%, 70%),    // light grey
-//     rgb(75%, 90%, 75%),   // green
-//     rgb(75%, 85%, 95%),   // blue
-//     rgb(85%, 75%, 90%),   // violet
-//   )
-
- 
-//   // Arrow labels
-//   let labels = (
-//     "Network Layer",
-//     "Overlay Layer",
-//     "Aggregation Layer",
-//     "Application Layer",
-//   )
-//   for i in range(4) {
-//     rect((0, i*spacing), (w, h + (i*spacing)), name: "rect_"+str(i), fill: colors.at(i)) 
-  
-//     content("rect_"+str(i), labels.at(i))  
-//   }
-// }), caption: [Architecture]
-// ) <fig:system-architecture>
