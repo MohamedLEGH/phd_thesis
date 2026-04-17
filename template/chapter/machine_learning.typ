@@ -2945,49 +2945,17 @@ table(
 
 == Conclusion
 
-This chapter has progressively built the conceptual and formal
-foundations necessary to situate decentralized learning within the
-broader landscape of machine learning. Starting from the classical
-supervised learning framework --- loss functions, gradient descent,
-and standard model classes --- we introduced a series of learning
-paradigms of increasing decentralization: from centralized learning,
-where a single entity holds all data and controls the entire training
-process, through distributed approaches such as data parallelism,
-model parallelism, and ensemble learning, to fully decentralized
-schemes in which nodes operate autonomously on private local datasets
-without any central coordinator.
+This chapter has progressively built the conceptual and formal foundations necessary to situate decentralized learning within the broader landscape of machine learning. Starting from the classical supervised learning framework --- loss functions, gradient descent, and standard model classes --- we introduced a series of learning paradigms of increasing decentralization: from centralized learning, where a single entity holds all data and controls the entire training process, through distributed approaches such as data parallelism, model parallelism, and ensemble learning, to fully decentralized schemes in which nodes operate autonomously on private local datasets without any central coordinator.
 
-Within this landscape, we formalized the decentralized learning
-problem by grounding it in the peer-to-peer model of @chap:model:
-a decentralized learning node is a peer-to-peer node enriched with
-a local dataset and a local model, and the global learning objective
-is to collectively minimize the aggregate loss $L_"global"$ without
-any node ever observing the data of another. We characterized
-convergence in terms of this global objective, and introduced
-complementary performance metrics --- final accuracy and time to
-accuracy --- that will serve as evaluation criteria throughout the
-remainder of this thesis.
+Within this landscape, we formalized the decentralized learning problem by grounding it in the peer-to-peer model of @chap:model: a decentralized learning node is a peer-to-peer node enriched with a local dataset and a local model, and the global learning objective is to collectively minimize the aggregate loss $L_"global"$ without any node ever observing the data of another. We characterized convergence in terms of this global objective, and introduced complementary performance metrics --- final accuracy and time to accuracy --- that will serve as evaluation criteria throughout the remainder of this thesis.
 
-We then surveyed the main topology-driven aggregation strategies
-proposed in the literature, ranging from the star-shaped architecture
-of federated learning and its hierarchical extensions, to fully
-decentralized schemes such as gossip learning and epidemic learning.
-This survey revealed a fundamental tension that runs through the
-field: centralized and hierarchical approaches such as federated
-learning benefit from efficient coordination and fast convergence,
-but rely on a central point of control that introduces fragility,
-scalability limitations, and trust requirements. Fully decentralized
-approaches such as gossip learning eliminate this central dependency
-and offer strong resilience properties, but typically converge more
-slowly due to the limited bandwidth of local pairwise interactions.
+We then surveyed the main topology-driven aggregation strategies proposed in the literature, ranging from the star-shaped architecture of federated learning and its hierarchical extensions, to fully decentralized schemes such as gossip learning and epidemic learning. This survey revealed a fundamental tension that runs through the field: centralized and hierarchical approaches such as federated learning benefit from efficient coordination and fast convergence, but rely on a central point of control that introduces fragility, scalability limitations, and trust requirements. Fully decentralized approaches such as gossip learning eliminate this central dependency and offer strong resilience properties, but typically converge more slowly due to the limited bandwidth of local pairwise interactions.
 
-Bridging this gap --- combining the convergence efficiency of
-federated learning with the robustness and decentralization
-properties of gossip-based protocols --- remains an open challenge.
-The following chapter presents our contribution to this problem.
-We introduce a novel peer-to-peer protocol that operates without any
-central coordinator, leverages the epidemic learning communication
-pattern to achieve richer local aggregation, and is designed to
-exhibit convergence properties competitive with federated learning
-while retaining the fault tolerance and scalability of fully
-decentralized systems.
+Beyond this architectural tension, several broader challenges remain for the next generation of decentralized learning systems:
+
+- *Security against privacy and Byzantine attacks.* Decentralized architectures are inherently exposed to data inference, membership inference, and model poisoning attacks. Designing protocols that guarantee robust aggregation or differential privacy without relying on central trust remains largely open.
+- *Theoretical performance guarantees.* While empirical results abound, formal convergence bounds and complexity analyses for fully decentralized, asynchronous, and highly heterogeneous settings are still fragmented. Bridging empirical practice with rigorous theoretical foundations is a critical unsolved problem.
+- *Adaptation to large language models (LLMs).* Training or fine-tuning billion-parameter models in a decentralized setting clashes with severe bandwidth, memory, and compute constraints at the edge. Developing communication-efficient, parameter-optimized strategies tailored to LLMs without sacrificing convergence is an emerging frontier.
+- *Resilient and efficient decentralized learning systems.* Building fully peer-to-peer learning frameworks that simultaneously achieve high fault tolerance, rapid convergence, and low communication overhead --- without relying on fragile coordinators or hierarchical structures --- remains a core systems-level challenge.
+
+Among these open research directions, this thesis deliberately narrows its scope to the fourth challenge: *the design of a resilient and efficient decentralized learning system*. Rather than attempting to solve security, theoretical bounds, or LLM-specific optimizations in isolation, our work targets the foundational systems problem of achieving fast, fault-tolerant, and communication-efficient model aggregation in fully decentralized environments. The following chapter (@chap:heal) presents our contribution to this problem.
