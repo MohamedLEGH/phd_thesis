@@ -5,7 +5,7 @@
 #import "@preview/i-figured:0.2.4": reset-counters, show-equation
 
 #let template(  
-  language: "en",
+  language: "fr",
   // file paths for logos etc.
   uni-logo: none,
   lab-logo: none,
@@ -59,7 +59,7 @@
   equation-numbering-pattern: "(1.1)",
 
   // supervised by text
-  supervised-by: "Supervised by",
+  supervised-by: "Encadrement de la Thèse",
 
   // the content of the thesis
   body
@@ -343,7 +343,7 @@ if language == "fr" {
 // Jury members
 align(center)[
   #table(
-    columns: (1fr, 1fr, 5fr, 2.2fr),
+    columns: (1fr, 2fr, 2fr, 2.2fr),
     align: (col, row) => (center, center, center, center).at(col),
     inset: 3pt,
     stroke: none,

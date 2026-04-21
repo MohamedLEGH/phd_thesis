@@ -40,6 +40,13 @@ The manuscript is organised into seven chapters, reflecting the progressive cons
 
 @chap:elevator presents the Elevator and Lift protocols. It covers the design of the hub election mechanism, the theoretical analysis of the resulting overlay properties, and the experimental evaluation conducted on PeerSim and over a real TCP/IP network.
 
-@chap:learning surveys the state of the art on machine learning and decentralised learning. It introduces the necessary background on supervised learning, federated learning, and gossip learning, and reviews the main approaches to decentralised aggregation in the learning literature.
+@chap:learning surveys the state of the art on machine learning and decentralised learning. It introduces the necessary background on supervised learning, federated learning, and gossip learning, and reviews the main approaches to decentralized aggregation in the learning literature.
 
 @chap:heal presents the HEAL and FLAIR protocols. It describes the architecture of HEAL, its aggregation scheme, and its experimental evaluation across multiple learning tasks and fault scenarios. The chapter then introduces FLAIR and its adaptation to physical wireless network constraints, evaluated on the ns-3 simulator.
+
+@chap:simulators documents the simulation infrastructure developed
+over the course of this thesis. It describes the engineering
+contributions made to PeerSim, the cluster deployment and
+orchestration pipeline, the metric computation and visualization
+tooling, and the hybrid PeerSim--Gossipy architecture used for
+decentralized learning experiments.

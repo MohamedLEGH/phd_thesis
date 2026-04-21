@@ -7,44 +7,51 @@
 #set par(justify: true)
 #set text(
   hyphenate: true,
-  lang: "en",
+  lang: "fr",
 )
 
 #show: template.with(
-  language: "en",
+  language: "fr",
   uni-logo: image("Logos/SORBONNE UNIVERSITÉ/SORBONNE_UNIVERSITE.svg", height: 32pt),
   lab-logo: image("Logos/LIP6/LIP6.svg", height: 32pt),
   orga1-logo: image("Logos/CNRS/CNRS.svg", height: 32pt),
-  orga2-logo: image("Logos/logoSuppl.png", height: 32pt),
+  // orga2-logo: image("Logos/logoSuppl.png", height: 32pt),
   university: "Sorbonne Université",
   doctoralschool: "École Doctorale Informatique, Télécommunications et Électronique (ED130)",
   lab: "Laboratoire d'Informatique de Paris 6",
-  title: "Efficient and Resilient Decentralized Learning Protocols",
-  subtitle: "Theory, Design and Evaluation",
+  title: "Protocoles pair à pair pour un apprentissage décentralisé efficace et résilient",
+  subtitle: "Théorie, conception et évaluation",
   author: (
     firstname: "Mohamed Amine",
     lastname: "LEGHERABA",
   ),
-  degree: "PhD Thesis",
-  speciality: "of Computer Science",
+  degree: "Doctorat",
+  speciality: "en Informatique",
   supervisors: (
     (
-      titlecivility: "",
-      firstname: "Prénom",
-      lastname: "Nom"
+      titlecivility: "Pr",
+      firstname: "Maria",
+      lastname: "POTOP-BUTUCARU"
+    ),
+    (
+      titlecivility: "Pr",
+      firstname: "Sébastien",
+      lastname: "TIXEUIL"
     ),
   ),
-  date: datetime.today(),
+  date: datetime(day: 01, month: 01, year: 1970),
+  // date: "xx/xx/xx",
+  // date: datetime.today(),
   examboard: (
     (
-      firstname: "Prénom",
-      lastname: "Nom",
+      firstname: "Maria",
+      lastname: "POTOP-BUTUCARU",
       title: "Titre",
       role: "Directrice de thèse"
     ),
     (
-      firstname: "Prénom",
-      lastname: "Nom",
+      firstname: "Sébastien",
+      lastname: "TIXEUIL",
       title: "Titre",
       role: "Directeur de thèse"
     ),
@@ -119,7 +126,8 @@
 // #include "template/chapter/simulators.typ"
 #include "template/chapter/simulators.typ"
 #include "template/chapter/conclusions_outlook.typ"
-#include "template/chapter/appendix.typ"
+#include "template/chapter/publications.typ"
+// #include "template/chapter/appendix.typ"
 
 // ------------------- bibliography -------------------
 #bibliography("template/References.bib")
