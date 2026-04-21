@@ -117,6 +117,7 @@
 // #include "template/chapter/heterogeneous_network.typ"
 // #include "template/chapter/variants_heal.typ"
 // #include "template/chapter/simulators.typ"
+#include "template/chapter/simulators.typ"
 #include "template/chapter/conclusions_outlook.typ"
 #include "template/chapter/appendix.typ"
 
@@ -124,4 +125,4 @@
 #bibliography("template/References.bib")
 
 // ------------------- declaration -------------------
-#include "template/chapter/declaration.typ"
+// #include "template/chapter/declaration.typ"
