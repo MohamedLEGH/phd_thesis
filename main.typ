@@ -7,7 +7,7 @@
 #set par(justify: true)
 #set text(
   hyphenate: true,
-  lang: "fr",
+  lang: "en",
 )
 
 #show: template.with(
@@ -114,6 +114,8 @@
 )
 
 // ------------------- content -------------------
+#include "template/chapter/remerciements.typ"
+#include "template/chapter/resume_fr.typ"
 #include "template/chapter/introduction.typ"
 #include "template/chapter/model.typ"
 #include "template/chapter/overlay.typ"

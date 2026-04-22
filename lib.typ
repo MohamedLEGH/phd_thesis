@@ -343,7 +343,7 @@ if language == "fr" {
 // Jury members
 align(center)[
   #table(
-    columns: (1fr, 2fr, 2fr, 2.2fr),
+    columns: (2fr, 2fr, 2fr),
     align: (col, row) => (center, center, center, center).at(col),
     inset: 3pt,
     stroke: none,
@@ -352,7 +352,7 @@ align(center)[
           (
             [#member.firstname],
             [#smallcaps([#member.lastname])],
-            [#member.title],
+            // [#member.title],
             [#member.role],
           )
         })

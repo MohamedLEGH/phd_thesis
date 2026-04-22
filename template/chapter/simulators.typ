@@ -517,6 +517,57 @@ protocols to be evaluated under identical, controlled topological
 conditions — which is the primary requirement for the comparative
 analysis of @chap:heal.
 
+=== FLAIR simulations on ns-3 <sec:flair-ns3>
+
+The simulation of FLAIR, introduced in @chap:heal, required a
+different infrastructure from the PeerSim--Gossipy hybrid used for
+HEAL. FLAIR targets physical wireless networks, and its evaluation
+therefore demands a simulator that faithfully models radio propagation,
+interference, and the MAC-layer behavior of Wi-Fi links. ns-3 was
+selected for this purpose, as it provides mature and well-validated
+Wi-Fi network components that cover the physical and link layers
+required by the FLAIR evaluation scenarios.
+
+The ns-3 distribution already includes the necessary network-level
+building blocks: Wi-Fi channel models, IEEE 802.11 MAC implementations,
+and node mobility support. What it does not provide is any machine
+learning substrate. Integrating a learning layer into ns-3 raised the
+same fundamental challenge encountered throughout the simulator
+evaluation process: bridging a network simulation framework with
+machine learning primitives.
+
+Several integration strategies were considered. The ns-3 Python
+bindings offer a scripting interface to the simulator, which in
+principle allows Python-side machine learning code to be called from
+within a simulation. However, this interface imposes significant
+overhead at the boundary between the C++ simulation core and the
+Python interpreter, and its support for fine-grained per-node,
+per-cycle callbacks is limited. A second approach — connecting ns-3
+to PyTorch through model serialization, analogous to the
+PeerSim--PyTorch bridge attempted earlier — was evaluated but
+discarded for the same reasons: the serialization overhead and the
+complexity of synchronizing two independent runtimes proved
+unmanageable at the scale of the experiments. A third option, a
+dedicated ns-3 machine learning package, was also examined but found
+to be insufficiently mature for the model architectures required by
+FLAIR.
+
+The approach ultimately retained was to reimplement the required
+machine learning models directly in C++, within the ns-3 codebase.
+This decision carries a significant development cost: model
+architectures, training routines, and aggregation operators must
+all be written from scratch without the support of an automatic
+differentiation framework. It yields, however, substantial
+advantages in return. The simulation is entirely self-contained:
+there are no external runtime dependencies, no serialization
+boundaries, and no synchronization overhead. Launch procedures are
+identical to those of any standard ns-3 simulation. Performance is
+optimal, as the learning computations execute natively within the
+same process as the network simulation. The resulting setup allowed
+FLAIR to be evaluated under realistic wireless conditions with full
+control over the experimental parameters, at the cost of a longer
+initial development phase.
+
 == Conclusion <sec:simulators-conclusion>
 
 The simulation infrastructure described in this chapter was not built
