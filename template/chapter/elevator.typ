@@ -1126,7 +1126,7 @@ When multiple non-coordinated Byzantine nodes are introduced randomly in the net
 #grid(
   columns: 1,
 [#figure(
-  image("../../Images/CANDAR/no_attack.pdf", width: 90%),
+  image("../../Images/CANDAR/elevator.ElevatorV15_normalStats_100_nb_hubs_graph_100_cycles.pdf", width: 90%),
   caption: [Running of Elevator without attack.],
 ) <fig:no_attack>
 ],
