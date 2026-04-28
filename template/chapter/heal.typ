@@ -1306,6 +1306,8 @@ is performed on the Watering the Plants dataset @nelakurthi2021plants.
 
 ==== Comparative evaluation in static networks
 
+// compare with gossip, federated, ...
+
 #figure(
   image("../../Images/FLAIR/test1.1.pdf", width: 90%),
   caption: [Accuracy evolution of FLAIR and baselines in static networks (100 nodes).],
@@ -1322,6 +1324,9 @@ scalability of decentralized designs with the efficiency of clustering, providin
 superior performance in static deployments.
 
 ==== Resilience to node dropouts <sec:flair-dropouts>
+
+// permanent crashes, recurring crashes, random crashes (1 epoch)
+// permanent crashes, recurring crashes, random crashes (3 epoch)
 
 #figure(
   image("../../Images/FLAIR/test2.pdf", width: 95%),
@@ -1378,6 +1383,8 @@ scenarios, confirming strong resilience even under extreme dropout conditions.
 
 ==== Impact of mobility on learning performance
 
+// range limited connectivity (perfect connectivity and range limited)
+
 #figure(
   image("../../Images/FLAIR/test3_combined.pdf", width: 90%),
   caption: [Accuracy evolution of FLAIR under five mobility patterns, comparing perfect
@@ -1395,6 +1402,8 @@ effectively adapts to dynamic topologies.
 
 ==== Smart farming with heterogeneous nodes
 
+// watering plantes, Baseline, and FLrounds 1 et 3
+
 #figure(
   image("../../Images/FLAIR/test4.1.1.pdf", width: 90%),
   caption: [Accuracy evolution on the Watering the Plants dataset under the smart
@@ -1408,6 +1417,9 @@ $E_"round" = 3$, convergence is faster in early stages, exceeding 70% within 10 
 whilst $E_"round" = 1$ initially converges more slowly but eventually closes the gap.
 Both configurations converge near the centralized baseline of 71.9%, with final
 accuracies of 71.2% and 71.4% respectively.
+
+// dropout with smart farming
+// permanent crashs, recurring crashes, random crashes
 
 #figure(
   image("../../Images/FLAIR/test4.2.pdf", width: 95%),
