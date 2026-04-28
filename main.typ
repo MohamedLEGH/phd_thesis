@@ -10,6 +10,12 @@
   lang: "en",
 )
 
+// #let appendix(body) = {
+//   set heading(numbering: "A.1", supplement: [Appendix])
+//   counter(heading).update(0)
+//   body
+// }
+
 #show: template.with(
   language: "fr",
   uni-logo: image("Logos/SORBONNE UNIVERSITÉ/SORBONNE_UNIVERSITE.svg", height: 32pt),
@@ -126,13 +132,18 @@
 // #include "template/chapter/heterogeneous_network.typ"
 // #include "template/chapter/variants_heal.typ"
 // #include "template/chapter/simulators.typ"
-#include "template/chapter/simulators.typ"
 #include "template/chapter/conclusions_outlook.typ"
 #include "template/chapter/publications.typ"
-// #include "template/chapter/appendix.typ"
+#include "template/chapter/appendix.typ"
 
 // ------------------- bibliography -------------------
 #bibliography("template/References.bib")
+
+// #show: appendix
+// #include "template/chapter/simulators.typ"
+
+// #outline(target: heading.where(supplement: [Appendix]), title: [Appendix])
+
 
 // ------------------- declaration -------------------
 // #include "template/chapter/declaration.typ"

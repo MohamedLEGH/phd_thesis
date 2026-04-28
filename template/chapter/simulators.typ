@@ -1,4 +1,9 @@
+// #set heading(numbering: none)  // Heading numbering
+// #set heading(numbering: "A1")
 = Simulators <chap:simulators>
+// #counter(heading).update(1)
+
+// #set heading(numbering: "A.1", supplement: [Appendix])  // Defines Appendix numbering
 
 Federated and decentralized learning protocols are inherently difficult to
 evaluate analytically: their behavior depends on the dynamic interplay between
