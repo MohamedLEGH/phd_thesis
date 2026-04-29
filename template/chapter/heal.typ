@@ -1310,11 +1310,11 @@ is performed on the Watering the Plants dataset @nelakurthi2021plants.
 // fl_comparison_100n_100e.pdf
 
 #figure(
-  image("../../Images/FLAIR/test1.1.pdf", width: 90%),
+  image("../../Images/FLAIR/fl_comparison_100n_100e.pdf", width: 90%),
   caption: [Accuracy evolution of FLAIR and baselines in static networks (100 nodes).],
-) <fig:flair-test1>
+) <fig:flair-comparison>
 
-@fig:flair-test1 shows the accuracy evolution over training cycles in a static network
+@fig:flair-comparison shows the accuracy evolution over training cycles in a static network
 of 100 nodes. FLAIR achieves the highest final accuracy ($approx 0.91$), surpassing
 C-FL, HEAL, and Gossip Learning ($approx 0.90$), and clearly outperforming Gaia
 ($approx 0.88$). These results demonstrate that the clustering-based design of FLAIR
@@ -1335,12 +1335,36 @@ superior performance in static deployments.
 // leach_fault_random_3_epochs_per_round.pdf    
 
 #figure(
-  image("../../Images/FLAIR/test2.pdf", width: 95%),
-  caption: [Accuracy evolution of FLAIR under different node dropout conditions.],
-) <fig:flair-test2>
+  image("../../Images/FLAIR/leach_fault_recurring_1_epoch_per_round.pdf", width: 95%),
+  caption: [Accuracy evolution of FLAIR under recurring fault conditions (1 epoch per round).],
+) <fig:flair-leach_fault_recurring_1epoch>
 
-@fig:flair-test2 reports the average accuracy evolution under permanent, temporary, and
-random crashes for both round duration settings ($E_"round" = 1$ and $E_"round" = 3$).
+#figure(
+  image("../../Images/FLAIR/leach_fault_permanent_1_epoch_per_round.pdf", width: 95%),
+  caption: [Accuracy evolution of FLAIR under permanent fault conditions (1 epoch per round).],
+) <fig:flair-leach_fault_permanent_1epoch>
+
+#figure(
+  image("../../Images/FLAIR/leach_fault_random_1_epoch_per_round.pdf", width: 95%),
+  caption: [Accuracy evolution of FLAIR under random fault conditions (1 epoch per round).],
+) <fig:flair-leach_fault_random_1epoch>
+
+#figure(
+  image("../../Images/FLAIR/leach_fault_recurring_3_epochs_per_round.pdf", width: 95%),
+  caption: [Accuracy evolution of FLAIR under recurring fault conditions (3 epochs per round).],
+) <fig:flair-leach_fault_recurring_3epochs>
+
+#figure(
+  image("../../Images/FLAIR/leach_fault_permanent_3_epochs_per_round.pdf", width: 95%),
+  caption: [Accuracy evolution of FLAIR under permanent fault conditions (3 epochs per round).],
+) <fig:flair-leach_fault_permanent_3epochs>
+
+#figure(
+  image("../../Images/FLAIR/leach_fault_random_3_epochs_per_round.pdf", width: 95%),
+  caption: [Accuracy evolution of FLAIR under random fault conditions (3 epochs per round).],
+) <fig:flair-leach_fault_random_3epochs>
+
+@fig:flair-leach_fault_recurring_1epoch, @fig:flair-leach_fault_permanent_1epoch, @fig:flair-leach_fault_random_1epoch, @fig:flair-leach_fault_recurring_3epochs, @fig:flair-leach_fault_permanent_3epochs, and @fig:flair-leach_fault_random_3epochs report the average accuracy evolution under permanent, temporary, and random crashes for both round duration settings ($E_"round" = 1$ and $E_"round" = 3$).
 In the baseline case without dropout, FLAIR stabilized around $0.90$ accuracy.
 
 Under permanent crashes, even when 90% of nodes were removed, the system still converged
@@ -1393,13 +1417,18 @@ scenarios, confirming strong resilience even under extreme dropout conditions.
 
 // mobility_perfect.pdf
 // mobility_range_limited.pdf
-#figure(
-  image("../../Images/FLAIR/test3_combined.pdf", width: 90%),
-  caption: [Accuracy evolution of FLAIR under five mobility patterns, comparing perfect
-  and range-limited connectivity.],
-) <fig:flair-test3>
 
-@fig:flair-test3 shows the accuracy evolution under both connectivity scenarios across
+#figure(
+  image("../../Images/FLAIR/mobility_perfect.pdf", width: 90%),
+  caption: [Accuracy evolution of FLAIR under five mobility patterns with perfect connectivity.],
+) <fig:flair-mobility_perfect>
+
+#figure(
+  image("../../Images/FLAIR/mobility_range_limited.pdf", width: 90%),
+  caption: [Accuracy evolution of FLAIR under five mobility patterns with range-limited connectivity.],
+) <fig:flair-mobility_range_limited>
+
+@fig:flair-mobility_perfect and @fig:flair-mobility_range_limited shows the accuracy evolution under both connectivity scenarios across
 five mobility models. Under perfect connectivity, mobility had no measurable impact on
 convergence speed or final accuracy, which remained comparable to the static network
 baseline. When communication was range-limited, occasional disconnections caused minor
@@ -1414,14 +1443,14 @@ effectively adapts to dynamic topologies.
 // fl_rounds_comparison.pdf
 
 #figure(
-  image("../../Images/FLAIR/test4.1.1.pdf", width: 90%),
+  image("../../Images/FLAIR/fl_rounds_comparison.pdf", width: 90%),
   caption: [Accuracy evolution on the Watering the Plants dataset under the smart
   farming setup (80 fixed sensors + 20 mobile robots). Two local update settings
   ($E_"round" = 1$ vs. $E_"round" = 3$) are compared against the centralized baseline
   (71.9%).],
-) <fig:flair-test4>
+) <fig:fl_rounds_comparison>
 
-@fig:flair-test4 shows the accuracy evolution under two local update settings. With
+@fig:fl_rounds_comparison shows the accuracy evolution under two local update settings. With
 $E_"round" = 3$, convergence is faster in early stages, exceeding 70% within 10 epochs,
 whilst $E_"round" = 1$ initially converges more slowly but eventually closes the gap.
 Both configurations converge near the centralized baseline of 71.9%, with final
@@ -1435,15 +1464,24 @@ accuracies of 71.2% and 71.4% respectively.
 // smart_leach_fault_random.pdf
 
 #figure(
-  image("../../Images/FLAIR/test4.2.pdf", width: 95%),
-  caption: [Accuracy evolution of FLAIR under different node dropout conditions in the
-  smart farming scenario.],
-) <fig:flair-test4-dropout>
+  image("../../Images/FLAIR/smart_leach_fault_permanent.pdf", width: 95%),
+  caption: [Accuracy evolution of FLAIR under permanent fault conditions in the smart farming scenario.],
+) <fig:flair-smart_fault_permanent>
+
+#figure(
+  image("../../Images/FLAIR/smart_leach_fault_recurring.pdf", width: 95%),
+  caption: [Accuracy evolution of FLAIR under recurring fault conditions in the smart farming scenario.],
+) <fig:flair-smart_fault_recurring>
+
+#figure(
+  image("../../Images/FLAIR/smart_leach_fault_random.pdf", width: 95%),
+  caption: [Accuracy evolution of FLAIR under random fault conditions in the smart farming scenario.],
+) <fig:flair-smart_fault_random>
 
 To further validate robustness in realistic deployments, the dropout experiments from
 @sec:flair-dropouts were extended to the smart farming setup. The same failure types —
 permanent, temporary, and random crashes — were injected under the $E_"round" = 3$
-setting, as shown in @fig:flair-test4-dropout. These results confirm that the resilience
+setting, as shown in @fig:flair-smart_fault_permanent, @fig:flair-smart_fault_recurring and @fig:flair-smart_fault_random. These results confirm that the resilience
 properties identified in controlled static networks extend to heterogeneous,
 application-driven scenarios. Even in the presence of mobility and partial connectivity,
 FLAIR demonstrates graceful degradation and rapid recovery, underscoring its
