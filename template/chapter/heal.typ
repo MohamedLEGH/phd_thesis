@@ -1307,6 +1307,7 @@ is performed on the Watering the Plants dataset @nelakurthi2021plants.
 ==== Comparative evaluation in static networks
 
 // compare with gossip, federated, ...
+// fl_comparison_100n_100e.pdf
 
 #figure(
   image("../../Images/FLAIR/test1.1.pdf", width: 90%),
@@ -1327,6 +1328,11 @@ superior performance in static deployments.
 
 // permanent crashes, recurring crashes, random crashes (1 epoch)
 // permanent crashes, recurring crashes, random crashes (3 epoch)
+// leach_fault_recurring_1_epoch_per_round.pdf
+// leach_fault_permanent_1_epoch_per_round.pdf   // leach_fault_random_1_epoch_per_round.pdf
+// leach_fault_recurring_3_epochs_per_round.pdf  
+// leach_fault_permanent_3_epochs_per_round.pdf
+// leach_fault_random_3_epochs_per_round.pdf    
 
 #figure(
   image("../../Images/FLAIR/test2.pdf", width: 95%),
@@ -1385,6 +1391,8 @@ scenarios, confirming strong resilience even under extreme dropout conditions.
 
 // range limited connectivity (perfect connectivity and range limited)
 
+// mobility_perfect.pdf
+// mobility_range_limited.pdf
 #figure(
   image("../../Images/FLAIR/test3_combined.pdf", width: 90%),
   caption: [Accuracy evolution of FLAIR under five mobility patterns, comparing perfect
@@ -1403,6 +1411,7 @@ effectively adapts to dynamic topologies.
 ==== Smart farming with heterogeneous nodes
 
 // watering plantes, Baseline, and FLrounds 1 et 3
+// fl_rounds_comparison.pdf
 
 #figure(
   image("../../Images/FLAIR/test4.1.1.pdf", width: 90%),
@@ -1420,6 +1429,10 @@ accuracies of 71.2% and 71.4% respectively.
 
 // dropout with smart farming
 // permanent crashs, recurring crashes, random crashes
+
+// smart_leach_fault_permanent.pdf
+// smart_leach_fault_recurring.pdf
+// smart_leach_fault_random.pdf
 
 #figure(
   image("../../Images/FLAIR/test4.2.pdf", width: 95%),
