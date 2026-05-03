@@ -11,7 +11,7 @@ international conferences:
 
 #cite(<legheraba2024emergent>, form: "full")
 
-#cite(<legheraba2025lift>, form: "full")
+#cite(<legheraba2025lift>, form: "full"). This publication received the *Outstanding Paper Award* in its category.
 
 Part of the contributions of @chap:heal have been published in the proceedings of the following international and national conferences:
 
