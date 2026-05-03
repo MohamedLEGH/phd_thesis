@@ -98,10 +98,88 @@ This chapter builds upon the system model introduced in the previous chapter, in
 An overlay management algorithm is a fully decentralized protocol (see @def:p2p-protocol) whose goal is to construct, maintain, and adapt the logical topology of a peer-to-peer system. It governs how nodes establish and update their neighbor sets (also called their partial view, see @def:partial-view) in order to ensure connectivity, robustness to churn and failures, and structural properties required by higher-level distributed protocols.
 ]
 
-// Peer-to-peer networks can be broadly divided into two categories: structured and unstructured networks. This organization is dictated by a protocol that constrains how nodes join, connect, and interact within the system.
-From an overlay management perspective, peer-to-peer networks can be broadly classified into structured and unstructured networks. This classification is determined by the protocol governing the construction and maintenance of the overlay, which constrains how nodes join, connect, and interact within the system.
+== Metrics
+In order to evaluate the effectiveness of an overlay management protocol, it is necessary to define quantitative metrics that capture the structural and dynamical properties of the resulting network. In an overlay network, the state of the system at a given instant can be represented as a graph snapshot of the underlying time-varying graph (as seen in @def:tvg). Various metrics can then be computed on this graph in order to characterize the structure of the network, monitor its evolution over time, and compare different protocols. Metrics provide insights into connectivity, resilience, efficiency, and overall behavior of the network. In the context of time-varying graphs, these metrics can be computed either on a single snapshot $G(t)$ or observed as time-dependent quantities $m(t) = m(G(t))$ that evolve as the network topology changes.
+Commonly used metrics include the indegree and outdegree distributions, the clustering coefficient, the average path length, and the network diameter.
+
+==== Degree Distribution
+
+The *indegree* and *outdegree* distributions are fundamental metrics that describe how
+connections are distributed among nodes at a given time. They are derived from the
+notions of degree introduced in @def:degree and @def:inoutdegree. Formally, given a
+directed overlay graph $G = (V, E)$ at time $t$, the outdegree distribution is the
+distribution of $"outdegree"_G (v)$ over all $v in V$, while the indegree distribution
+is the distribution of $"indegree"_G (v)$ over all $v in V$.
+
+Degree distributions serve as a primary tool for characterising the topology produced
+by an overlay management protocol. As the number of nodes may reach several thousands,
+direct graph visualisation becomes impractical; degree distributions provide a compact
+summary of the structural properties of the network. Moreover, deviations from the
+expected distribution — such as an unexpected concentration of indegree on a small
+subset of nodes — may signal undesired behaviour in the overlay protocol, such as load
+imbalance or the unintended emergence of bottlenecks.
+
+In most unstructured peer-to-peer overlays, the outdegree is constrained by design and
+remains approximately constant, as it corresponds to the fixed size of the partial view
+maintained by each node. Consequently, structural heterogeneity primarily appears in the
+indegree distribution. In overlays that approximate random graphs, the indegree
+distribution typically follows a binomial distribution. In contrast, in scale-free or
+power-law overlays, the indegree distribution follows a power-law of the form
+$P(k) tilde k^gamma$, leading to the emergence of highly connected nodes (hubs).
+
+==== Clustering Coefficient
+
+The clustering coefficient (see @def:clusteringcoef) measures the tendency of nodes to
+form tightly connected groups, quantifying how likely it is that the neighbours of a
+node are also connected to each other. In a dynamic peer-to-peer network, the clustering
+coefficient can be computed at each time step on the snapshot $G(t)$, yielding a
+time-dependent metric that reflects the local cohesiveness of the network as it evolves.
+This metric is particularly useful for identifying the emergence of clusters or community
+structures.
+
+In the context of overlay management, monitoring the clustering coefficient provides
+critical insights into the trade-offs between connectivity, routing efficiency, and
+maintenance overhead. A low clustering coefficient typically indicates a topology
+approaching a random graph, which favours uniform load distribution and short average
+path lengths. Conversely, a high clustering coefficient suggests
+denser, more locally interconnected structures that can enhance neighbourhood discovery and fault tolerance through redundant alternative paths, at the
+cost of increased link maintenance overhead and potential routing bottlenecks.
+
+==== Average Path Length
+
+The average path length, formally defined in @def:averagepathlength, measures the mean shortest-path distance between all pairs of distinct nodes in the overlay graph.
+In the context of time-varying overlays, this metric is computed at each time step on the current graph snapshot $G(t)$, yielding a time-dependent quantity $a(G(t))$ that reflects the evolution of the network's structural efficiency. A smaller average path length indicates a more efficient topology, as it implies that messages can traverse the network in fewer hops on average. Consequently, overlays with low average path length enable faster information dissemination, improved responsiveness, and better scalability.
+
+Beyond raw routing efficiency, monitoring the average path length is crucial for assessing the robustness and adaptability of overlay management protocols under churn. A sudden increase in $a(G(t))$ often signals topological degradation, such as emerging bottlenecks, inadequate neighbor-replacement strategies, or early stages of network partitioning. Tracking this metric over time thus allows protocol designers to verify convergence toward theoretical routing guarantees and detect structural anomalies.
+
+==== Diameter
+
+The diameter of a graph, formally defined in @def:diameter, captures the maximum shortest-path distance between any pair of nodes in the overlay network.
+
+Similarly to the average path length, the diameter is computed at each time step on the current snapshot $G(t)$, yielding a time-dependent quantity $"diam"(G(t))$ that reflects the worst-case communication distance in the network.
+
+A small diameter is highly desirable, as it guarantees that even in the worst case, any node can reach another within a bounded number of hops. Overlays exhibiting small diameters provide strict upper bounds on message dissemination delay and improve robustness against network fragmentation. In contrast, a large or rapidly increasing diameter may signal structural inefficiencies, degraded connectivity, or early-stage partitioning.
+
+In the context of overlay management, monitoring the diameter is essential for verifying worst-case routing guarantees and assessing the convergence speed of maintenance mechanisms under churn. While the average path length characterises typical communication latency, the diameter exposes tail-latency risks and worst-case bottlenecks that can critically impact time-sensitive applications, consensus protocols, or structured lookups. Together with the average path length, the diameter provides a complete picture of the overlay's latency distribution and structural resilience.
+
+==== Metrics for Byzantine Resilience
+
+Unlike crash failures, where topological and structural metrics (e.g., diameter, average path length, clustering coefficient, degree distribution) directly quantify network degradation, Byzantine failures do not admit a universal set of graph-theoretic indicators. Byzantine nodes can behave arbitrarily---sending malformed messages, lying about their state, or selectively connecting to honest peers---which means that standard overlay metrics may remain nominally stable while the protocol's correctness is silently compromised. Consequently, assessing Byzantine resilience requires metrics that are explicitly tied to the protocol's threat model, safety guarantees, and convergence properties.
+
+In the context of overlay management, three complementary dimensions are typically monitored:
+
+1. *Protocol Liveness and Convergence:* The most fundamental metric is whether the overlay protocol continues to operate and eventually reaches a stable, desired configuration despite the presence of Byzantine nodes. This can be quantified by tracking the time-to-convergence, the success rate of membership operations (joins, leaves, repairs), or the fraction of protocol cycles that complete without deadlocks or livelocks. A resilient system should maintain bounded convergence times and preserve its target topology invariants under adversarial conditions.
+
+2. *Byzantine Infiltration in Partial Views:* Since Byzantine nodes aim to remain embedded in the network to influence routing, data aggregation, or consensus, monitoring their representation in honest nodes' partial views provides a direct measure of containment. Relevant indicators include the average proportion of Byzantine peers in $P(i)$ across honest nodes $i$, the maximum Byzantine degree observed in the overlay, or the eviction rate of suspicious neighbours by honest participants.
+
+3. *Overhead of Resilience Mechanisms:* When Byzantine-tolerant countermeasures are deployed (e.g., redundant messaging, consistency checks, reputation systems, or secure neighbour selection), their impact on system efficiency must be quantified. Key metrics include the relative increase in convergence time compared to the benign baseline, the additional state or bandwidth consumed per node, and the algorithmic complexity introduced in message routing or view maintenance. An effective resilience strategy minimises this overhead while guaranteeing safety, reflecting the classic trade-off between security and performance in distributed systems.
+
+In the remainder of this chapter, we will analyse the main overlay management protocols described in the literature, comparing them on the basis of the metrics defined above.
 
 == Structured Networks
+
+From an overlay management perspective, peer-to-peer networks can be broadly classified into structured and unstructured networks. This classification is determined by the protocol governing the construction and maintenance of the overlay, which constrains how nodes join, connect, and interact within the system.
+
 In structured networks, each node is assigned a logical identifier, often derived from a hash function, and connections are established according to this identifier space. 
 As a result, the network forms a well-defined topology that enables deterministic and efficient routing, typically with logarithmic complexity in the number of nodes.
 
@@ -136,9 +214,69 @@ Kademlia supports parallel and iterative lookups, which improves robustness and 
 
 Not all structured networks are based on DHTs. For example, Tiara @clouser2012tiara is a structured overlay network that maintains a deterministic topology based on skip lists and skip graphs. Unlike DHTs, Tiara does not rely on consistent hashing to map keys to nodes or objects; instead, nodes are totally ordered according to their identifiers and connected following strict structural rules. A skip list is a layered linked structure where each node maintains forward pointers at multiple levels, allowing searches to be performed in logarithmic time by progressively skipping over nodes. A skip graph generalizes this idea to a distributed setting by organizing nodes into multiple overlapping ordered lists, which improves fault tolerance and connectivity. Tiara combines these concepts with self-stabilization mechanisms, ensuring that the overlay converges deterministically to the desired structured topology even in the presence of transient faults or churn.
 
-While structured networks, and in particular Kademlia, have been widely adopted in peer-to-peer systems for their scalability and efficient lookup guarantees, they exhibit limitations in highly dynamic environments. 
-Under extreme churn, the continuous maintenance of routing tables, neighbor sets, and replicated data can introduce significant overhead and may temporarily compromise routing consistency. 
-These challenges have motivated the exploration of alternative designs based on unstructured peer-to-peer networks. 
+// While structured networks, and in particular Kademlia, have been widely adopted in peer-to-peer systems for their scalability and efficient lookup guarantees, they exhibit limitations in highly dynamic environments. 
+// Under extreme churn, the continuous maintenance of routing tables, neighbor sets, and replicated data can introduce significant overhead and may temporarily compromise routing consistency. 
+// These challenges have motivated the exploration of alternative designs based on unstructured peer-to-peer networks.
+
+We now assess structured overlay protocols against the criteria that matter for
+our objective: efficient and resilient decentralized learning.
+
+*Do structured overlays achieve small diameter and fast information propagation?*
+Yes — this is precisely their design objective. Protocols such as Chord, Kademlia,
+and Pastry guarantee logarithmic diameter in the number of nodes, ensuring that
+any message reaches any destination in $O(log N)$ hops. Information propagation
+is therefore efficient by construction, and theoretical bounds are well established.
+
+*Are they resilient to crash failures?*
+Not robustly. Structured overlays maintain correctness only as long as the
+fraction of failed nodes remains below a protocol-specific threshold. Beyond this
+threshold, the structure itself breaks: routing tables become inconsistent,
+lookups fail, and the overlay may partition. Even below the threshold, recovery
+requires time to detect the failure and repair the affected connections, during
+which the protocol's guarantees do not hold.
+
+*Are they resilient to churn?*
+Only under moderate churn rates. High churn — frequent and unpredictable node
+arrivals and departures — prevents the overlay from ever reaching a stable
+configuration. Maintenance traffic grows rapidly as the protocol attempts to
+continuously repair a structure that is constantly being disrupted, and in
+extreme cases the overhead of maintenance can dominate the available bandwidth.
+
+*Are they resilient to Byzantine failures?*
+This is a fundamental weakness of structured overlays. Because the rules
+governing node placement and connection are public and deterministic, Byzantine
+nodes can exploit this knowledge to position themselves strategically within the
+topology — occupying critical routing positions, corrupting lookup results, or
+systematically isolating honest nodes. The very structure that makes these
+overlays efficient also makes them predictable and therefore exploitable by
+adversaries.
+
+*Is the maintenance overhead acceptable?*
+It is significant. Building the initial structure requires a coordinated
+bootstrapping phase. Every node join or departure triggers a sequence of
+connection updates to preserve the structural invariants, generating overhead
+that grows with the rate of topological change. In large and dynamic networks,
+this overhead can become a limiting factor.
+
+*Are structured overlays flexible and application-agnostic?*
+No — this is perhaps their most fundamental limitation for our purposes.
+Structured overlays are typically co-designed with a specific application,
+such as distributed hash tables or key-value stores. The overlay structure
+reflects the data model of the application, making it difficult to repurpose
+for a different use case without redesigning the protocol. Furthermore, to
+the best of our knowledge, no structured overlay protocol natively supports
+the notion of hub nodes — nodes with elevated connectivity and aggregation
+responsibility — which is the core mechanism we seek to introduce.
+
+*Conclusion.* Structured overlays offer strong guarantees on diameter and
+routing efficiency, but these come at the cost of fragility under failures
+and churn, vulnerability to Byzantine adversaries, significant maintenance
+overhead, and tight coupling to specific application semantics. For the
+objective of this thesis — a resilient, efficient, and application-agnostic
+decentralized learning framework — structured overlays are not the right
+foundation. This motivates the study of unstructured overlay protocols,
+which trade deterministic routing guarantees for greater robustness,
+flexibility, and adaptability to dynamic environments.
 
 == Unstructured Networks & Peer Sampling
 Unlike structured systems, unstructured networks do not impose a predefined topology or DHT-based organization; instead, nodes establish and maintain connections in an ad-hoc fashion or rely on peer-sampling services to dynamically discover peers, favoring resilience and adaptability over deterministic lookup guarantees.
@@ -335,7 +473,86 @@ X-BOT @leitao2009x is an evolution of the HyParView protocol, developed by the s
 
 Readers who wish to explore gossip networks in more depth can refer to this survey @montresor2017gossip, which not only explains the mechanics of peer sampling in gossip systems but also addresses broader topics such as information dissemination, epidemic modeling, and aggregation techniques.
 
-All the previously discussed protocols primarily aim at constructing random k-out graph topologies, in which each node maintains approximately k outgoing links and the distribution of incoming degrees follows a binomial law centered around k. Such topologies are known for their strong resilience to node crashes and churn: even when a large fraction of nodes fail or leave the system, the overlay graph remains connected with high probability. However, this robustness comes at a cost in terms of performance. In particular, information dissemination may be suboptimal, and some nodes can experience relatively high incoming degrees, leading to increased load. In contrast, alternative overlay structures introduce heterogeneity in the distribution of incoming degrees. These include power-law networks, where the degree distribution follows an exponential or heavy-tailed law, and scale-free networks, whose structure scales with the number of nodes in a self-similar manner. Although such topologies are generally less resilient to failures and churn, they often provide better performance for information dissemination, as highly connected nodes act as hubs that can rapidly spread information throughout the network.
+We now apply the same evaluative lens to unstructured overlay protocols,
+assessing them against the criteria that matter for our objective.
+
+A first group of protocols — including lpbcast @eugster2003lightweight and
+Astrolabe @van2003astrolabe — must be set aside immediately: despite operating
+in large-scale networks, they rely on hierarchical structures or centralized
+oracles to coordinate membership and dissemination. This reintroduces exactly
+the kind of control point we seek to eliminate, and they are therefore
+incompatible with our decentralization objective.
+
+The remaining protocols — SCAMP @ganesh2003peer, PROOFS @stavrou2004lightweight,
+Cyclon @voulgaris2005cyclon, Newscast @jelasity2007gossip, HyParView
+@leitao2007hyparview, and their variants — form the core of the gossip-based
+and random-walk-based peer sampling literature. We now assess them on the same
+criteria as structured overlays.
+
+*Do gossip-based overlays achieve small diameter and fast information propagation?*
+The diameter is reasonable — gossip protocols typically produce overlays with
+small-world properties, where the average path length grows logarithmically with
+the number of nodes. However, information propagation is inherently slow: without
+any global aggregation phase, information spreads through successive pairwise
+exchanges, and convergence requires many rounds. More fundamentally, the absence
+of structure makes global aggregation structurally impossible — no node has
+sufficient visibility over the network to orchestrate it, which means that the
+slow dissemination is not merely a performance issue but a fundamental limitation
+of the paradigm.
+
+*Are they resilient to crash failures and churn?*
+Yes — this is the primary strength of gossip-based overlays. Random $k$-out graph
+topologies remain connected with high probability even when a large fraction of
+nodes fail or leave the system. Protocols such as Cyclon and Newscast are
+specifically designed to handle churn gracefully, continuously refreshing partial
+views through periodic shuffles. The absence of structural invariants means there
+is nothing to break when nodes depart unexpectedly.
+
+*Are they resilient to Byzantine failures?*
+No. In a gossip-based overlay, a Byzantine node can freely manipulate the partial
+views of its neighbors by injecting false peer addresses, withholding entries, or
+systematically biasing the sampling distribution. Because there is no mechanism
+to verify the integrity of exchanged peer lists, Byzantine nodes can corrupt the
+overlay topology silently and persistently, without any honest node being able to
+detect the manipulation.
+
+*Is the maintenance overhead acceptable?*
+Yes — this is another advantage of gossip-based protocols. Maintenance consists
+of periodic lightweight shuffle operations between pairs of nodes, with no global
+coordination required. The overhead per node is bounded and does not grow with
+network size, making these protocols highly scalable.
+
+*Are gossip-based overlays flexible and application-agnostic?*
+Yes. Unlike structured overlays, gossip-based peer sampling services expose a
+minimal interface — typically just getPeer() — and impose no constraints on the
+application layer. The same protocol can serve as the substrate for learning,
+aggregation, broadcast, or any other distributed algorithm, without modification.
+
+*Do they support hub election?*
+No. Gossip-based protocols are explicitly designed to produce uniform degree
+distributions, preventing the emergence of highly connected nodes. The absence of
+degree heterogeneity is a deliberate design choice motivated by load balancing and
+resilience, but it makes native hub election impossible within this framework.
+Furthermore, the additional randomness introduced by the absence of structure
+adds significant uncertainty to convergence speed, making it difficult to provide
+meaningful bounds on dissemination time in practice.
+
+*Conclusion on gossip-based overlays.* These protocols offer strong resilience,
+low overhead, and good flexibility, but they fundamentally cannot support global
+aggregation or hub election. The very properties that make them robust —
+uniformity, randomness, absence of structure — are precisely what prevents them
+from achieving the aggregation efficiency we seek.
+
+This naturally leads us to examine a distinct family of unstructured overlays:
+*power-law and scale-free networks*. These topologies deliberately introduce
+degree heterogeneity, allowing some nodes to accumulate significantly more
+connections than others. This heterogeneity is precisely the property that
+underlies the notion of hubs — nodes with elevated connectivity that can
+serve as natural aggregation points. We therefore examine this family in more
+detail, as it represents the closest existing approximation to the hub-based
+overlay structure we aim to construct.
+
+// All the previously discussed protocols primarily aim at constructing random k-out graph topologies, in which each node maintains approximately k outgoing links and the distribution of incoming degrees follows a binomial law centered around k. Such topologies are known for their strong resilience to node crashes and churn: even when a large fraction of nodes fail or leave the system, the overlay graph remains connected with high probability. However, this robustness comes at a cost in terms of performance. In particular, information dissemination may be suboptimal, and some nodes can experience relatively high incoming degrees, leading to increased load. In contrast, alternative overlay structures introduce heterogeneity in the distribution of incoming degrees. These include power-law networks, where the degree distribution follows an exponential or heavy-tailed law, and scale-free networks, whose structure scales with the number of nodes in a self-similar manner. Although such topologies are generally less resilient to failures and churn, they often provide better performance for information dissemination, as highly connected nodes act as hubs that can rapidly spread information throughout the network.
 
 == Peer sampling in Power-law networks
 
@@ -408,13 +625,13 @@ When a node i joins the network, it first obtains a list of peer addresses eithe
   caption: [Phenix algorithm (background thread).],
 ) <Phenix-background-algorithm>
 
-#cite(<wakamiya2005toward>, form:"prose") explores the concept of overlay network symbiosis, focusing on the interactions and connections between multiple coexisting overlay networks. Rather than addressing a single overlay in isolation, the authors investigate mechanisms for inter-overlay connectivity, aiming to improve overall efficiency, resource utilization, and resilience across different networks.
+// #cite(<wakamiya2005toward>, form:"prose") explores the concept of overlay network symbiosis, focusing on the interactions and connections between multiple coexisting overlay networks. Rather than addressing a single overlay in isolation, the authors investigate mechanisms for inter-overlay connectivity, aiming to improve overall efficiency, resource utilization, and resilience across different networks.
 
 LLR @sasabe2006llr is a peer-to-peer network construction scheme designed to achieve low diameter, location awareness, and resilience. Nodes join the network individually, obtaining an initial peer list from a bootstrap server. Each node measures physical proximity to its peers using hop counts on the underlying Internet topology and selects the closest peers to form its neighbor set. A preferential attachment mechanism is then applied among these nearby nodes to strengthen connectivity. The protocol also includes a rewiring procedure, allowing nodes to replace distant connections with closer ones while maintaining the preferential connectivity. LLR is explicitly designed to handle churn and potential Byzantine behaviors, and its evaluation relies on topological data from real-world networks such as Abilene and Sprint. No simulation results are reported, but the design emphasizes physical proximity and robustness in dynamic network conditions.
 
 #cite(<vishnumurthy2006heterogeneous>, form:"prose") addresses the construction of heterogeneous unstructured overlay networks and the efficient selection of random nodes within them. The authors propose practical algorithms that adapt the number of outgoing links a node establishes based on its capacity, allowing high-capacity nodes to maintain more connections and thus achieve heterogeneity in the network. New nodes joining the network require knowledge of at least one existing member, which can be facilitated by a well-known rendezvous node. A key contribution is the SwapLinks mechanism, designed to counteract the self-reinforcing effect where early or high-degree nodes accumulate disproportionately many inlinks. SwapLinks actively redistributes inlinks from high-degree nodes to lower-degree nodes, maintaining balance in the network. Additionally, the approach leverages biased random walks during the graph construction and node selection processes, ensuring that connectivity remains efficient while preserving resilience to churn. Simulations indicate that this methodology produces scalable and robust overlay networks suitable for dynamic environments.
 
-The paper #cite(<xie2008scale>, form:"prose") introduces a simple generative model showing that scale-free networks can emerge without network growth. Starting from an arbitrary initial topology, such as a random graph, the network evolves solely through a rewiring process that preserves the total number of edges. At each time step, an existing edge is removed uniformly at random, and a new edge is created by selecting its two endpoints according to a preferential probability that depends on the current node degrees. This preferential rewiring favors high-degree nodes and leads the system toward a stationary equilibrium characterized by a scale-free degree distribution, independently of the initial topology. The model allows self-loops and multiple edges, which simplifies the analysis and highlights the underlying mechanism driving the emergence of heavy-tailed degree distributions. While conceptually important for understanding the origins of scale-free structures, the approach assumes global knowledge of node degrees to perform preferential selection, which limits its direct applicability in fully decentralized peer-to-peer systems.
+// The paper #cite(<xie2008scale>, form:"prose") introduces a simple generative model showing that scale-free networks can emerge without network growth. Starting from an arbitrary initial topology, such as a random graph, the network evolves solely through a rewiring process that preserves the total number of edges. At each time step, an existing edge is removed uniformly at random, and a new edge is created by selecting its two endpoints according to a preferential probability that depends on the current node degrees. This preferential rewiring favors high-degree nodes and leads the system toward a stationary equilibrium characterized by a scale-free degree distribution, independently of the initial topology. The model allows self-loops and multiple edges, which simplifies the analysis and highlights the underlying mechanism driving the emergence of heavy-tailed degree distributions. While conceptually important for understanding the origins of scale-free structures, the approach assumes global knowledge of node degrees to perform preferential selection, which limits its direct applicability in fully decentralized peer-to-peer systems.
 
 #cite(<brocco2009bounded>, form:"prose") proposes a self-organized overlay construction algorithm that aims at achieving a bounded network diameter without relying on hubs. Inspired by biological systems, the approach uses lightweight agents, referred to as “ants”, which are periodically sent by nodes to explore the network and collect topological information. Based on the feedback brought by these ants, nodes locally adapt their connections in order to reduce the overall diameter while avoiding highly connected central nodes. Although the construction process is distributed in spirit, the algorithm assumes global knowledge of the network topology to guide optimization decisions, and it relies on a master entity to enforce certain disconnection operations. As a result, the system achieves low-diameter overlays with balanced degrees, but at the cost of stronger assumptions that limit its applicability in fully decentralized and purely peer-to-peer environments.
 
@@ -422,9 +639,9 @@ The paper #cite(<xie2008scale>, form:"prose") introduces a simple generative mod
 
 #cite(<eum2009self>, form:"prose") proposed a self-organizing mechanism for constructing scale-free topologies in peer-to-peer networks, with the explicit goal of reconciling desirable structural properties of power-law graphs with the practical constraints of decentralized systems. Nodes are assumed to join the network incrementally, one after another, reflecting a realistic P2P setting. To enable the initial contact with the network, the authors assume the existence of a bootstrapping server whose sole role is to return identifiers of randomly selected peers already present in the overlay. This assumption is kept minimal and does not require the server to maintain or expose any global view of the topology. The proposed model is governed by two parameters that directly shape the resulting degree distribution. The first parameter, m, represents the number of links that a newly joining peer establishes upon arrival. The second parameter, α, controls the balance between random attachment and preferential attachment. More precisely, when a new peer seeks to establish a connection, the endpoint is chosen according to a mixed strategy: with probability α, the attachment is purely random, while with probability (1 − α), the attachment follows a preferential rule favoring already well-connected peers. By tuning α, the algorithm allows a fine-grained control over the resulting power-law exponent, enabling the construction of a wide range of scale-free topologies. A key contribution of this work lies in the fully decentralized realization of this mixed attachment process. Rather than requiring global knowledge of node degrees or network size, all decisions are delegated to existing peers. In practice, the joining peer N first contacts the bootstrapping server to obtain the identifiers of m randomly selected peers in the current overlay. For each such peer $D$, the joining node asks $D$ to suggest an attachment target. Peer $D$ then returns either its own identifier with probability α, or the identifier of one of its neighbors with probability (1 − α). The new peer finally connects to the peer whose identifier is returned. As a result, the preferential attachment effect emerges implicitly through local neighbor selection, without ever exposing degree information or global topology data to the joining node. This design choice has important robustness and security implications. Since the new peer does not observe the structure of the overlay and only follows connection decisions made by existing peers, the algorithm naturally limits the information available to a potentially malicious node. The authors argue that this property improves resilience against targeted attacks, as attackers cannot easily infer or exploit high-degree nodes. Moreover, the simplicity of the local rules makes the construction robust under churn: although node arrivals and departures slightly perturb the topology, the scale-free characteristics are largely preserved over time. Beyond topology construction, the paper evaluates the functional benefits of the resulting overlays. In particular, the authors demonstrate that the constructed scale-free networks improve search efficiency when using common P2P search mechanisms such as flooding and random walks. The presence of highly connected nodes accelerates query dissemination, while the adjustable attachment parameter α mitigates the well-known drawback of classical scale-free networks, namely the excessive load placed on a very small number of hubs.
 
-#cite(<eum2010self>, form:"author") extended their model by introducing an explicit topology transformation mechanism based on link rewiring @eum2010self. While the previous approach focused on the construction of scale-free structures during node arrivals, this follow-up study addresses a complementary problem: how to continuously reshape an existing peer-to-peer topology in a decentralized manner, without relying on node churn or global coordination. The central idea of the paper is to modify the degree distribution through local link relocation processes. Instead of adding or removing peers, the network periodically rewires existing connections according to simple probabilistic rules executed by peers with only neighborhood-level information. Two symmetric rewiring schemes are proposed, each favoring a different direction of degree redistribution. In the first scheme, a peer A is selected at random, one of its neighbors E is identified, and E relinquishes one of its links. This link is then reassigned to a randomly chosen peer G, whose degree is not known a priori. Since E is a neighbor of a randomly selected peer, it is statistically biased toward higher-degree nodes. Consequently, this mechanism effectively removes a link from a high-degree peer and transfers it to a randomly chosen peer, thereby reducing degree heterogeneity. The second rewiring scheme operates in the opposite direction. A randomly chosen peer A first drops one of its existing links, and this link is then reconnected to a high-degree peer B, again identified as a neighbor of a randomly selected peer. In this case, the process reinforces degree heterogeneity by moving a link from a randomly selected node toward a well-connected one. By alternating between these two schemes, the network can be driven toward different degree distributions, ranging from more homogeneous to more skewed structures. To control the balance between these two opposing effects, the authors introduce a probability parameter β. The first scheme, which shifts links away from high-degree peers, is applied with probability β, while the second scheme, which concentrates links on high-degree peers, is applied with probability (1 − β). By tuning β, the system can continuously adjust the shape of the degree distribution, enabling either the attenuation or the reinforcement of scale-free properties. This probabilistic combination provides a flexible and lightweight mechanism for topology adaptation. In addition to β, the rewiring process is constrained by explicit degree bounds. Two parameters, M and n, define the maximum and minimum number of connections a peer is allowed to maintain. During rewiring, a peer may refuse a connection request if its degree has reached M, or reject a disconnection if its degree is already at n. These bounds prevent pathological situations such as the emergence of overly dominant hubs or the isolation of poorly connected peers, and they further enhance stability under dynamic conditions.
+// #cite(<eum2010self>, form:"author") extended their model by introducing an explicit topology transformation mechanism based on link rewiring @eum2010self. While the previous approach focused on the construction of scale-free structures during node arrivals, this follow-up study addresses a complementary problem: how to continuously reshape an existing peer-to-peer topology in a decentralized manner, without relying on node churn or global coordination. The central idea of the paper is to modify the degree distribution through local link relocation processes. Instead of adding or removing peers, the network periodically rewires existing connections according to simple probabilistic rules executed by peers with only neighborhood-level information. Two symmetric rewiring schemes are proposed, each favoring a different direction of degree redistribution. In the first scheme, a peer A is selected at random, one of its neighbors E is identified, and E relinquishes one of its links. This link is then reassigned to a randomly chosen peer G, whose degree is not known a priori. Since E is a neighbor of a randomly selected peer, it is statistically biased toward higher-degree nodes. Consequently, this mechanism effectively removes a link from a high-degree peer and transfers it to a randomly chosen peer, thereby reducing degree heterogeneity. The second rewiring scheme operates in the opposite direction. A randomly chosen peer A first drops one of its existing links, and this link is then reconnected to a high-degree peer B, again identified as a neighbor of a randomly selected peer. In this case, the process reinforces degree heterogeneity by moving a link from a randomly selected node toward a well-connected one. By alternating between these two schemes, the network can be driven toward different degree distributions, ranging from more homogeneous to more skewed structures. To control the balance between these two opposing effects, the authors introduce a probability parameter β. The first scheme, which shifts links away from high-degree peers, is applied with probability β, while the second scheme, which concentrates links on high-degree peers, is applied with probability (1 − β). By tuning β, the system can continuously adjust the shape of the degree distribution, enabling either the attenuation or the reinforcement of scale-free properties. This probabilistic combination provides a flexible and lightweight mechanism for topology adaptation. In addition to β, the rewiring process is constrained by explicit degree bounds. Two parameters, M and n, define the maximum and minimum number of connections a peer is allowed to maintain. During rewiring, a peer may refuse a connection request if its degree has reached M, or reject a disconnection if its degree is already at n. These bounds prevent pathological situations such as the emergence of overly dominant hubs or the isolation of poorly connected peers, and they further enhance stability under dynamic conditions.
 
-In a follow-up work @eum2010self2, Eum, Arakawa, and Murata refine their previous self-organizing and self-transforming overlay models by introducing a probabilistic verification step that governs the acceptance of rewiring operations. Building on the 2010 topology transformation scheme, each candidate rewiring is evaluated according to an energy change that reflects how well the resulting topology matches the targeted power-law structure, and the new configuration is accepted with a probability p. This stochastic acceptance mechanism allows the overlay to progressively converge toward a power-law degree distribution while avoiding overly rigid transformations. The model assumes the existence of a mechanism to select random peers, abstracting away its concrete implementation. Unlike earlier studies that rely on churn, the network is considered static, and resilience is instead assessed by progressively removing nodes and measuring the collapse of the giant component. The resulting power-law topology exhibits a small diameter, improved search efficiency, and robustness against random failures, while remaining vulnerable to targeted attacks, and benefits from clustering properties that help preserve efficiency under node removals.
+// In a follow-up work @eum2010self2, Eum, Arakawa, and Murata refine their previous self-organizing and self-transforming overlay models by introducing a probabilistic verification step that governs the acceptance of rewiring operations. Building on the 2010 topology transformation scheme, each candidate rewiring is evaluated according to an energy change that reflects how well the resulting topology matches the targeted power-law structure, and the new configuration is accepted with a probability p. This stochastic acceptance mechanism allows the overlay to progressively converge toward a power-law degree distribution while avoiding overly rigid transformations. The model assumes the existence of a mechanism to select random peers, abstracting away its concrete implementation. Unlike earlier studies that rely on churn, the network is considered static, and resilience is instead assessed by progressively removing nodes and measuring the collapse of the giant component. The resulting power-law topology exhibits a small diameter, improved search efficiency, and robustness against random failures, while remaining vulnerable to targeted attacks, and benefits from clustering properties that help preserve efficiency under node removals.
 
 // T-MAN
 
@@ -436,23 +653,23 @@ UMM @ripeanu2010search is a self-organizing group communication overlay that com
 
 #cite(<bulut2013constructing>, form:"prose") addresses the problem of constructing *limited* scale-free overlays that closely follow a target power-law degree distribution while remaining practical and cost-efficient for peer-to-peer systems. The main contribution is the introduction of two parameterized growth algorithms, SRA and SDA, which allow the designer to explicitly control the desired scale-free exponent, thereby achieving a high adherence to scale-freeness without creating extreme hubs. Both approaches rely on incremental node addition and focus exclusively on link creation at join time, avoiding costly global rewiring operations. The Semi-Randomized Growth Algorithm (SRA) operates without global knowledge and uses randomized degree targets derived from the desired power-law distribution. A joining node samples target degree values, broadcasts a request, and connects to responding peers whose current degrees match these targets, relaxing the constraints toward nearby degree values when necessary. In contrast, the Semi-Deterministic Growth Algorithm (SDA) assumes knowledge of the total network size and deterministically computes the degree that each node should maintain to preserve the target distribution. Nodes advertising matching degrees respond to new peers, which then establish connections accordingly. While both algorithms can guarantee scale-free properties only for a bounded range of exponents and do not handle churn, they demonstrate that accurate and tunable power-law overlays can be constructed efficiently using join-time decisions alone.
 
-#cite(<armetta2014self>, form:"prose") proposes a self-organized peer-to-peer system aimed at improving data sharing efficiency by jointly adapting search mechanisms and the underlying overlay topology. Starting from an initially random and connected network, the approach leverages ant-inspired routing strategies to guide search operations, particularly targeting the efficient discovery of rare data items. Artificial ants explore the network and leave implicit feedback that helps bias future searches toward more promising regions of the overlay. Beyond routing alone, the system progressively reshapes the topology itself. By exploiting information gathered during the ant-based search process, the overlay evolves toward a power-law degree distribution, which is known to reduce path lengths and improve reachability. The combination of adaptive routing and emergent scale-free structure leads to significant improvements in search performance compared to purely random overlays. The authors validate their approach through simulations conducted on a custom-built simulator, demonstrating scalability to networks comprising several thousand peers and highlighting the benefits of coupling biologically inspired search with self-organizing topological adaptation.
+// #cite(<armetta2014self>, form:"prose") proposes a self-organized peer-to-peer system aimed at improving data sharing efficiency by jointly adapting search mechanisms and the underlying overlay topology. Starting from an initially random and connected network, the approach leverages ant-inspired routing strategies to guide search operations, particularly targeting the efficient discovery of rare data items. Artificial ants explore the network and leave implicit feedback that helps bias future searches toward more promising regions of the overlay. Beyond routing alone, the system progressively reshapes the topology itself. By exploiting information gathered during the ant-based search process, the overlay evolves toward a power-law degree distribution, which is known to reduce path lengths and improve reachability. The combination of adaptive routing and emergent scale-free structure leads to significant improvements in search performance compared to purely random overlays. The authors validate their approach through simulations conducted on a custom-built simulator, demonstrating scalability to networks comprising several thousand peers and highlighting the benefits of coupling biologically inspired search with self-organizing topological adaptation.
 
-In the paper by #cite(<colman2014local>, form:"prose"), the authors investigate the evolution of complex networks through a combination of growth, global rewiring, and local rewiring mechanisms. The model is not decentralized, as rewiring operations rely on the ability to select nodes and edges uniformly at random across the entire network. At each time step, the network evolves according to one of three possible processes: local rewiring, global rewiring, or growth. In the local rewiring case, a randomly chosen node detaches one of its outgoing edges and reconnects it to a node located within its extended local neighborhood, namely a descendant of a descendant. In contrast, global rewiring reconnects the detached edge to a randomly selected node in the whole network. Finally, during growth, a new node is added and creates a fixed number of outgoing links to randomly chosen existing nodes. A key aspect of the model is the balance between preferential attachment and preferential detachment. While highly connected nodes are more likely to attract new links, they are also more likely to lose existing ones through rewiring. This dual mechanism prevents the emergence of a pure scale-free structure and instead leads to an exponential degree distribution, with only a small number of nodes exhibiting extremely high degrees as outliers. The study focuses on the structural properties that emerge at equilibrium and does not consider churn, as nodes are not removed once added to the network.
+// In the paper by #cite(<colman2014local>, form:"prose"), the authors investigate the evolution of complex networks through a combination of growth, global rewiring, and local rewiring mechanisms. The model is not decentralized, as rewiring operations rely on the ability to select nodes and edges uniformly at random across the entire network. At each time step, the network evolves according to one of three possible processes: local rewiring, global rewiring, or growth. In the local rewiring case, a randomly chosen node detaches one of its outgoing edges and reconnects it to a node located within its extended local neighborhood, namely a descendant of a descendant. In contrast, global rewiring reconnects the detached edge to a randomly selected node in the whole network. Finally, during growth, a new node is added and creates a fixed number of outgoing links to randomly chosen existing nodes. A key aspect of the model is the balance between preferential attachment and preferential detachment. While highly connected nodes are more likely to attract new links, they are also more likely to lose existing ones through rewiring. This dual mechanism prevents the emergence of a pure scale-free structure and instead leads to an exponential degree distribution, with only a small number of nodes exhibiting extremely high degrees as outliers. The study focuses on the structural properties that emerge at equilibrium and does not consider churn, as nodes are not removed once added to the network.
 
 #cite(<marza2015new>, form:"prose") proposes a hybrid overlay topology for peer-to-peer video streaming that explicitly combines insights from complex network theory with awareness of the underlying physical topology. Rather than relying solely on abstract graph properties, the approach introduces a position-based construction mechanism aimed at aligning the logical P2P overlay with physical proximity, thereby reducing communication costs and improving streaming efficiency. The authors argue that, since many real-world networks simultaneously exhibit scale-free and small-world properties, an overlay that integrates both characteristics is better suited to practical deployment than models that enforce only one of these properties. The topology construction starts from a minimal motif, a fully connected triangle, which represents an initial set of servers at a CDN-like level and is deliberately chosen such that the three nodes are physically far apart. New peers are then added incrementally and connect to their three closest neighbors, creating a recursive spatial partitioning of the network. Each new insertion subdivides the existing regions into smaller zones, leading to a hierarchical structure that reflects both physical location and logical connectivity. As the network grows, this iterative process yields an overlay that naturally combines clustering, short path lengths, and heterogeneous degree distribution. Experimental results indicate that this hybrid scale-free and small-world topology provides higher robustness to random failures and malicious attacks, outperforming classical small-world and scale-free overlays in terms of resilience while remaining well adapted to the requirements of video streaming applications.
 
-#cite(<takeuchi2016deterministic>, form:"prose") introduces a deterministic method for constructing artificial scale-free networks while explicitly enforcing a predefined upper bound on node degree. The network grows incrementally, with nodes joining one by one, and builds upon the Semi-Deterministic Algorithm (SDA) previously proposed in #cite(<bulut2013constructing>, form:"prose"). The key idea is to move beyond purely incremental attachment by incorporating an explicit target for the global degree distribution. To this end, the algorithm first computes an ideal degree distribution based on the desired power-law exponent γ, the maximum degree k, and the minimum degree m, and derives from it the corresponding ideal number of edges in the network. As in SDA, each newly added node initially connects to k existing nodes in a deterministic manner; however, this step is systematically complemented by a post-processing phase that adjusts the total number of edges so that the evolving topology better matches the ideal distribution. By explicitly correcting the edge count after node insertion, the approach significantly reduces both the average and the worst-case deviation from the target degree distribution. As a result, the method achieves tighter control over scale-freeness under degree constraints, at the cost of increased determinism and coordination compared to purely local or stochastic construction schemes.
+// #cite(<takeuchi2016deterministic>, form:"prose") introduces a deterministic method for constructing artificial scale-free networks while explicitly enforcing a predefined upper bound on node degree. The network grows incrementally, with nodes joining one by one, and builds upon the Semi-Deterministic Algorithm (SDA) previously proposed in #cite(<bulut2013constructing>, form:"prose"). The key idea is to move beyond purely incremental attachment by incorporating an explicit target for the global degree distribution. To this end, the algorithm first computes an ideal degree distribution based on the desired power-law exponent γ, the maximum degree k, and the minimum degree m, and derives from it the corresponding ideal number of edges in the network. As in SDA, each newly added node initially connects to k existing nodes in a deterministic manner; however, this step is systematically complemented by a post-processing phase that adjusts the total number of edges so that the evolving topology better matches the ideal distribution. By explicitly correcting the edge count after node insertion, the approach significantly reduces both the average and the worst-case deviation from the target degree distribution. As a result, the method achieves tighter control over scale-freeness under degree constraints, at the cost of increased determinism and coordination compared to purely local or stochastic construction schemes.
 
-#cite(<lopez2017distributed>, form:"prose") presents a distributed rewiring model aimed at improving the structural efficiency of complex networks through local link adjustments. Each node starts with a set of links divided into fixed and dynamic subsets. During network operation, nodes use their incident edges to route packets and gather local performance statistics. Based on these statistics, nodes identify underperforming outgoing links—those that carried fewer packets—and rewire them toward distant nodes that are more likely to shorten future paths. Initially, nodes are deployed on a 2D grid with a Von Neumann neighborhood, where fixed links ensure minimal connectivity and dynamic links remain untied. Each cycle consists of a packet exchange phase, where tracers with random destinations are forwarded sequentially, and a rewiring phase, in which nodes rank neighbors by utility and attempt to replace their least useful links with better-performing nodes. To support this approach, the authors developed a custom Python-based simulator integrating NetworkX for graph analysis, enabling distributed execution and structural monitoring. A coordinator node, randomly selected, synchronizes phase transitions, ensuring orderly progression across the network. Overall, the model leverages purely local information to iteratively optimize network topology, reducing path lengths while maintaining decentralized control.
+// #cite(<lopez2017distributed>, form:"prose") presents a distributed rewiring model aimed at improving the structural efficiency of complex networks through local link adjustments. Each node starts with a set of links divided into fixed and dynamic subsets. During network operation, nodes use their incident edges to route packets and gather local performance statistics. Based on these statistics, nodes identify underperforming outgoing links—those that carried fewer packets—and rewire them toward distant nodes that are more likely to shorten future paths. Initially, nodes are deployed on a 2D grid with a Von Neumann neighborhood, where fixed links ensure minimal connectivity and dynamic links remain untied. Each cycle consists of a packet exchange phase, where tracers with random destinations are forwarded sequentially, and a rewiring phase, in which nodes rank neighbors by utility and attempt to replace their least useful links with better-performing nodes. To support this approach, the authors developed a custom Python-based simulator integrating NetworkX for graph analysis, enabling distributed execution and structural monitoring. A coordinator node, randomly selected, synchronizes phase transitions, ensuring orderly progression across the network. Overall, the model leverages purely local information to iteratively optimize network topology, reducing path lengths while maintaining decentralized control.
 
 #cite(<park2018distributed>, form:"prose") introduces a distributed algorithm for constructing scale-free networks through preferential rewiring, without requiring network growth. In this model, all nodes start with an inherent attractiveness reflecting their computational power or availability, and initially maintain only a single link. At each time step, nodes randomly sample a limited set of peers and attempt to establish a bidirectional connection with the most attractive candidate. If the candidate node accepts—by comparing the requesting node’s attractiveness with that of its existing neighbor—both nodes rewire their links, replacing connections to less attractive nodes. This iterative process drives the emergence of a power-law degree distribution with a scaling exponent of 2.5, as confirmed analytically and via Monte Carlo simulations. Notably, the resulting networks exhibit ultra-small diameters, scaling as $O(ln ln N)$ for $2 < gamma < 3$. The algorithm operates without churn, relying solely on local decisions and random sampling, yet efficiently produces highly heterogeneous, scale-free topologies that reflect intrinsic node attributes.
 
 #cite(<diggans2021emergent>, form:"prose") investigate how constraints on node connectivity influence the emergence of hierarchical structures in networks. Building on the classical Barabási–Albert preferential attachment model @barabasi1999emergence, they introduce conductance-based limits on the number of connections a node can maintain. By systematically restricting link capacity, the study demonstrates that bottlenecks in connectivity naturally induce hierarchical organization, where high-degree nodes occupy central positions while lower-degree nodes are relegated to peripheral roles. This work highlights the interplay between local degree constraints and global network topology, showing that hierarchy can emerge as an intrinsic property of scale-free systems when structural limitations are enforced.
 
-#cite(<fasino2021generating>, form:"prose") present a method for generating large scale-free networks using the Chung–Lu random graph model, which requires specifying the expected degree sequence for all nodes. The model constructs networks where each node achieves its target degree exactly, and under suitable conditions, the resulting networks exhibit a power-law degree distribution with a giant connected component. Unlike many other random graph models, the Chung–Lu approach avoids introducing correlations between the degrees of connected nodes. However, the method is not decentralized, does not handle churn, and its admissibility conditions impose restrictions on both the degree sequence and the network size.
+// #cite(<fasino2021generating>, form:"prose") present a method for generating large scale-free networks using the Chung–Lu random graph model, which requires specifying the expected degree sequence for all nodes. The model constructs networks where each node achieves its target degree exactly, and under suitable conditions, the resulting networks exhibit a power-law degree distribution with a giant connected component. Unlike many other random graph models, the Chung–Lu approach avoids introducing correlations between the degrees of connected nodes. However, the method is not decentralized, does not handle churn, and its admissibility conditions impose restrictions on both the degree sequence and the network size.
 
-#cite(<meng2023scale>, form:"prose") revisit the concept of scale-free networks by highlighting the distinction between the degree distribution (DD) and the degree–degree distance distribution (DDDD). They show that networks exhibiting a power-law DD form only a subset of those with power-law DDDD, and that some networks may have non-power-law DD but still display power-law DDDD. The authors propose two models: a no-growth preferential attachment model, in which nodes are fixed and links are added internally based on degree-dependent probabilities, and a fitness-based model, where links form deterministically if the sum of node fitnesses exceeds a threshold. These approaches emphasize that network structure can emerge from internal rewiring or node fitness rather than growth, and suggest that DDDD provides a more comprehensive measure of scale-free properties than traditional degree distributions. The models are non-decentralized and do not consider churn.
+// #cite(<meng2023scale>, form:"prose") revisit the concept of scale-free networks by highlighting the distinction between the degree distribution (DD) and the degree–degree distance distribution (DDDD). They show that networks exhibiting a power-law DD form only a subset of those with power-law DDDD, and that some networks may have non-power-law DD but still display power-law DDDD. The authors propose two models: a no-growth preferential attachment model, in which nodes are fixed and links are added internally based on degree-dependent probabilities, and a fitness-based model, where links form deterministically if the sum of node fitnesses exceeds a threshold. These approaches emphasize that network structure can emerge from internal rewiring or node fitness rather than growth, and suggest that DDDD provides a more comprehensive measure of scale-free properties than traditional degree distributions. The models are non-decentralized and do not consider churn.
 
 == Byzantine-Resilient protocols
 
@@ -461,83 +678,6 @@ Byzantine attacks @byzantine refer to arbitrary and potentially malicious behavi
 Among Byzantine fault-tolerant protocols, Phenix @wouhaybi2004phenix enables the creation of power-law networks while remaining resilient to Byzantine nodes attempting targeted attacks, such as becoming hubs or disconnecting nodes from the network. When a node detects that it risks disconnection, it switches to a maintenance mode and creates additional connections with preferred (highly connected) nodes to preserve connectivity. The Brahms protocol @bortnikov2008brahms relies on a gossip-based peer sampling algorithm resistant to flooding attacks, in which Byzantine nodes attempt to propagate their identifiers widely to bias local views. Brahms achieves unbiased ID sampling from potentially biased histories using min-wise independent permutations.
 
 Similarly, @anceaume2021byzantine proposes a mechanism capable of producing uniform ID samples while adapting to dynamic environments. Basalt @basalt builds upon Brahms and introduces a ranking function to determine cache updates. Secure Peer Sampling @jesi2010secure extends the Newscast gossip protocol @jelasity2007gossip by incorporating cryptographic keys, a certificate authority, and a hub-detection mechanism to mitigate malicious behavior. SecureCyclon @antonov2023securecyclon, derived from Cyclon @voulgaris2005cyclon, introduces additional security features enabling nodes to detect and blacklist malicious participants that violate the peer sampling protocol. Finally, AUPE @mukam2024aupe leverages trusted hardware components (e.g., Intel SGX) to monitor and control the dissemination of identifiers within the system.
-
-
-== Metrics
-In order to evaluate the effectiveness of an overlay management protocol, it is necessary to define quantitative metrics that capture the structural and dynamical properties of the resulting network. In an overlay network, the state of the system at a given instant can be represented as a graph snapshot of the underlying time-varying graph (as seen in @def:tvg). Various metrics can then be computed on this graph in order to characterize the structure of the network, monitor its evolution over time, and compare different protocols. Metrics provide insights into connectivity, resilience, efficiency, and overall behavior of the network. In the context of time-varying graphs, these metrics can be computed either on a single snapshot $G(t)$ or observed as time-dependent quantities $m(t) = m(G(t))$ that evolve as the network topology changes.
-Commonly used metrics include the indegree and outdegree distributions, the clustering coefficient, the average path length, and the network diameter.
-
-==== Degree Distribution
-
-The *indegree* and *outdegree* distributions are fundamental metrics that describe how
-connections are distributed among nodes at a given time. They are derived from the
-notions of degree introduced in @def:degree and @def:inoutdegree. Formally, given a
-directed overlay graph $G = (V, E)$ at time $t$, the outdegree distribution is the
-distribution of $"outdegree"_G (v)$ over all $v in V$, while the indegree distribution
-is the distribution of $"indegree"_G (v)$ over all $v in V$.
-
-Degree distributions serve as a primary tool for characterising the topology produced
-by an overlay management protocol. As the number of nodes may reach several thousands,
-direct graph visualisation becomes impractical; degree distributions provide a compact
-summary of the structural properties of the network. Moreover, deviations from the
-expected distribution — such as an unexpected concentration of indegree on a small
-subset of nodes — may signal undesired behaviour in the overlay protocol, such as load
-imbalance or the unintended emergence of bottlenecks.
-
-In most unstructured peer-to-peer overlays, the outdegree is constrained by design and
-remains approximately constant, as it corresponds to the fixed size of the partial view
-maintained by each node. Consequently, structural heterogeneity primarily appears in the
-indegree distribution. In overlays that approximate random graphs, the indegree
-distribution typically follows a binomial distribution. In contrast, in scale-free or
-power-law overlays, the indegree distribution follows a power-law of the form
-$P(k) tilde k^gamma$, leading to the emergence of highly connected nodes (hubs).
-
-==== Clustering Coefficient
-
-The clustering coefficient (see @def:clusteringcoef) measures the tendency of nodes to
-form tightly connected groups, quantifying how likely it is that the neighbours of a
-node are also connected to each other. In a dynamic peer-to-peer network, the clustering
-coefficient can be computed at each time step on the snapshot $G(t)$, yielding a
-time-dependent metric that reflects the local cohesiveness of the network as it evolves.
-This metric is particularly useful for identifying the emergence of clusters or community
-structures.
-
-In the context of overlay management, monitoring the clustering coefficient provides
-critical insights into the trade-offs between connectivity, routing efficiency, and
-maintenance overhead. A low clustering coefficient typically indicates a topology
-approaching a random graph, which favours uniform load distribution and short average
-path lengths. Conversely, a high clustering coefficient suggests
-denser, more locally interconnected structures that can enhance neighbourhood discovery and fault tolerance through redundant alternative paths, at the
-cost of increased link maintenance overhead and potential routing bottlenecks.
-
-==== Average Path Length
-
-The average path length, formally defined in @def:averagepathlength, measures the mean shortest-path distance between all pairs of distinct nodes in the overlay graph.
-In the context of time-varying overlays, this metric is computed at each time step on the current graph snapshot $G(t)$, yielding a time-dependent quantity $a(G(t))$ that reflects the evolution of the network's structural efficiency. A smaller average path length indicates a more efficient topology, as it implies that messages can traverse the network in fewer hops on average. Consequently, overlays with low average path length enable faster information dissemination, improved responsiveness, and better scalability.
-
-Beyond raw routing efficiency, monitoring the average path length is crucial for assessing the robustness and adaptability of overlay management protocols under churn. A sudden increase in $a(G(t))$ often signals topological degradation, such as emerging bottlenecks, inadequate neighbor-replacement strategies, or early stages of network partitioning. Tracking this metric over time thus allows protocol designers to verify convergence toward theoretical routing guarantees and detect structural anomalies.
-
-==== Diameter
-
-The diameter of a graph, formally defined in @def:diameter, captures the maximum shortest-path distance between any pair of nodes in the overlay network.
-
-Similarly to the average path length, the diameter is computed at each time step on the current snapshot $G(t)$, yielding a time-dependent quantity $"diam"(G(t))$ that reflects the worst-case communication distance in the network.
-
-A small diameter is highly desirable, as it guarantees that even in the worst case, any node can reach another within a bounded number of hops. Overlays exhibiting small diameters provide strict upper bounds on message dissemination delay and improve robustness against network fragmentation. In contrast, a large or rapidly increasing diameter may signal structural inefficiencies, degraded connectivity, or early-stage partitioning.
-
-In the context of overlay management, monitoring the diameter is essential for verifying worst-case routing guarantees and assessing the convergence speed of maintenance mechanisms under churn. While the average path length characterises typical communication latency, the diameter exposes tail-latency risks and worst-case bottlenecks that can critically impact time-sensitive applications, consensus protocols, or structured lookups. Together with the average path length, the diameter provides a complete picture of the overlay's latency distribution and structural resilience.
-
-==== Metrics for Byzantine Resilience
-
-Unlike crash failures, where topological and structural metrics (e.g., diameter, average path length, clustering coefficient, degree distribution) directly quantify network degradation, Byzantine failures do not admit a universal set of graph-theoretic indicators. Byzantine nodes can behave arbitrarily---sending malformed messages, lying about their state, or selectively connecting to honest peers---which means that standard overlay metrics may remain nominally stable while the protocol's correctness is silently compromised. Consequently, assessing Byzantine resilience requires metrics that are explicitly tied to the protocol's threat model, safety guarantees, and convergence properties.
-
-In the context of overlay management, three complementary dimensions are typically monitored:
-
-1. *Protocol Liveness and Convergence:* The most fundamental metric is whether the overlay protocol continues to operate and eventually reaches a stable, desired configuration despite the presence of Byzantine nodes. This can be quantified by tracking the time-to-convergence, the success rate of membership operations (joins, leaves, repairs), or the fraction of protocol cycles that complete without deadlocks or livelocks. A resilient system should maintain bounded convergence times and preserve its target topology invariants under adversarial conditions.
-
-2. *Byzantine Infiltration in Partial Views:* Since Byzantine nodes aim to remain embedded in the network to influence routing, data aggregation, or consensus, monitoring their representation in honest nodes' partial views provides a direct measure of containment. Relevant indicators include the average proportion of Byzantine peers in $P(i)$ across honest nodes $i$, the maximum Byzantine degree observed in the overlay, or the eviction rate of suspicious neighbours by honest participants.
-
-3. *Overhead of Resilience Mechanisms:* When Byzantine-tolerant countermeasures are deployed (e.g., redundant messaging, consistency checks, reputation systems, or secure neighbour selection), their impact on system efficiency must be quantified. Key metrics include the relative increase in convergence time compared to the benign baseline, the additional state or bandwidth consumed per node, and the algorithmic complexity introduced in message routing or view maintenance. An effective resilience strategy minimises this overhead while guaranteeing safety, reflecting the classic trade-off between security and performance in distributed systems.
 
 == Conclusion
 
