@@ -252,7 +252,8 @@ diagram({
   caption: [A hierarchical (or tree) topology, with 2 levels, the root server and the intermediate servers.],
 ) <tree-topology>
 
-==== Random network
+==== Random network <sec:random-graph>
+
 In contrast to the deterministic topologies presented above, real-world networks are often not explicitly organized but instead emerge in a largely random manner. Social networks, for instance, are formed through independent and uncoordinated interactions between individuals, leading to structures that are difficult to predict or control globally. To model such systems, random network models have been widely studied, among which the Erdős–Rényi random graph @erdHos1959evolution is the most classical and intuitive. In this model, edges are created at random, either by fixing the probability of connection between any pair of nodes or by fixing the expected number of connections per node. Despite the apparent lack of structure, random graphs exhibit several desirable properties. When the average degree k is greater than a small constant (typically slightly above 2), the probability that the graph is connected rapidly approaches one as the network size grows. Moreover, the diameter of the graph remains relatively small, scaling logarithmically with the number of nodes, which ensures efficient information propagation. In the directed case, k usually denotes the out-degree of each node, while the in-degree follows a binomial distribution centered around k. These properties make random graphs attractive as baseline models for large-scale decentralized systems, even though they do not capture heterogeneity or hub formation observed in many real networks.
 
 #figure(
@@ -358,7 +359,7 @@ edge(label("4"), "->", stroke: 1pt)
   caption: [A directed small world network, with 2 clusters (left and right).],
 ) <watts-strogatz-example>
 
-==== Power-law and scale-free networks
+==== Power-law and scale-free networks <sec:power-law>
 
 The Erdős–Rényi and Watts–Strogatz models are useful approximations,
 but many real-world networks are more complex than simple random
