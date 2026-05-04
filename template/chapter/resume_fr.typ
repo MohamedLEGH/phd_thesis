@@ -142,21 +142,12 @@ reconfiguration et de volume de messages échangés.
 Le cinquième chapitre introduit les fondements théoriques de
 l'apprentissage automatique et de l'apprentissage fédéré
 décentralisé, et constitue le pont entre la partie réseau et la
-partie applicative de la thèse. L'apprentissage supervisé est
-présenté à travers ses abstractions fondamentales : fonction de
-perte, descente de gradient stochastique, et convergence. Les
-principaux modèles utilisés dans les expérimentations — régression
-logistique, réseau de neurones multicouches — sont introduits et
-leurs propriétés de convergence discutées.
-
-L'apprentissage fédéré est ensuite présenté dans sa formulation
+partie applicative de la thèse.
+L'apprentissage fédéré est présenté dans sa formulation
 canonique centralisée, telle qu'elle a été introduite par FedAvg.
 Cette approche, bien qu'efficace, repose sur un serveur central qui
 agrège les mises à jour des clients à chaque ronde, ce qui en limite
-la passage à l'échelle et la résistance aux pannes. Le chapitre
-discute en détail les limites de l'apprentissage fédéré centralisé
-en présence de données hétérogènes, de pannes du serveur, ou
-d'attaques ciblant l'agrégateur central.
+la passage à l'échelle et la résistance aux pannes.
 
 L'apprentissage fédéré décentralisé est ensuite introduit comme
 alternative naturelle. Dans ce paradigme, il n'existe plus de
@@ -221,7 +212,7 @@ du réseau, tout en limitant le volume de communications nécessaires
 modélise fidèlement les conditions de propagation et d'interférence
 d'un réseau sans fil réel.
 
-Un chapitre documente l'ensemble de l'infrastructure de
+Un chapitre en annexe documente l'ensemble de l'infrastructure de
 simulation développée au cours de la thèse. Cette infrastructure,
 largement invisible dans les chapitres principaux, a nécessité un
 investissement considérable et constitue une contribution

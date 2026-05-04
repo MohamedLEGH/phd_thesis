@@ -19,9 +19,7 @@ forming a dense interconnected core to which all other nodes are
 directly attached. Elevator is complemented by Lift, a
 Byzantine-resilient extension that prevents adversarial nodes from
 manipulating the election outcome through a shared pseudo-random
-number generator seeded by the current hub identifiers. Both
-protocols are analyzed theoretically and evaluated through
-large-scale simulations and on a real TCP/IP network.
+number generator seeded by the current hub identifiers. Elevator is analyzed theoretically and evaluated through large-scale simulations and on a real TCP/IP network, while Lift is evaluated through simulation.
 
 The second contribution is HEAL (Hub Enhanced Adaptive Learning), a
 decentralized federated learning framework built on Elevator. HEAL
@@ -35,4 +33,4 @@ under fault-free operation, static node failures, and churn.
 A complementary protocol, FLAIR, adapts hub-based aggregation to
 physical wireless networks by electing cluster heads based on node
 capabilities following the LEACH framework, and is evaluated on
-the ns-3 simulator under realistic Wi-Fi conditions.
+the ns-3 simulator.
