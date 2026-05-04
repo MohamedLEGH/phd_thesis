@@ -334,14 +334,6 @@ that no two neighbours of any node are connected, and $C(G) = 1$ indicates that 
 neighbourhood forms a complete subgraph.
 ] <def:clusteringcoef>
 
-Having established the formal vocabulary of graph theory --- vertices,
-edges, paths, distances, degree and clustering coefficient --- we now turn to the study of
-specific network models. The following section surveys the principal
-graph structures and generative models encountered in the peer-to-peer
-and distributed systems literature, ranging from deterministic
-topologies defined by explicit construction rules to random models
-whose structure emerges from probabilistic processes.
-
 === Overlay Network Modeling
 
 With the basic concepts of graph theory in place, we can now formalize the representation of an overlay network.  
@@ -699,6 +691,4 @@ This framework was further extended to dynamic settings, where the overlay topol
 Within this abstraction, global system behavior emerges from repeated local interactions, allowing us to reason about properties such as self-organization, convergence, resilience, and fault tolerance in a principled manner.  
 Modeling failures explicitly, and in particular crash failures, further grounds the framework in realistic peer-to-peer settings while preserving analytical tractability.
 
-Having established this unified and abstract modeling framework—where a peer-to-peer system is viewed as a temporal graph whose nodes are state machines—we are now in a position to present our contribution.  
-In the following chapter, we introduce a novel peer-to-peer protocol for unstructured networks.  
-This protocol leverages the local execution model described above to induce desirable global properties, and exhibits innovative features in terms of organization, robustness, and emergent behavior.
+Having established this unified and abstract modeling framework---where a peer-to-peer system is viewed as a temporal graph whose nodes are state machines---we now turn to the existing literature on overlay management. The following chapter surveys the state of the art, and establishes why no existing protocol fully addresses our requirements. This sets the stage for our own contribution, introduced in the subsequent chapter.
