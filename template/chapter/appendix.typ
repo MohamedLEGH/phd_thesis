@@ -972,7 +972,7 @@ samples. Each image is of size $28 times 28$ pixels, yielding a 784-dimensional 
 flattening. The task is to assign each image to one of ten classes corresponding to the digits 0
 through 9. MNIST is one of the most widely used benchmarks in the machine learning literature,
 serving as a standard testbed for evaluating classification models ranging from logistic regression
-to deep convolutional networks. In the context of HEAL, it provides a more demanding evaluation
+to deep convolutional networks. It provides a more demanding evaluation
 setting than Spambase, due to its higher input dimensionality and the multiclass nature of the
 learning task.
 
@@ -2097,7 +2097,7 @@ simulator configuration, cluster deployment, parameter sweeps, result
 collection, and post-processing — and the absence of documented procedures
 is a common obstacle to replication. The following sections therefore describe
 the full simulation workflow in sufficient detail to allow an independent
-researcher to reproduce the experimental conditions of @chap:elevator and @chap:heal from scratch:
+researcher to reproduce the experimental conditions of our work from scratch:
 from cluster installation and job submission to result extraction and
 aggregation.
 
@@ -2135,10 +2135,10 @@ Java, which is considerably more accessible than the C++ codebases of
 alternative simulators and facilitated the substantial extensions
 described in @sec:peersim-engineering.
 
-==== Overview <sec:peersim-overview>
+// ==== Overview <sec:peersim-overview>
 
-PeerSim @p2p09-peersim is an open-source, Java-based simulator developed
-at the University of Bologna, designed specifically for large-scale
+PeerSim is open-source, developed
+at the University of Bologna, and designed specifically for large-scale
 peer-to-peer protocol research. Its guiding design principles are extreme
 scalability and support for dynamic network membership: nodes may join and
 leave continuously, and the simulator has been demonstrated to handle

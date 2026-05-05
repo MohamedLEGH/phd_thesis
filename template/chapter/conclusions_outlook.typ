@@ -4,12 +4,9 @@
 
 == General conclusions
 
-This thesis was motivated by a fundamental question: can federated learning be conducted in a truly decentralised manner? The initial intuition pointed toward blockchain as a natural substrate for decentralised coordination. However, a systematic survey of the state of the art revealed an existing paradigm — gossip learning — that already eliminates the central server. The problem, well-documented in the literature, is that gossip learning consistently underperforms federated learning in both convergence speed and final model accuracy, precisely because it lacks any form of structured aggregation.
+This thesis was motivated by a fundamental question: can federated learning be conducted in a truly decentralised manner? The initial intuition pointed toward blockchain as a natural substrate for decentralised coordination. However, a systematic survey of the state of the art revealed an existing paradigm — gossip learning — that already eliminates the central server. The problem, well-documented in the literature, is that gossip learning consistently underperforms federated learning in both convergence speed and final model accuracy, precisely because it lacks any form of structured aggregation. This observation shifted the research question to a lower level of the stack: rather than modifying the learning algorithm itself, we asked whether the underlying communication topology could be engineered to recover the benefits of structured aggregation, while preserving full decentralisation. This led us to survey the peer sampling and overlay management literature, in search of protocols capable of shaping the network toward a topology that would support efficient global aggregation.
 
-A survey of the existing literature reveals that neither the peer sampling nor the
-machine learning communities had addressed this problem in a satisfactory way.
-On the peer sampling side, several families of protocols have been proposed, yet
-none was designed with the explicit goal of elevating nodes to the role of hubs.
+Several families of protocols have been proposed, yet none was designed with the explicit goal of structuring the overlay to support global aggregation — in particular, none considered the deliberate emergence of hub nodes as a design objective.
 Random-walk and multi-hop gossip protocols accelerate information propagation by
 reducing the effective diameter of the communication graph, but they do not
 produce a structured topology and their gains in practice are limited by increased
@@ -33,10 +30,11 @@ underperformance relative to federated learning, as documented in @chap:learning
 The result is a clear gap: no existing protocol simultaneously achieves
 decentralisation, scalability, and aggregation efficiency.
 
-This gap shaped the central research question of the thesis: _how can the efficiency of gossip learning be improved so as to approach federated learning, without sacrificing decentralisation?_ The answer, as argued throughout this work, lies not at the application layer but one level below, at the peer sampling layer.
+This gap shaped the central research question of the thesis: _how can the efficiency of gossip learning be improved so as to approach federated learning, without sacrificing decentralisation?_ 
 
-The key insight is that peer sampling governs which nodes communicate with which, and therefore how information propagates across the system. By acting at this layer — elevating a dynamic subset of nodes to the role of hubs — it becomes possible to introduce a structured aggregation topology without relying on any pre-assigned coordinator or use-case-specific infrastructure. This is the contribution of the *Elevator* protocol. Elevator is a decentralised peer-to-peer overlay protocol that organises nodes through a lightweight, self-organising random election mechanism. Crucially, Elevator is application-agnostic: it provides a general-purpose structured overlay that any distributed algorithm can exploit.
+The survey of the peer sampling literature confirmed our intuition that the answer lies not at the application layer but one level below, at the peer sampling layer: by shaping the communication topology, it is possible to introduce structured aggregation without relying on any pre-assigned coordinator. However, as documented in @chap:overlay, no existing protocol was designed with this objective in mind — none considered the deliberate elevation of nodes to the role of hubs as a design goal. This absence left us no choice but to design such a protocol from scratch.
 
+The result is *Elevator*, a decentralised peer-to-peer overlay protocol that organises nodes through a lightweight, self-organising random election mechanism. Crucially, Elevator is application-agnostic: it provides a general-purpose structured overlay that any distributed algorithm can exploit.
 The evaluation of Elevator rests on three complementary pillars. First, a theoretical analysis characterises the protocol's behaviour in terms of overlay properties — diameter, average shortest path length, and clustering coefficient — and derives analytical bounds on convergence and hub election dynamics. Second, these theoretical results are validated through large-scale simulations conducted on PeerSim, a peer-to-peer network simulator widely used and recognised by the research community. Third, a real implementation over TCP/IP confirms that the protocol behaves as predicted at the network level, bridging the gap between simulation and deployment. The consistency across all three levels of evaluation strengthens confidence in the correctness and robustness of the protocol.
 
 This multi-level methodology did not come for free. Peer-to-peer networks with emergent hub structures of the kind introduced by Elevator are a novelty, and the research community has not converged on standard evaluation practices for such systems. A substantial methodological effort was therefore devoted to establishing appropriate scientific rigour: selecting and justifying the evaluation metrics, designing visualisations that faithfully represent the structural properties of the overlay, and adapting PeerSim — a simulator that is over twenty years old and was not designed with hub-based overlays in mind — to the requirements of this work. In particular, scaling simulations to networks of thousands or even hundreds of thousands of nodes, which is the operational target of a general-purpose peer-to-peer protocol, demanded significant engineering effort to make PeerSim tractable at that scale. The evaluation framework developed in the course of this work — comprising the
@@ -64,7 +62,7 @@ returning fellow byzantines in their neighbour lists — as few as two percent o
 malicious nodes are sufficient to guarantee that all byzantines are elected as hubs,
 fully compromising the aggregation layer. Lift addresses this threat through a
 dedicated defence mechanism at the overlay level, extending the collusion tolerance
-threshold to fifteen percent of byzantine nodes while preserving the decentralised
+threshold to ten percent of byzantine nodes while preserving the decentralised
 nature of the election process. Beyond this threshold, colluding byzantines are
 again able to capture hub roles, which defines the boundary of the current security
 guarantee. Crucially, Lift operates entirely at the peer sampling layer and is
@@ -81,7 +79,7 @@ inspired by LEACH, in which each node associates with the cluster head from whic
 it receives the strongest signal. Aggregation is confined to the cluster level, and
 cluster heads rotate at every round, so that progressive global model mixing
 emerges from topology dynamics alone, without any inter-cluster coordination.
-The evaluation on ns-3 validates these properties across static, fault-prone, mobile,
+The evaluation on the ns-3 network simulator validates these properties across static, fault-prone, mobile,
 and heterogeneous deployment scenarios. Taken together, HEAL and FLAIR
 constitute two existence proofs that the layered architecture can yield protocols
 adapted to fundamentally different deployment contexts — a result that opens a
@@ -90,7 +88,7 @@ as satellite, vehicular, or sensor networks.
 
 Considered as a whole, the contributions of this thesis establish a coherent
 framework for decentralised, efficient, and resilient machine learning over
-peer-to-peer networks. The progression from gossip learning, through Elevator, to HEAL, Lift, and FLAIR constitutes a principled answer to the motivating question: structured aggregation can be achieved without centralisation, provided that the overlay layer is designed with that goal in mind.
+peer-to-peer networks. The progression from the state of the art, through Elevator, to HEAL, Lift, and FLAIR constitutes a principled answer to the motivating question: structured aggregation can be achieved without centralisation, provided that the overlay layer is designed with that goal in mind.
 
 It is worth reflecting on the scope and conditions under which this answer holds.
 The results established in this thesis are most conclusive under conditions that
@@ -199,13 +197,10 @@ synchronisation primitive — remains an open challenge, and would remove the
 implicit dependency on an external coordination mechanism, whether centralised
 or distributed.
 
-The Lift protocol, while effective up to a collusion threshold of fifteen percent of
+The Lift protocol, while effective up to a collusion threshold of ten percent of
 byzantine nodes, presents several limitations. The adversarial model considered
 remains relatively constrained: byzantine nodes operate independently or collude
-as a single coordinated group, but more sophisticated threat models — such as
-partial collusion, adaptive adversaries that adjust their strategy in response to
-the protocol's behaviour, or sybil attacks in which a single entity controls
-multiple identities — are not addressed. Furthermore, Lift hardens only the
+as a single coordinated group, but more sophisticated threat models are not addressed. Furthermore, Lift hardens only the
 overlay layer: the learning layer remains unprotected against poisoning attacks,
 in which malicious nodes submit manipulated model updates, and against privacy
 attacks such as gradient inversion or membership inference. The security
