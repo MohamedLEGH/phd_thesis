@@ -196,7 +196,7 @@ cetz.canvas({
 
 The Network Layer forms the foundation of the HEAL protocol stack. It is responsible for low-level peer-to-peer communication, providing the basic message passing primitives upon which all higher layers depend. This layer directly implements the network assumptions formalized in @chap:model. In particular, we assume the underlying network is connected, reliable, and provides bidirectional communication channels between nodes.
 
-For all practical purposes, the Network Layer is equivalent to a standard TCP/IP stack. Each node is identified by a unique network address (e.g., an IP address and port), and messages are transmitted over reliable, bidirectional channels that guarantee in-order delivery without loss or corruption. This abstraction aligns with our modeling assumptions from @chap:model, where message transmission is treated as instantaneous and reliable, allowing us to focus on overlay-level protocols without accounting for network-level failures.
+For all practical purposes, the Network Layer is equivalent to a standard TCP/IP stack. Each node is identified by a unique network address (e.g., an IP address and port), and messages are transmitted over reliable, bidirectional channels that guarantee in-order delivery without loss or corruption. This abstraction aligns with our modeling assumptions, where message transmission is treated as instantaneous and reliable, allowing us to focus on overlay-level protocols without accounting for network-level failures.
 
 The Network Layer exposes two primary operations to the layer above:
 - `send(peer_id, message)`: transmits a message to a specified peer identified by its network address,
@@ -211,12 +211,14 @@ The Overlay Layer implements the logical topology that enables efficient decentr
 Elevator operates in a fully decentralized manner and converges within $O(log N)$ communication cycles, where $N$ is the network size. The protocol is resilient to node churn and failures: the departure or crash of any individual node --- including a hub --- does not compromise the overlay's connectivity, as replacement mechanisms automatically restore the desired topology.
 
 The overlay exposes two configurable global parameters:
-- $h in NN^*$: the number of hubs maintained in the system,
-- $c in NN^*$ with $c > h$: the total number of logical connections (degree) maintained by each node.
+- $c in NN^*$: the total size of each node's partial view, i.e. the number of outgoing connections it maintains,
+- $h in NN^*$ with $c > h$: the number of preferential connections maintained by each node, targeting the most connected peers in the neighborhood.
 
-Each node in the overlay maintains exactly $c$ connections, structured as follows:
-- $h$ connections to *all* hubs in the system (every node, including hubs themselves, is connected to every hub),
-- $c - h$ connections to randomly selected non-hub peers, refreshed periodically to ensure good mixing properties.
+Each node maintains a partial view of $c$ outgoing connections to other nodes, structured as follows:
+- $h$ preferential connections, targeting the most connected peers discovered in the local neighborhood,
+- $c - h$ connections to randomly selected peers, refreshed periodically to ensure good mixing properties.
+
+As an emergent property of this local attachment rule, exactly $h$ nodes spontaneously rise to hub status at the system level, forming a dense interconnected core to which all other nodes maintain a direct outgoing connection.
 
 This hybrid structure combines the low-diameter benefits of a hub-based topology with the robustness of random gossip-style connections. Hubs serve as high-visibility coordination points, while random edges provide redundancy and mitigate the risk of partitioning.
 
@@ -1023,7 +1025,7 @@ verifiable.
         + $R_n arrow.l alpha dot "CPU"_n + beta dot "RAM"_n + gamma dot "GPU"_n + delta dot "BW"_n$
         + $T(n) arrow.l display(frac(p dot R_n, 1 - p dot (r mod 1/p)))$
       + *end if*
-      + $x arrow.l "VRF\_Uniform"(0,1)$
+      + $x arrow.l "VRF"_"Uniform"(0,1)$
       + *if* $x < T(n)$ *then*
         + broadcast `CH-ADV`
         + mark $n$ as CH
@@ -1193,10 +1195,7 @@ regression model @hosmer2013applied with cross-entropy loss, and data is partiti
 across nodes such that each node holds a private local subset that never leaves the
 device.
 
-The first task uses the Spambase dataset (@sec:datasets), which comprises 4,601 email
-samples described by 57 numerical features, with spam messages representing 39.4% of
-the corpus. This dataset was chosen for its lightweight nature and wide adoption in
-decentralized learning benchmarks.
+The first task uses the Spambase dataset (@sec:datasets), which was also used in the HEAL experiments.
 
 The second task uses the "Predicting Watering the Plants" dataset @nelakurthi2021plants,
 a Kaggle dataset tailored for intelligent irrigation systems. It contains 100,000 samples
@@ -1306,14 +1305,6 @@ is performed on the Watering the Plants dataset @nelakurthi2021plants.
 
 ==== Comparative evaluation in static networks
 
-// compare with gossip, federated, ...
-// fl_comparison_100n_100e.pdf
-
-#figure(
-  image("../../Images/FLAIR/fl_comparison_100n_100e.pdf", width: 90%),
-  caption: [Accuracy evolution of FLAIR and baselines in static networks (100 nodes).],
-) <fig:flair-comparison>
-
 @fig:flair-comparison shows the accuracy evolution over training cycles in a static network
 of 100 nodes. FLAIR achieves the highest final accuracy ($approx 0.91$), surpassing
 C-FL, HEAL, and Gossip Learning ($approx 0.90$), and clearly outperforming Gaia
@@ -1324,15 +1315,15 @@ protocol requires significantly fewer cycles to stabilize. Overall, FLAIR combin
 scalability of decentralized designs with the efficiency of clustering, providing
 superior performance in static deployments.
 
+#figure(
+  image("../../Images/FLAIR/fl_comparison_100n_100e.pdf", width: 90%),
+  caption: [Accuracy evolution of FLAIR and baselines in static networks (100 nodes).],
+) <fig:flair-comparison>
+
 ==== Resilience to node dropouts <sec:flair-dropouts>
 
-// permanent crashes, recurring crashes, random crashes (1 epoch)
-// permanent crashes, recurring crashes, random crashes (3 epoch)
-// leach_fault_recurring_1_epoch_per_round.pdf
-// leach_fault_permanent_1_epoch_per_round.pdf   // leach_fault_random_1_epoch_per_round.pdf
-// leach_fault_recurring_3_epochs_per_round.pdf  
-// leach_fault_permanent_3_epochs_per_round.pdf
-// leach_fault_random_3_epochs_per_round.pdf    
+@fig:flair-leach_fault_recurring_1epoch, @fig:flair-leach_fault_permanent_1epoch, @fig:flair-leach_fault_random_1epoch, @fig:flair-leach_fault_recurring_3epochs, @fig:flair-leach_fault_permanent_3epochs, and @fig:flair-leach_fault_random_3epochs report the average accuracy evolution under permanent, temporary, and random crashes for both round duration settings ($E_"round" = 1$ and $E_"round" = 3$).
+In the baseline case without dropout, FLAIR stabilized around $0.90$ accuracy.
 
 #figure(
   image("../../Images/FLAIR/leach_fault_recurring_1_epoch_per_round.pdf", width: 95%),
@@ -1363,9 +1354,6 @@ superior performance in static deployments.
   image("../../Images/FLAIR/leach_fault_random_3_epochs_per_round.pdf", width: 95%),
   caption: [Accuracy evolution of FLAIR under random fault conditions (3 epochs per round).],
 ) <fig:flair-leach_fault_random_3epochs>
-
-@fig:flair-leach_fault_recurring_1epoch, @fig:flair-leach_fault_permanent_1epoch, @fig:flair-leach_fault_random_1epoch, @fig:flair-leach_fault_recurring_3epochs, @fig:flair-leach_fault_permanent_3epochs, and @fig:flair-leach_fault_random_3epochs report the average accuracy evolution under permanent, temporary, and random crashes for both round duration settings ($E_"round" = 1$ and $E_"round" = 3$).
-In the baseline case without dropout, FLAIR stabilized around $0.90$ accuracy.
 
 Under permanent crashes, even when 90% of nodes were removed, the system still converged
 above $0.88$, as summarized in @tab:flair-test2, demonstrating graceful degradation.
@@ -1413,10 +1401,14 @@ scenarios, confirming strong resilience even under extreme dropout conditions.
 
 ==== Impact of mobility on learning performance
 
-// range limited connectivity (perfect connectivity and range limited)
-
-// mobility_perfect.pdf
-// mobility_range_limited.pdf
+@fig:flair-mobility_perfect and @fig:flair-mobility_range_limited shows the accuracy evolution under both connectivity scenarios across
+five mobility models. Under perfect connectivity, mobility had no measurable impact on
+convergence speed or final accuracy, which remained comparable to the static network
+baseline. When communication was range-limited, occasional disconnections caused minor
+perturbations and slightly slower convergence, yet overall accuracy remained within 2%
+of the static case, staying above $0.88$ for all mobility patterns. These results
+indicate that FLAIR is resilient to mobility effects and that its clustering mechanism
+effectively adapts to dynamic topologies.
 
 #figure(
   image("../../Images/FLAIR/mobility_perfect.pdf", width: 90%),
@@ -1428,19 +1420,13 @@ scenarios, confirming strong resilience even under extreme dropout conditions.
   caption: [Accuracy evolution of FLAIR under five mobility patterns with range-limited connectivity.],
 ) <fig:flair-mobility_range_limited>
 
-@fig:flair-mobility_perfect and @fig:flair-mobility_range_limited shows the accuracy evolution under both connectivity scenarios across
-five mobility models. Under perfect connectivity, mobility had no measurable impact on
-convergence speed or final accuracy, which remained comparable to the static network
-baseline. When communication was range-limited, occasional disconnections caused minor
-perturbations and slightly slower convergence, yet overall accuracy remained within 2%
-of the static case, staying above $0.88$ for all mobility patterns. These results
-indicate that FLAIR is resilient to mobility effects and that its clustering mechanism
-effectively adapts to dynamic topologies.
-
 ==== Smart farming with heterogeneous nodes
 
-// watering plantes, Baseline, and FLrounds 1 et 3
-// fl_rounds_comparison.pdf
+@fig:fl_rounds_comparison shows the accuracy evolution under two local update settings. With
+$E_"round" = 3$, convergence is faster in early stages, exceeding 70% within 10 epochs,
+whilst $E_"round" = 1$ initially converges more slowly but eventually closes the gap.
+Both configurations converge near the centralized baseline of 71.9%, with final
+accuracies of 71.2% and 71.4% respectively.
 
 #figure(
   image("../../Images/FLAIR/fl_rounds_comparison.pdf", width: 90%),
@@ -1450,18 +1436,14 @@ effectively adapts to dynamic topologies.
   (71.9%).],
 ) <fig:fl_rounds_comparison>
 
-@fig:fl_rounds_comparison shows the accuracy evolution under two local update settings. With
-$E_"round" = 3$, convergence is faster in early stages, exceeding 70% within 10 epochs,
-whilst $E_"round" = 1$ initially converges more slowly but eventually closes the gap.
-Both configurations converge near the centralized baseline of 71.9%, with final
-accuracies of 71.2% and 71.4% respectively.
-
-// dropout with smart farming
-// permanent crashs, recurring crashes, random crashes
-
-// smart_leach_fault_permanent.pdf
-// smart_leach_fault_recurring.pdf
-// smart_leach_fault_random.pdf
+To further validate robustness in realistic deployments, the dropout experiments from
+@sec:flair-dropouts were extended to the smart farming setup. The same failure types —
+permanent, temporary, and random crashes — were injected under the $E_"round" = 3$
+setting, as shown in @fig:flair-smart_fault_permanent, @fig:flair-smart_fault_recurring and @fig:flair-smart_fault_random. These results confirm that the resilience
+properties identified in controlled static networks extend to heterogeneous,
+application-driven scenarios. Even in the presence of mobility and partial connectivity,
+FLAIR demonstrates graceful degradation and rapid recovery, underscoring its
+practicality for real-world IoT deployments.
 
 #figure(
   image("../../Images/FLAIR/smart_leach_fault_permanent.pdf", width: 95%),
@@ -1477,15 +1459,6 @@ accuracies of 71.2% and 71.4% respectively.
   image("../../Images/FLAIR/smart_leach_fault_random.pdf", width: 95%),
   caption: [Accuracy evolution of FLAIR under random fault conditions in the smart farming scenario.],
 ) <fig:flair-smart_fault_random>
-
-To further validate robustness in realistic deployments, the dropout experiments from
-@sec:flair-dropouts were extended to the smart farming setup. The same failure types —
-permanent, temporary, and random crashes — were injected under the $E_"round" = 3$
-setting, as shown in @fig:flair-smart_fault_permanent, @fig:flair-smart_fault_recurring and @fig:flair-smart_fault_random. These results confirm that the resilience
-properties identified in controlled static networks extend to heterogeneous,
-application-driven scenarios. Even in the presence of mobility and partial connectivity,
-FLAIR demonstrates graceful degradation and rapid recovery, underscoring its
-practicality for real-world IoT deployments.
 
 === Summary
 
