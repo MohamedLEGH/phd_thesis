@@ -238,14 +238,13 @@ collect data instances under a shared feature schema.
 
 The decentralized learning system inherits the assumptions established in
 the peer-to-peer model of @chap:model. In particular, we assume that all
-nodes are identical in terms of computational capabilities and memory
-(see @chap:model), that communication channels are reliable and
+nodes are identical in terms of computational capabilities and memory, that communication channels are reliable and
 instantaneous, and that message transmission incurs no latency or
 bandwidth constraints.
 
-These assumptions extend naturally to the machine learning components
-introduced in @def:dl-node. Specifically:
-
+// These assumptions extend naturally to the machine learning components
+// introduced in @def:dl-node. Specifically:
+Specifically:
 - *Model size*: the size of the local model $f_(theta_i)$ — that is,
   the number of parameters $p = |theta_i|$ — is assumed to be identical
   across all nodes and imposes no memory or transmission constraint.
@@ -1484,4 +1483,4 @@ Beyond this architectural tension, several broader challenges remain for the nex
 - *Adaptation to large language models (LLMs).* Training or fine-tuning billion-parameter models in a decentralized setting clashes with severe bandwidth, memory, and compute constraints at the edge. Developing communication-efficient, parameter-optimized strategies tailored to LLMs without sacrificing convergence is an emerging frontier.
 - *Resilient and efficient decentralized learning systems.* Building fully peer-to-peer learning frameworks that simultaneously achieve high fault tolerance, rapid convergence, and low communication overhead --- without relying on fragile coordinators or hierarchical structures --- remains a core systems-level challenge.
 
-Among these open research directions, this thesis deliberately narrows its scope to the fourth challenge: *the design of a resilient and efficient decentralized learning system*. Rather than attempting to solve security, theoretical bounds, or LLM-specific optimizations in isolation, our work targets the foundational systems problem of achieving fast, fault-tolerant, and communication-efficient model aggregation in fully decentralized environments. The following chapter (@chap:heal) presents our contribution to this problem.
+Among these open research directions, this thesis deliberately narrows its scope to the fourth challenge: *the design of a resilient and efficient decentralized learning system*. The following chapter (@chap:heal) presents our contribution to this problem.
