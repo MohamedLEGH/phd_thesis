@@ -17,29 +17,12 @@
 // Peer-to-peer networks, Peer sampling service, Hub sampling, Resilient networks, System design, Algorithms, Simulations.
 
 == Introduction
-The growing usage of decentralized systems such as blockchain @nakamoto2008bitcoin and federated learning @mcmahan2017communication in recent years has sparked considerable interest in peer-to-peer (P2P) communication protocols. While existing P2P protocols have demonstrated significant utility across various applications, emerging demands for enhanced performance, scalability, and robustness necessitate the development of innovative solutions.
 
-Peer-to-peer (P2P) protocols have undergone extensive research and development to facilitate efficient decentralized communication among networked devices. Foundational P2P protocols like Napster @carlsson2001rise, Gnutella @frankel2003gnutella, and BitTorrent @cohen2003incentives paved the way for distributed file sharing and content distribution across the Internet. Typically, P2P overlay networks are categorized as either structured (e.g. CAN @ratnasamy2001scalable, Chord @stoica2001chord, or Kademlia @maymounkov2002kademlia) or unstructured (e.g. Gnutella @frankel2003gnutella). More comprehensive details about peer-to-peer overlays can be found in recent surveys @malatras2015state, @naik2020next. 
+As established in @chap:overlay, no existing overlay management protocol simultaneously achieves full decentralization, controlled topology shaping, and hub election. Yet, the presence of highly connected nodes in a peer-to-peer network would be highly desirable in a number of practical settings. In decentralized federated learning, such nodes could serve as aggregators, collecting and redistributing machine learning models across the network, playing a role analogous to that of the central server in classical federated learning. Beyond federated learning, similar benefits would arise in file sharing systems, where well-connected nodes could act as high-availability relay nodes, or in distributed storage architectures, where they could serve as replication anchors. In all these settings, the key property is the same: a small number of nodes acting as bridges between the rest of the network, ensuring that any two nodes are at most two hops apart and thus keeping the network diameter at two.
 
-Structured overlays come with a maintenance cost @malatras2015state, and are more susceptible to Byzantine attacks (that is, attacks performed by the peers themselves) @naik2020next and churn @malatras2015state (that is, the unexpected departure and arrival process of the peers). 
-Unstructured networks exhibit advantages in resilience to node failures and adaptability to shifting network conditions @jelasity2007gossip, rendering them well-suited for dynamic and heterogeneous environments when compared to their structured counterparts. Their shortcomings are that the quality of services built on top of the network is difficult to assess. 
+However, relying on statically designated nodes introduces well-known vulnerabilities: a fixed, publicly known hub is a natural target for adversarial attacks. What is needed instead is a mechanism that allows such nodes to emerge organically from the network itself, without central coordination, while remaining controllable in number and resilient to failures and churn.
 
-Peers within an unstructured overlay maintain a dynamic set of neighbors, often discovered through mechanisms like peer sampling @jelasity2007gossip, which enables nodes to gather and exchange information about other nodes in the network, and thus dictates the network topology.
-Existing peer sampling algorithms in the literature yield two types of topologies (random and power-law) that demonstrate favorable networking characteristics. Random graphs are built from gossip peer sampling algorithms and are known to be resilient to churn @jelasity2007gossip. 
-Power-law (or scale-free) networks are built from algorithms that use the concept of preferential attachment and are known to have ultra-small diameter @cohen2003scale, which helps scalability. 
-However, when considering the specific use case of federated learning, certain limitations emerge: _(i)_ gossip learning, based on gossip peer sampling, exhibits a slower convergence rate compared to centralized federated learning methodologies @hegedHus2021decentralized, and _(ii)_ while power-law topologies theoretically offer improved convergence efficiency, prior research has predominantly focused on constructing networks adhering strictly to power-law distributions @xie2008scale, @bulut2013constructing, implementing algorithms to restrict the proliferation of hubs @guclu2008limited, @eum2009self (that is, peers that are extremely well connected), or leveraging other metrics to construct node connections, like the distance in terms of Internet hops @sasabe2006llr or an initial attractiveness @park2018distributed. 
-
-Yet, for federated learning, the presence of hubs is advantageous, as these hubs facilitate rapid relay of machine learning models across the network, accelerating convergence rates. Nonetheless, conventional approaches relying on predefined hubs (e.g., super-peer-based topologies) are susceptible to attacks targeting static and well-defined hub nodes @montresor2004robust.
-
-Hence, there exists a pressing need for a protocol that fosters the organic emergence of hubs within networks. The service outlined in this chapter is designed precisely for this purpose, allowing selected nodes to naturally ascend to hub status through a process we term "hub sampling". 
-
-By enabling nodes to organically assume the role of hubs, our protocol aims to strike a balance between leveraging the efficiency of hub-based networks for applications like federated learning, while mitigating vulnerabilities associated with static hub designations.
-
-Our primary goal is to develop a protocol (called Elevator) that autonomously promotes nodes to act as hubs within unstructured peer-to-peer networks. To achieve this goal, we hybridize two fundamental concepts: 
-_preferential attachment_, and _random attachment_.
-By integrating these two concepts, our protocol promotes a balanced network structure, where hubs emerge organically based on connectivity patterns and yet adapt to dynamic network changes. 
-This approach not only fosters robustness against failures and disruptions but also maintains a low network diameter, facilitating efficient communication and information propagation. The parameter _h_, representing the desired number of hubs, allows for flexibility and control over the network's topology, enabling tailored configurations to suit specific application requirements and network environments.
-The rationale behind this initiative is rooted in the benefits of having hub nodes, particularly in applications such as federated learning, where efficient information dissemination is crucial. The existence of hubs facilitates faster network-wide communication compared to overlay networks structured in a random graph topology.
+This chapter presents Elevator, a protocol designed precisely for this purpose. Elevator allows selected nodes to naturally ascend to hub status through a process we term _hub sampling_, by hybridizing two fundamental concepts: _preferential attachment_ and _random attachment_. This combination promotes a balanced network structure where hubs emerge organically based on connectivity patterns, yet adapt to dynamic network changes. The parameter $h$, representing the desired number of hubs, provides flexibility and control over the resulting topology, enabling tailored configurations to suit specific application requirements.
 
 == Elevator Protocol
 
@@ -56,8 +39,8 @@ $
 forall v in V, quad h in P(v)
 $
 ] <def:hub>
-Equivalently, a hub is a node to which all other nodes are connected, functioning as a highly accessible focal point in the overlay. In practical terms, this is analogous to the role of a server in a centralized network, providing a shortcut for communication and information dissemination.
 
+Equivalently, a hub is a node to which all other nodes are connected, functioning as a highly accessible focal point in the overlay. In practical terms, this is analogous to the role of a server in a centralized network, providing a shortcut for communication and information dissemination.
 
 The objective of a hub sampling service is to promote the appearance of globally reachable nodes that structurally reduce communication distances while preserving decentralization. 
 Unlike centralized mechanisms, this service operates without global knowledge and must adapt dynamically to network changes.
@@ -326,7 +309,7 @@ Additionally, we have three temporary structures: _(i)_ _frequency_map_ holds th
 === Byzantine protocols
 The Elevator protocol was not designed to be resilient to Byzantine attacks, and the protocol assumes that each node is honest and returns reliable information. Since in Elevator each node modifies its cache based on the cache of its neighbors, having one or more Byzantine nodes among its neighbors significantly changes the local behavior of the protocol (for a given node) and therefore the overall convergence toward the _h_ hubs.
 
-To describe how such malicious behavior can affect the protocol, we adopt the Byzantine failure model defined in the previous chapter, namely the *Byzantine Synchronous Message-Passing model* (BSMP ⟨n, t⟩ [∅]). Our Byzantine model assumes that a certain percentage of nodes are Byzantine from the start.
+To describe how such malicious behavior can affect the protocol, we adopt the Byzantine failure model defined in @chap:model, namely the *Byzantine Synchronous Message-Passing model* (BSMP ⟨n, t⟩ [∅]). Our Byzantine model assumes that a certain percentage of nodes are Byzantine from the start.
 These malicious nodes try to break the Elevator protocol by sending false information
 during cache exchanges, manipulating the hub selection process.
 
@@ -452,7 +435,7 @@ After convergence, all correct nodes simultaneously execute the following determ
 
 #figure(
   pseudocode-list(booktabs: true)[
-    - current hub list: *H*
+    - hub list: *H*
     - network size: *N*
     - target hubs: *h*
 
@@ -463,21 +446,15 @@ After convergence, all correct nodes simultaneously execute the following determ
       // Initialize PRNG with seed
 
     + selectedIDs $arrow.l$ {}
-    + newHubs $arrow.l$ {}
 
     + *while* selectedIDs.size() < h
       + randomID $arrow.l$ prng.nextInt(N) 
         // Random node ID in [0, N-1]
 
       + *if* randomID *not in* selectedIDs
-        + targetNode $arrow.l$ network.get(randomID)
+        + selectedIDs $arrow.l$ selectedIDs $union$ {randomID}
 
-        + *if* targetNode != null and targetNode.isUp()
-          + selectedIDs $arrow.l$ selectedIDs $union$ {randomID}
-          + newHubs $arrow.l$ newHubs $union$ {targetNode}
-
-    + replaceCache(newHubs, currentNode) 
-      // Update cache with new hubs
+    + H $arrow.l$ selectedIDs
   ],
   caption: [Lift: Deterministic Hub Redistribution.],
 ) <algo:lift>
@@ -549,7 +526,7 @@ We define the stability of the Elevator algorithm as the property that, once con
 Formally, let $H(t)$ denote the set of hubs identified at time $t$, and let $C_v (t)$ be the ordered list of outgoing connections (the cache) of node $v in V$.  
 The algorithm is said to be _stable_ if, after convergence time $T$, the following holds with high probability:
 
-$Pr[forall t >= T, H(t)=H(T) and forall v in V, C_v (t)[1:h] = H(t)] approx 1$
+$Pr[forall t >= T, H(t)=H(T) and forall v in V, C_v (t)[1:h] = H(t)] = 1$
 
 In other words, after convergence, every node in the network maintains the same $h$ leading entries in its cache, corresponding to the stable hub set $H(T)$, and this structure remains fixed over time.
 
@@ -991,7 +968,7 @@ All simulations were run on 16 vCPU, using 64G of memory, on a cluster composed 
 We evaluated the following metrics: in-degree distribution, clustering coefficient, average shortest path length, and diameter.
 
 The degree distributions of Newscast and PROOFS exhibit patterns akin to a normal distribution.
-We see similar results for Elevator, except for a distinct group of 10 hubs with an in-degree of 999.
+We see similar results for Elevator, except for a distinct group of 10 hubs with an in-degree of 1000.
 By contrast, the Phenix protocol's degree distribution conforms to a power-law distribution.
 
 PROOFS and Newscast maintain a low clustering coefficient during all simulations, as seen in @fig:ClustCoef.
@@ -1032,9 +1009,9 @@ We also compared the algorithms according to their resilience to crashes, churn,
 We analyze the performance of the four algorithms when the network suffers crashes.
 To simulate a brutal failure we disconnected 50% of the nodes in the middle of the simulation, *i.e.*, in this case, we have disconnected 500 nodes at cycle 500 (as there are 1000 nodes in total and 1000 cycles).
 
-The performance of Elevator is not affected, as the in-degree distribution is still the same, and we have 10 hubs with an in-degree of 499.
+The performance of Elevator is not affected, as the in-degree distribution is still the same, and we have 10 hubs with an in-degree of 500.
 The degree distribution is also the same for Newscast and PROOFS.
-For Phenix, the degree distribution remains the same, with values going to a max of 999, even if there are only 500 nodes in the network.
+For Phenix, the degree distribution remains the same, with values going to a max of 1000, even if there are only 500 nodes in the network.
 It's because the nodes have kept in their cache the addresses of (old) nodes who are no longer in the network.
 In @fig:ClustCoefCrash, the clustering coefficient evolution shows that it is not affected by the crashes, as we have almost the same results as those obtained without a crash.
 The same observation holds for the average path length and the diameter, as we can see in @fig:AveragePathLengthCrash and @fig:DiameterCrash.
@@ -1091,7 +1068,7 @@ We hereby analyze the performance of the four algorithms after a failure on the 
 To simulate it, we disconnected 10 nodes that have the highest in-degree in the middle of the simulated scenario.
 
 Logically, Newscast and PROOFS are not affected by the failure, as there are no hubs in the networks built by these algorithms.
-For Elevator, the in-degree distribution remains similar, with 10 high-in-degree peers that have each an in-degree of 989.
+For Elevator, the in-degree distribution remains similar, with 10 high-in-degree peers that have each an in-degree of 990.
 We are thus confident in the capacity of our algorithm to promote new nodes to the position of hubs if the previous hubs were disconnected.
 In @fig:ClustCoefCrashHub we can see that we have almost the same results as the results obtained without crashes for the clustering coefficient.
 Its the same for the average path length and the diameter, there is no impact, as we can see in @fig:AveragePathLengthCrashHub and @fig:DiameterCrashHub.
@@ -1244,7 +1221,7 @@ Overall, our simulation results demonstrate that Elevator achieves the targeted 
 // make repository public
 // add link to repository
 
-To complement the simulation-based evaluation presented earlier, we implemented a fully operational version of the Elevator protocol over real TCP/IP networks. This implementation (available at https://github.com/MohamedLEGH/elevator-algorithm) serves two main purposes: (i) validating the feasibility of Elevator in a realistic peer-to-peer environment, and (ii) assessing its behavior under asynchronous execution, failures, and heterogeneous deployment conditions.
+To complement the simulation-based evaluation, we implemented a fully operational version of the Elevator protocol over real TCP/IP networks. This implementation (available at https://github.com/MohamedLEGH/elevator-algorithm) serves two main purposes: (i) validating the feasibility of Elevator in a realistic peer-to-peer environment, and (ii) assessing its behavior under asynchronous execution, failures, and heterogeneous deployment conditions.
 
 === Implementation choices and technological stack
 
@@ -1387,8 +1364,9 @@ Our study combines theoretical analysis, simulation-based evaluation, and real-w
 
 We then validated these properties through extensive simulations. The results demonstrate that Elevator achieves the targeted structural objectives: low network diameter, stable hub formation, bounded degree, and robustness under crash failures and churn. The protocol maintains stable global metrics even under dynamic conditions, confirming the soundness of its design.
 
-Beyond simulations, we implemented Elevator on real peer-to-peer networks, confirming its practical feasibility and validating that its theoretical and simulated properties hold in realistic environments.
+Beyond simulations, we implemented Elevator on a real network, confirming its practical feasibility and validating that its theoretical and simulated properties hold in realistic environments.
 
 We also investigated the vulnerability of Elevator to Byzantine attacks. Our analysis shows that, while the protocol is resilient to failures and churn, it remains vulnerable to coordinated Byzantine strategies aiming at capturing hub positions. To address this limitation, we proposed a modification of the algorithm, Lift, which increases resilience against Byzantine behavior through a deterministic redistribution mechanism. Importantly, this countermeasure improves robustness without compromising decentralization or degrading the performance of the protocol.
 
-Elevator opens the way to a new class of algorithms that we refer to as hub sampling algorithms, where structural centrality is deliberately engineered within unstructured overlays. One particularly promising application domain is artificial intelligence, and federated learning in particular, where controlled hub structures may accelerate model aggregation and dissemination. This use case will be studied in detail in @chap:heal.
+Elevator opens the way to a new class of algorithms that we refer to as hub sampling algorithms, where structural centrality is deliberately engineered within unstructured overlays. One particularly promising application domain is artificial intelligence, and federated learning in particular, where controlled hub structures may accelerate model aggregation and dissemination. Before presenting this contribution, @chap:learning surveys the state of the art in decentralized learning. This use case (and our associated contribution in the field) is then studied in detail in @chap:heal.
+
