@@ -15,6 +15,10 @@ phd_thesis/
 ├── diff9to11_fixed.typ                   # Diff entre versions v9 et v11
 ├── typst_flatten.py                      # Script Python pour aplatir les includes en un seul .typ
 ├── Phd_thesis_typdiff_v9_to_v11.pdf      # PDF du diff visuel entre v9 et v11
+├── AGENTS.md                             # Ce fichier — analyse du dépôt, du manuscrit, note
+├── presentation/
+│   ├── slides.typ                        # Présentation Touying pour la soutenance (72 slides)
+│   └── slides.pdf                        # PDF compilé de la présentation
 ├── template/
 │   ├── References.bib                    # Bibliographie BibTeX (167 entrées, 1532 lignes)
 │   ├── customization/
@@ -85,6 +89,66 @@ phd_thesis/
 - La date de soutenance est mise à `01/01/1970` (placeholder)
 - Le jury contient des noms génériques `"Prénom Nom"` (à compléter)
 - Les figures sont toutes en PDF vectoriel (sauf une image webp ARPANET)
+
+---
+
+## 2b. Présentation de soutenance (`presentation/slides.typ`)
+
+### Stack technique
+
+| Composant | Version | Usage |
+|---|---|---|
+| `touying` | 0.5.5 | Moteur de slides (navigation, overlay, animations) |
+| `themes.metropolis` | (inclus dans touying) | Thème de présentation (en-têtes, footer, barre de progression) |
+| `fletcher` | 0.5.8 | Diagrammes de graphes inline (non utilisé dans les slides actuels) |
+
+### Thème et style
+
+- **Thème** : metropolis (inspiré de LaTeX beamer mtheme)
+- **Couleur primaire** : `rgb("#800080")` (violet, cohérent avec le manuscrit)
+- **Couleur secondaire** : `rgb("#23373b")` (en-têtes foncés)
+- **Police** : DejaVu Sans (disponible sur le système), DejaVu Math TeX Gyre pour les équations
+- **Ratio** : 16:9
+- **Footer** : numéro de slide / total + barre de progression
+
+### Structure des slides (72 slides au total)
+
+| Section | Slides | Durée estimée | Contenu |
+|---|---|---|---|
+| **Title** | 1 | — | Page de titre avec logos Sorbonne/LIP6/CNRS |
+| **Opening** | 6 | ~5 min | About me, Research trajectory, NEMO project, Centralisation of AI, Why decentralise, Research question |
+| **Foundations** | 3 | ~3 min | Contributions (C1–C4), Formal model, Failure models |
+| **State of the Art** | 4 | ~5 min | Overlay landscape, Power-law overlays, Decentralised ML landscape, The gap |
+| **Elevator & Lift** | 12 | ~12 min | Intuition, Hub definition, Protocol, Desired properties, Stability proof, Convergence proof, Model vs simulation, Simulation overview, Normal/crash/churn results, TCP/IP deployment, Byzantine attacks, Lift |
+| **HEAL & FLAIR** | 9 | ~10 min | Motivation, Layered architecture, 5-phase protocol, Crash-free results, Convergence speed table, Crash resilience, Churn resilience, Summary table, FLAIR architecture & evaluation |
+| **Conclusions & Outlook** | 4 | ~5 min | Summary of contributions, Limitations, Near-term perspectives, Long-term perspectives |
+| **Thank you** | 1 | — | Slide de fin |
+| **Appendix** | 9 | backup | Publications, Crash detail, Baseline comparison, Byzantine detail, Hub count, Hub crash, Simulation infrastructure, FLAIR detail |
+
+### Slides clés (narratif de la soutenance)
+
+1. **"About Me"** : diplôme ingénieur 2018 → 4 ans conseil (blockchain/DevOps) → thèse feb. 2023 → séjour Tokyo
+2. **"Research Trajectory"** : 3 étapes visuelles — FL+Blockchain → Gossip Learning → Peer Sampling (les 2 pivots)
+3. **"NEMO Project"** : projet européen H2020, rethink Internet/5G, pivot sécurité→performance
+4. **"The Gap We Fill"** : slide centrale — le bottleneck est au niveau peer sampling, pas learning
+5. **"HEAL: Summary of Results"** : tableau comparatif FL / Gossip / HEAL (✓/✗)
+6. **"Limitations"** : même honnêteté que le manuscrit
+
+### Commande de compilation
+
+```bash
+typst compile --root . presentation/slides.typ presentation/slides.pdf
+```
+
+> ⚠️ Le flag `--root .` est obligatoire car les figures référencent `../Images/` en dehors du dossier `presentation/`.
+
+### Pièges de code (Touying)
+
+- **Pas de `][` dans les `#slide[...]`** : Touying utilise `][` comme séparateur de blocs de contenu. Un `#grid(columns: ..)[cell1][cell2]` à l'intérieur d'un `#slide[]` sera interprété comme deux blocs de slide séparés. Utiliser `#table(...)` à la place pour les grilles multi-cellules.
+- **Pas de syntaxe LaTeX en mode math** : `\delta` → `delta`, `\subseteq` → `subset.eq`, `\log` → `log`, `\text{...}` → `"..."`, `\frac{a}{b}` → `a/b`, etc.
+- **`str()` n'accepte pas le contenu** : pour les labels numériques dans les grilles, utiliser `str(num)` pour les entiers mais pas pour le contenu Typst.
+- **Fontes** : Fira Sans n'est pas installée sur le système. DejaVu Sans est utilisée comme fallback.
+- **Images** : les chemins sont relatifs au dossier `presentation/` (ex: `../Images/HEAL/...`). Certaines images référencées peuvent ne pas exister (ex: `Elevator_normal_1000_100xp_biggest_component_strong_color_zoom.pdf`).
 
 ---
 
@@ -248,4 +312,4 @@ phd_thesis/
 
 ---
 
-*Dernière mise à jour : 2026-05-06*
+*Dernière mise à jour : 2026-05-06 — ajout section présentation*
