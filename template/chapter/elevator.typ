@@ -834,15 +834,15 @@ We evaluate the two proposed models (Model A: Geometric Growth Model and Model B
 #grid(
     columns: 1,
 [#figure(
-  image("../../Images/models/indegree_Nsize_comparison_models.pdf", width: 90%),
+  image("../../Images/models/indegree_Nsize_comparison_models.svg", width: 90%),
   caption: [In-degree evolution of the hub, comparing models with simulation data, with N from 100 to 1000. K=20, h=10.],
 ) <ModelNsize>],
 [#figure(
-  image("../../Images/models/indegree_cachesize_comparison_models.pdf", width: 90%),
+  image("../../Images/models/indegree_cachesize_comparison_models.svg", width: 90%),
   caption: [In-degree evolution of the hub, comparing models with simulation data, with varying values for K. N=1000, h=10.],
 ) <Modelcachesize>],
 [#figure(
-  image("../../Images/models/indegree_numberhubs_comparison_models.pdf", width: 90%),
+  image("../../Images/models/indegree_numberhubs_comparison_models.svg", width: 90%),
   caption: [In-degree evolution of the hub, comparing models with simulation data, with varying values for h. K=20, N=1000.],
 ) <Modelnbhubs>]
 )
@@ -989,15 +989,15 @@ This is better than PROOFS and Newscast, which output respectively 3 and 4 for t
 #grid(
   columns: 1,
   [#figure(
-  image("../../Images/Elevator/normal_1000_100xp_clustering_color.pdf", width: 90%),
+  image("../../Images/Elevator/normal_1000_100xp_clustering_color.svg", width: 90%),
   caption: [Clustering coefficient computed during the simulation (no failures), for each algorithm, every 10 cycles],
 ) <fig:ClustCoef>],
 [#figure(
-  image("../../Images/Elevator/normal_1000_100xp_average_path_color.pdf", width: 90%),
+  image("../../Images/Elevator/normal_1000_100xp_average_path_color.svg", width: 90%),
   caption: [Average path length computed during the simulation (no failures), for each algorithm, every 10 cycles],
 ) <fig:AveragePathLength>],
 [#figure(
-  image("../../Images/Elevator/normal_1000_100xp_diameter_color.pdf", width: 90%),
+  image("../../Images/Elevator/normal_1000_100xp_diameter_color.svg", width: 90%),
   caption: [Diameter computed during the simulation (no failures), for each algorithm, every 10 cycles],
 ) <fig:Diameter>],
 )
@@ -1019,15 +1019,15 @@ The same observation holds for the average path length and the diameter, as we c
 #grid(
   columns: 1,
 [#figure(
-  image("../../Images/Elevator/crash_1000_100xp_clustering_color.pdf", width: 90%),
+  image("../../Images/Elevator/crash_1000_100xp_clustering_color.svg", width: 90%),
   caption: [Clustering coefficient computed with a 50% crash, for each algorithm, every 10 cycles],
 ) <fig:ClustCoefCrash>],
 [#figure(
-  image("../../Images/Elevator/crash_1000_100xp_average_path_color.pdf", width: 90%),
+  image("../../Images/Elevator/crash_1000_100xp_average_path_color.svg", width: 90%),
   caption: [Average path length computed with a 50% crash, for each algorithm, every 10 cycles],
 ) <fig:AveragePathLengthCrash>],
 [#figure(
-  image("../../Images/Elevator/crash_1000_100xp_diameter_color.pdf", width: 90%),
+  image("../../Images/Elevator/crash_1000_100xp_diameter_color.svg", width: 90%),
   caption: [Diameter computed with a 50% crash, for each algorithm, every 10 cycles],
 ) <fig:DiameterCrash>],
 )
@@ -1049,15 +1049,15 @@ In @fig:DiameterChurn, we can see that the diameter varies with churn, with a me
 #grid(
   columns: 1,
 [#figure(
-  image("../../Images/Elevator/churn_1000_100xp_clustering_color.pdf", width: 90%),
+  image("../../Images/Elevator/churn_1000_100xp_clustering_color.svg", width: 90%),
   caption: [Clustering coefficient computed with churn, for each algorithm, every 10 cycles],
 ) <fig:ClustCoefChurn>],
 [#figure(
-  image("../../Images/Elevator/churn_1000_100xp_average_path_color.pdf", width: 90%),
+  image("../../Images/Elevator/churn_1000_100xp_average_path_color.svg", width: 90%),
   caption: [Average path length computed with churn, for each algorithm, every 10 cycles],
 ) <fig:AveragePathLengthChurn>],
 [#figure(
-  image("../../Images/Elevator/churn_1000_100xp_diameter_color.pdf", width: 90%),
+  image("../../Images/Elevator/churn_1000_100xp_diameter_color.svg", width: 90%),
   caption: [Diameter computed with churn, for each algorithm, every 10 cycles],
 ) <fig:DiameterChurn>],
 )
@@ -1076,15 +1076,15 @@ Its the same for the average path length and the diameter, there is no impact, a
 #grid(
   columns: 1,
 [#figure(
-  image("../../Images/Elevator/crash_hub_1000_100xp_clustering_color.pdf", width: 90%),
+  image("../../Images/Elevator/crash_hub_1000_100xp_clustering_color.svg", width: 90%),
   caption: [Clustering coefficient computed with a hub-targeted failure, for each algorithm, every 10 cycles],
 ) <fig:ClustCoefCrashHub>],
 [#figure(
-  image("../../Images/Elevator/crash_hub_1000_100xp_average_path_color.pdf", width: 90%),
+  image("../../Images/Elevator/crash_hub_1000_100xp_average_path_color.svg", width: 90%),
   caption: [Average path length computed with a hub-targeted failure, for each algorithm, every 10 cycles],
 ) <fig:AveragePathLengthCrashHub>],
 [#figure(
-  image("../../Images/Elevator/crash_hub_1000_100xp_diameter_color.pdf", width: 90%),
+  image("../../Images/Elevator/crash_hub_1000_100xp_diameter_color.svg", width: 90%),
   caption: [Diameter computed with a hub-targeted failure, for each algorithm, every 10 cycles],
 ) <fig:DiameterCrashHub>],
 )
@@ -1103,24 +1103,24 @@ When multiple non-coordinated Byzantine nodes are introduced randomly in the net
 #grid(
   columns: 1,
 [#figure(
-  image("../../Images/CANDAR/elevator.ElevatorV15_normalStats_100_nb_hubs_graph_100_cycles.pdf", width: 90%),
+  image("../../Images/CANDAR/elevator.ElevatorV15_normalStats_100_nb_hubs_graph_100_cycles.svg", width: 90%),
   caption: [Running of Elevator without attack.],
 ) <fig:no_attack>
 ],
   [
     #figure(
-      image("../../Images/CANDAR/elevator.ElevatorVOneByzantine2_oneByzantineActif_1000_nb_hubs_100_cycles.pdf", width: 90%),
+      image("../../Images/CANDAR/elevator.ElevatorVOneByzantine2_oneByzantineActif_1000_nb_hubs_100_cycles.svg", width: 90%),
       caption: [Active Byzantine behavior.],
     ) <fig:single_byzantine_active>
   ],
   [
     #figure(
-      image("../../Images/CANDAR/elevator.ElevatorVOneByzantine_oneByzantinePassif_1000_nb_hubs_100_cycles.pdf", width: 90%),
+      image("../../Images/CANDAR/elevator.ElevatorVOneByzantine_oneByzantinePassif_1000_nb_hubs_100_cycles.svg", width: 90%),
       caption: [Passive Byzantine behavior.],
     ) <fig:single_byzantine_passive>
   ],
   [#figure(
-  image("../../Images/CANDAR/elevator.ElevatorVByzantine2_5percentindep_1000_nb_hubs_100_cycles.pdf", width: 90%),
+  image("../../Images/CANDAR/elevator.ElevatorVByzantine2_5percentindep_1000_nb_hubs_100_cycles.svg", width: 90%),
   caption: [Independent Byzantine attack at 5% rate.],
 ) <fig:independent_byzantine>
 ],)
@@ -1133,17 +1133,17 @@ These findings demonstrate that while Elevator is resilient to individual or ind
 #grid(
   columns: 1,
 [#figure(
-  image("../../Images/CANDAR/elevator.ElevatorVByzantine2_1percentrandom_1000_nb_hubs_100_cycles.pdf", width: 90%),
+  image("../../Images/CANDAR/elevator.ElevatorVByzantine2_1percentrandom_1000_nb_hubs_100_cycles.svg", width: 90%),
   caption: [Byzantine hub infiltration at 1% rate.],
 ) <fig:1percent_byzantine>
 ],
 [#figure(
-  image("../../Images/CANDAR/elevator.ElevatorVByzantine2_2percentrandom_1000_nb_hubs_100_cycles.pdf", width: 90%),
+  image("../../Images/CANDAR/elevator.ElevatorVByzantine2_2percentrandom_1000_nb_hubs_100_cycles.svg", width: 90%),
   caption: [Byzantine hub infiltration at 2% rate.],
 ) <fig:2percent_byzantine>
 ],
 [#figure(
-  image("../../Images/CANDAR/elevator.ElevatorVByzantine2_5percentrandom_1000_nb_hubs_100_cycles.pdf", width: 90%),
+  image("../../Images/CANDAR/elevator.ElevatorVByzantine2_5percentrandom_1000_nb_hubs_100_cycles.svg", width: 90%),
   caption: [Byzantine hub infiltration at 5% rate.],
 ) <fig:5percent_byzantine>
 ],
@@ -1162,15 +1162,15 @@ At 15% Byzantine participation, the Lift countermeasure’s effectiveness dimini
 #grid(
   columns: 1,
 [#figure(
-      image("../../Images/CANDAR/elevator.ElevatorVCounter_5percentcounter_1000_nb_hubs_100_cycles.pdf", width: 90%),
+      image("../../Images/CANDAR/elevator.ElevatorVCounter_5percentcounter_1000_nb_hubs_100_cycles.svg", width: 90%),
       caption: [Counter-attack effectiveness at 5% rate.],
     ) <fig:counter_5percent>],
     [    #figure(
-      image("../../Images/CANDAR/elevator.ElevatorVCounter_10percentcounter_1000_nb_hubs_100_cycles.pdf", width: 90%),
+      image("../../Images/CANDAR/elevator.ElevatorVCounter_10percentcounter_1000_nb_hubs_100_cycles.svg", width: 90%),
       caption: [Counter-attack effectiveness at 10% rate.],
     ) <fig:counter_10percent>],
     [    #figure(
-      image("../../Images/CANDAR/elevator.ElevatorVCounter_15percentcounter_1000_nb_hubs_100_cycles.pdf", width: 90%),
+      image("../../Images/CANDAR/elevator.ElevatorVCounter_15percentcounter_1000_nb_hubs_100_cycles.svg", width: 90%),
       caption: [Counter-attack effectiveness at 15% rate.],
     ) <fig:counter_15percent>
 ],
@@ -1183,11 +1183,11 @@ We first analyzed the structural properties of the network produced by the Eleva
 #grid(
   columns: 1,
 [#figure(
-  image("../../Images/Elevator/Elevator_1000_100xp_indegree_color.pdf", width: 90%),
+  image("../../Images/Elevator/Elevator_1000_100xp_indegree_color.svg", width: 90%),
   caption: [In-degree distribution of the network, after the run of the Elevator algorithm, with a variable number of hubs (5 hubs, 10 hubs, 15 hubs, 20 hubs), no failures.],
 ) <fig:degreeDistributionVariableNbHubs>],
 [#figure(
-  image("../../Images/Elevator/Elevator_context_1000_100xp_indegree_color.pdf", width: 90%),
+  image("../../Images/Elevator/Elevator_context_1000_100xp_indegree_color.svg", width: 90%),
   caption: [In-degree distribution of the network, after the run of the Elevator algorithm, during each context (no failures, 50% crash, churn, and hub-targeted failure).],
 ) <fig:CompareContext>],
 )
@@ -1197,15 +1197,15 @@ Across different failure contexts, the overall distribution shape and structural
 #grid(
   columns: 1,
 [#figure(
-  image("../../Images/Elevator/Elevator_context_1000_100xp_clustering_color.pdf", width: 90%),
+  image("../../Images/Elevator/Elevator_context_1000_100xp_clustering_color.svg", width: 90%),
   caption: [Clustering of the network, after the run of the Elevator algorithm, during each context (no failures, 50% crash, churn, and hub-targeted failure).],
 ) <fig:ElevatorContextCoefClust>],
 [#figure(
-  image("../../Images/Elevator/Elevator_context_1000_100xp_average_path_color.pdf", width: 90%),
+  image("../../Images/Elevator/Elevator_context_1000_100xp_average_path_color.svg", width: 90%),
   caption: [Average path length of the network, after the run of the Elevator algorithm, during each context (no failures, 50% crash, churn, and hub-targeted failure).],
 ) <fig:ElevatorAveragePathLength>],
 [#figure(
-  image("../../Images/Elevator/Elevator_context_1000_100xp_diameter_color.pdf", width: 90%),
+  image("../../Images/Elevator/Elevator_context_1000_100xp_diameter_color.svg", width: 90%),
   caption: [Diameter of the network, after the run of the Elevator algorithm, during each context (no failures, 50% crash, churn, and hub-targeted failure).],
 ) <fig:ElevatorDiameter>],
 )
@@ -1296,15 +1296,15 @@ Overall, this TCP/IP implementation confirms that Elevator is not only theoretic
 #grid(
   columns: 1,
   [#figure(
-  image("../../Images/Victor/graphe_4HUBS_Cycles12.pdf", width: 90%),
+  image("../../Images/Victor/graphe_4HUBS_Cycles12.svg", width: 90%),
   caption: [Number of hubs at each cycle, with $N=20$, $c=10$ and $h=4$],
 ) <fig:Victor20nodes>],
   [#figure(
-  image("../../Images/Victor/graphe_5HUBS_Cycles.pdf", width: 90%),
+  image("../../Images/Victor/graphe_5HUBS_Cycles.svg", width: 90%),
   caption: [Number of hubs at each cycle, with $N=50$, $c=10$ and $h=5$],
 ) <fig:Victor50nodes>],
   [#figure(
-  image("../../Images/Victor/graphe_4HUBS_deco_Cycles.pdf", width: 90%),
+  image("../../Images/Victor/graphe_4HUBS_deco_Cycles.png", width: 90%),
   caption: [Crash of the hubs in the middle of the experiment, with $N=50$, $c=10$ and $h=4$],
 ) <fig:VictorCrash>],
 )
@@ -1322,15 +1322,15 @@ For the single-machine experiments, three configurations of the Elevator protoco
 #grid(
   columns: 1,
 [#figure(
-  image("../../Images/Victor/graphe_test_V1_10_HUBS.pdf", width: 90%),
+  image("../../Images/Victor/graphe_test_V1_10_HUBS.svg", width: 90%),
   caption: [Number of hubs at each cycle, semi-synchronous, with $N=100$, $c=20$ and $h=10$],
 ) <fig:Victor100nodes>],
   [#figure(
-  image("../../Images/Victor/graphe_test_V2_5_HUBS.pdf", width: 90%),
+  image("../../Images/Victor/graphe_test_V2_5_HUBS.svg", width: 90%),
   caption: [Number of hubs, synchronous mode, with $N=100$, $c=20$ and $h=5$],
 ) <fig:Victor100nodesSynchrone>],
   [#figure(
-  image("../../Images/Victor/graphe_test_V3_1_HUBS.pdf", width: 90%),
+  image("../../Images/Victor/graphe_test_V3_1_HUBS.svg", width: 90%),
   caption: [Number of hubs, asynchronous mode, with $N=100$, $c=20$ and $h=1$],
 ) <fig:Victor100nodesAsynchrone>],
 )
@@ -1343,15 +1343,15 @@ Experimental results confirmed theoretical expectations, with rapid convergence 
 #grid(
   columns: 1,
   [#figure(
-  image("../../Images/Victor/graphe_test2_V1.pdf", width: 90%),
+  image("../../Images/Victor/graphe_test2_V1.svg", width: 90%),
   caption: [Experiments on a cluster of 2 machines, semi-synchronous mode, with $N=100$, $c=20$ and $h=10$],
 ) <fig:Victor100nodesCluster>],
   [#figure(
-  image("../../Images/Victor/graphe_test2_V2.pdf", width: 90%),
+  image("../../Images/Victor/graphe_test2_V2.svg", width: 90%),
   caption: [Experiments on a cluster of 2 machines, synchronous mode, with $N=100$, $c=20$ and $h=10$],
 ) <fig:Victor100nodesClusterSynchrone>],
   [#figure(
-  image("../../Images/Victor/graphe_test2_V3.pdf", width: 90%),
+  image("../../Images/Victor/graphe_test2_V3.svg", width: 90%),
   caption: [Experiments on a cluster of 2 machines, asynchronous mode, with $N=100$, $c=20$ and $h=10$],
 ) <fig:Victor100nodesClusterAsynchrone>],
 )

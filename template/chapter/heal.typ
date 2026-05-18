@@ -618,13 +618,13 @@ performs very well for both the Spambase and MNIST datasets.
     columns: 1,
     [
 #figure(
-        image("../../Images/HEAL/normal_accuracy_Spambase_color.pdf", width: 90%),
+        image("../../Images/HEAL/normal_accuracy_Spambase_color.svg", width: 90%),
         caption: [Accuracy of various communication protocols, with a network of 100 nodes, during 1000 cycles. HEAL overlay has 5 hubs, each node sends its model to one hub, for the Spambase dataset, no failures],
       ) <fig:AccuracySpambase>
     ],
     [
 #figure(
-        image("../../Images/HEAL/normal_accuracy_MNIST_color.pdf", width: 90%),
+        image("../../Images/HEAL/normal_accuracy_MNIST_color.svg", width: 90%),
         caption: [Accuracy of various communication protocols, with a network of 100 nodes, during 1000 cycles. HEAL overlay has 5 hubs, each node sends its model to one hub, for the MNIST dataset, no failures],
       ) <fig:AccuracyMNIST>
     ])
@@ -718,7 +718,7 @@ which we send our model, from 1 to $"nb_hubs"/2$, slightly increases
 convergence speed.
 
 #figure(
-  image("../../Images/HEAL/various_hub_accuracy_MNIST_color.pdf", width: 90%),
+  image("../../Images/HEAL/various_hub_accuracy_MNIST_color.svg", width: 90%),
   caption: [HEAL with different numbers of hubs (_h_), from 1 to 25, each
   node sent its model to (_s_) hubs, with (_s_) equals to 1 or $h/2$,
   no failures, 2000 cycles],
@@ -757,7 +757,7 @@ and Fedlay. HEAL is the algorithm with the best results, although Gaia remains
 very close, as seen in @fig:AccuracyCrash20peers.
 
 #figure(
-  image("../../Images/HEAL/crash20peers_accuracy_MNIST_color.pdf", width: 90%),
+  image("../../Images/HEAL/crash20peers_accuracy_MNIST_color.svg", width: 90%),
   caption: [Accuracy of various communication protocols, with a network of 100 nodes, during 1000 cycles. HEAL overlay has 5 hubs, each node sends its model to one hub. for the MNIST dataset, when 20\% of the nodes fail at cycle 10],
 ) <fig:AccuracyCrash20peers>
 
@@ -765,7 +765,7 @@ We also compared HEAL subjected to different level of crashes (20%, 30%, 40%, 50
 We have summarized our results in @tab:results-crash. The final accuracy, at cycle n°200, is very close to the accuracy obtained without crashes for a crash level of 20\%. For greater crash level, the drop in accuracy is greater, but the algorithm still manages to converge. For a crash level of 40%, accuracy reaches 0.9, in a number of cycles of 107.
 
 #figure(
-  image("../../Images/HEAL/hub_learning_crash_accuracy_MNIST_color.pdf", width: 90%),
+  image("../../Images/HEAL/hub_learning_crash_accuracy_MNIST_color.svg", width: 90%),
   caption: [Accuracy of HEAL for the MNIST dataset for different levels of crash, with 100 nodes and 5 hubs, each node sent its model to one hub, 200 cycles],
 ) <fig:AccuracyCrashVarious>
 
@@ -814,7 +814,7 @@ churn, model accuracy falls slightly, but rises again very quickly once churn is
 over, back to the level without failures.
 
 #figure(
-  image("../../Images/HEAL/hub_learning_accuracy_allcontexts_color.pdf", width: 90%),
+  image("../../Images/HEAL/hub_learning_accuracy_allcontexts_color.svg", width: 90%),
   caption: [HEAL for all contexts (no failures, crash of 20 peers, crash
   of 1 hub, crash of all hubs, churn), with 5 hubs, each node sent its
   model to one hub, 200 cycles],
@@ -823,7 +823,7 @@ over, back to the level without failures.
 We also compared HEAL subjected to different level of churn (10%, 20%, 30%), as seen in the @fig:AccuracyChurnVarious. HEAL remain resilient even under a churn level of 30%. The accuracy level drops sharply during the churn phase, but rises again almost immediately when the churn is over.
 
 #figure(
-  image("../../Images/HEAL/hub_learning_churn_accuracy_MNIST_color.pdf", width: 90%),
+  image("../../Images/HEAL/hub_learning_churn_accuracy_MNIST_color.svg", width: 90%),
   caption: [Accuracy of HEAL for the MNIST dataset for different levels of churn, with 100 nodes and 5 hubs, each node sent its model to one hub, 200 cycles.],
 ) <fig:AccuracyChurnVarious>
 
@@ -1316,7 +1316,7 @@ scalability of decentralized designs with the efficiency of clustering, providin
 superior performance in static deployments.
 
 #figure(
-  image("../../Images/FLAIR/fl_comparison_100n_100e.pdf", width: 90%),
+  image("../../Images/FLAIR/fl_comparison_100n_100e.svg", width: 90%),
   caption: [Accuracy evolution of FLAIR and baselines in static networks (100 nodes).],
 ) <fig:flair-comparison>
 
@@ -1326,32 +1326,32 @@ superior performance in static deployments.
 In the baseline case without dropout, FLAIR stabilized around $0.90$ accuracy.
 
 #figure(
-  image("../../Images/FLAIR/leach_fault_recurring_1_epoch_per_round.pdf", width: 95%),
+  image("../../Images/FLAIR/leach_fault_recurring_1_epoch_per_round.svg", width: 95%),
   caption: [Accuracy evolution of FLAIR under recurring fault conditions (1 epoch per round).],
 ) <fig:flair-leach_fault_recurring_1epoch>
 
 #figure(
-  image("../../Images/FLAIR/leach_fault_permanent_1_epoch_per_round.pdf", width: 95%),
+  image("../../Images/FLAIR/leach_fault_permanent_1_epoch_per_round.svg", width: 95%),
   caption: [Accuracy evolution of FLAIR under permanent fault conditions (1 epoch per round).],
 ) <fig:flair-leach_fault_permanent_1epoch>
 
 #figure(
-  image("../../Images/FLAIR/leach_fault_random_1_epoch_per_round.pdf", width: 95%),
+  image("../../Images/FLAIR/leach_fault_random_1_epoch_per_round.svg", width: 95%),
   caption: [Accuracy evolution of FLAIR under random fault conditions (1 epoch per round).],
 ) <fig:flair-leach_fault_random_1epoch>
 
 #figure(
-  image("../../Images/FLAIR/leach_fault_recurring_3_epochs_per_round.pdf", width: 95%),
+  image("../../Images/FLAIR/leach_fault_recurring_3_epochs_per_round.svg", width: 95%),
   caption: [Accuracy evolution of FLAIR under recurring fault conditions (3 epochs per round).],
 ) <fig:flair-leach_fault_recurring_3epochs>
 
 #figure(
-  image("../../Images/FLAIR/leach_fault_permanent_3_epochs_per_round.pdf", width: 95%),
+  image("../../Images/FLAIR/leach_fault_permanent_3_epochs_per_round.svg", width: 95%),
   caption: [Accuracy evolution of FLAIR under permanent fault conditions (3 epochs per round).],
 ) <fig:flair-leach_fault_permanent_3epochs>
 
 #figure(
-  image("../../Images/FLAIR/leach_fault_random_3_epochs_per_round.pdf", width: 95%),
+  image("../../Images/FLAIR/leach_fault_random_3_epochs_per_round.svg", width: 95%),
   caption: [Accuracy evolution of FLAIR under random fault conditions (3 epochs per round).],
 ) <fig:flair-leach_fault_random_3epochs>
 
@@ -1411,12 +1411,12 @@ indicate that FLAIR is resilient to mobility effects and that its clustering mec
 effectively adapts to dynamic topologies.
 
 #figure(
-  image("../../Images/FLAIR/mobility_perfect.pdf", width: 90%),
+  image("../../Images/FLAIR/mobility_perfect.svg", width: 90%),
   caption: [Accuracy evolution of FLAIR under five mobility patterns with perfect connectivity.],
 ) <fig:flair-mobility_perfect>
 
 #figure(
-  image("../../Images/FLAIR/mobility_range_limited.pdf", width: 90%),
+  image("../../Images/FLAIR/mobility_range_limited.svg", width: 90%),
   caption: [Accuracy evolution of FLAIR under five mobility patterns with range-limited connectivity.],
 ) <fig:flair-mobility_range_limited>
 
@@ -1429,7 +1429,7 @@ Both configurations converge near the centralized baseline of 71.9%, with final
 accuracies of 71.2% and 71.4% respectively.
 
 #figure(
-  image("../../Images/FLAIR/fl_rounds_comparison.pdf", width: 90%),
+  image("../../Images/FLAIR/fl_rounds_comparison.svg", width: 90%),
   caption: [Accuracy evolution on the Watering the Plants dataset under the smart
   farming setup (80 fixed sensors + 20 mobile robots). Two local update settings
   ($E_"round" = 1$ vs. $E_"round" = 3$) are compared against the centralized baseline
@@ -1446,17 +1446,17 @@ FLAIR demonstrates graceful degradation and rapid recovery, underscoring its
 practicality for real-world IoT deployments.
 
 #figure(
-  image("../../Images/FLAIR/smart_leach_fault_permanent.pdf", width: 95%),
+  image("../../Images/FLAIR/smart_leach_fault_permanent.svg", width: 95%),
   caption: [Accuracy evolution of FLAIR under permanent fault conditions in the smart farming scenario.],
 ) <fig:flair-smart_fault_permanent>
 
 #figure(
-  image("../../Images/FLAIR/smart_leach_fault_recurring.pdf", width: 95%),
+  image("../../Images/FLAIR/smart_leach_fault_recurring.svg", width: 95%),
   caption: [Accuracy evolution of FLAIR under recurring fault conditions in the smart farming scenario.],
 ) <fig:flair-smart_fault_recurring>
 
 #figure(
-  image("../../Images/FLAIR/smart_leach_fault_random.pdf", width: 95%),
+  image("../../Images/FLAIR/smart_leach_fault_random.svg", width: 95%),
   caption: [Accuracy evolution of FLAIR under random fault conditions in the smart farming scenario.],
 ) <fig:flair-smart_fault_random>
 

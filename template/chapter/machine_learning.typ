@@ -60,12 +60,8 @@ across nodes rather than data. We now formalise this setting.
     import draw: *
 
     // --- Circles ---
-circle((2.8, 0), radius: 3.8,
-  fill: rgb("#1D9E75").lighten(75%).transparentize(30%),
-  stroke: rgb("#1D9E75") + 0.5pt)
-circle((6.2, 0), radius: 3.8,
-  fill: rgb("#7F77DD").lighten(75%).transparentize(30%),
-  stroke: rgb("#7F77DD") + 0.5pt)
+circle((2.8, 0), radius: 3.8, stroke: rgb("#1D9E75") + 0.5pt)
+circle((6.2, 0), radius: 3.8, stroke: rgb("#7F77DD") + 0.5pt)
   
     // --- Left: Machine learning ---
     content((1.0, 1.4), text(size: 10pt, weight: "bold")[Machine learning])
