@@ -10,6 +10,10 @@
   lang: "en",
 )
 
+// PDF/A-1a compliance: default alt text for equations and images
+#set math.equation(alt: "mathematical expression")
+#set image(alt: "image")
+
 // #let appendix(body) = {
 //   set heading(numbering: "A.1", supplement: [Appendix])
 //   counter(heading).update(0)

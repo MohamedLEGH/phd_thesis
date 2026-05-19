@@ -82,6 +82,7 @@ circle((6.2, 0), radius: 3.8, stroke: rgb("#7F77DD") + 0.5pt)
     content((4.5, 0.0), text(size: 8.5pt)[Local data])
     content((4.5, -0.6), text(size: 8.5pt)[Model exchange])
   }),
+  alt: "Venn diagram showing decentralized learning at the intersection of machine learning and peer-to-peer systems",
   caption: [
     Decentralized learning at the intersection of machine learning and
     peer-to-peer systems.

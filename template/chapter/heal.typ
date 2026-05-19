@@ -189,7 +189,7 @@ cetz.canvas({
     line((arrow_x_start, mid_y), (arrow_x_end, mid_y), mark: (end: ">"))
     content((text_x, mid_y), anchor: "west", details.at(i))
   }
-}), caption: [Layered architecture of HEAL]
+}), alt: "Layered architecture diagram of HEAL showing four stacked layers: Network, Overlay, Aggregation, and Application", caption: [Layered architecture of HEAL]
 ) <fig:system-architecture>
 
 ==== Network Layer
@@ -925,7 +925,7 @@ cetz.canvas({
     line((arrow_x_start, mid_y), (arrow_x_end, mid_y), mark: (end: ">"))
     content((text_x, mid_y), anchor: "west", details.at(i))
   }
-}), caption: [Layered architecture of FLAIR]
+}), alt: "Layered architecture diagram of FLAIR showing four stacked layers: Network, Overlay, Aggregation, and Learning Task", caption: [Layered architecture of FLAIR]
 ) <fig:flair-architecture>
 
 === FLAIR Architecture
