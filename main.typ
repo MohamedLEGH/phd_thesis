@@ -22,9 +22,9 @@
 
 #show: template.with(
   language: "fr",
-  uni-logo: image("Logos/SORBONNE UNIVERSITÉ/SORBONNE_UNIVERSITE.svg", height: 32pt),
-  lab-logo: image("Logos/LIP6/LIP6.svg", height: 32pt),
-  orga1-logo: image("Logos/CNRS/CNRS.svg", height: 32pt),
+  uni-logo: image("Logos/SORBONNE UNIVERSITÉ/SORBONNE_UNIVERSITE.svg", height: 32pt, alt: "logo sorbonne university"),
+  lab-logo: image("Logos/LIP6/LIP6.svg", height: 32pt, alt: "logo LIP6"),
+  orga1-logo: image("Logos/CNRS/CNRS.svg", height: 32pt, alt: "logo CNRS"),
   // orga2-logo: image("Logos/logoSuppl.png", height: 32pt),
   university: "Sorbonne Université",
   doctoralschool: "École Doctorale Informatique, Télécommunications et Électronique (ED130)",
@@ -96,7 +96,7 @@
       role: "Invité·e"
     ),
   ),
-  license-logo: image("Logos/LICENSE/by-nc-nd.eu.svg", height: 32pt),
+  license-logo: image("Logos/LICENSE/by-nc-nd.eu.svg", height: 32pt, alt: "logo license"),
   license-text: (
     "Except where otherwise noted, this work is licensed under " +
     linebreak() +
