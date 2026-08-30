@@ -70,14 +70,34 @@
     node-fill: white,
     node-stroke: 1pt,
     {
-      title((0,-4), "Training")
-      title((0,-2), "Data")
-       imagebox((0, -1.5), image("dog.svg", width: 50pt))
-       imagebox((.6, -1.5), image("cat.svg", width: 60pt))
-      title((-0.6,-1), "Labels")
-      labelbox((0,-1), "Dog")
-      labelbox((.6,-1), "Cat")
-      imagebox((1.8, -1.3), image("machine.svg", width: 40pt))
+      title((-2,-3), "Training")
+      title((-3,-2), "Data")
+       imagebox((-3, -1.5), image("dog.svg", width: 50pt), name: <dog_img>)
+       imagebox((-2.5, -1.5), image("cat.svg", width: 60pt), name: <cat_img>)
+      title((-3.7,-1), "Labels")
+      labelbox((-3,-1), "Dog", name: <dog_lbl>)
+      labelbox((-2.5,-1), "Cat", name: <cat_lbl>)
+      imagebox((-1, -1.3), image("machine.svg", width: 40pt), name: <ml>)
+      title((-1, -0.9), "Model")
+
+      // flèche du couple (image chat + label Cat) vers le modèle
+      edge(<cat_lbl>, <ml>, "->", label: [data + label], label-size: 9pt)
+      edge(<cat_img>, <ml>, "->")
+
+      // barre verticale pointillée bleue à droite du modèle (sépare l'inférence)
+      node((0, -4.2), name: <sep_top>, stroke: none, fill: none)
+      node((0, 1.2), name: <sep_bot>, stroke: none, fill: none)
+      edge(<sep_top>, <sep_bot>, stroke: (paint: rgb("#02a9e0"), dash: "dashed", thickness: 1pt))
+
+      title((2,-3), "Prediction")
+
+      imagebox((1,-1.3), image("cat2.svg", width: 50pt))
+      edge("->")
+      imagebox((2,-1.3), image("machine.svg", width: 50pt),name: <machine_trained>)
+      title((2,-.8), "Trained Model")
+      edge(<machine_trained>, <cat_lbl2>, "->")
+      labelbox((3,-1.3), "Cat", name: <cat_lbl2>)
+
   })
 ]
 
