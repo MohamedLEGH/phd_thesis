@@ -70,11 +70,14 @@
     node-fill: white,
     node-stroke: 1pt,
     {
+      title((0,-4), "Training")
       title((0,-2), "Data")
-       node((0, -1.5), image("dog.svg"))
-      title((0,-0.8), "Labels")
-      labelbox((0,0), "Cat")
-      labelbox((1,0), "Dog")
+       imagebox((0, -1.5), image("dog.svg", width: 50pt))
+       imagebox((.6, -1.5), image("cat.svg", width: 60pt))
+      title((-0.6,-1), "Labels")
+      labelbox((0,-1), "Dog")
+      labelbox((.6,-1), "Cat")
+      imagebox((1.8, -1.3), image("machine.svg", width: 40pt))
   })
 ]
 
