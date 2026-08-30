@@ -10,15 +10,21 @@
 ```
 phd_thesis/
 ├── main.typ                              # Point d'entrée : métadonnées + inclusion des chapitres
+├── main.pdf / main_corrected.pdf         # PDF compilés du manuscrit (corrected : conformité PDF/A-1a)
 ├── lib.typ                               # Template Typst : page de garde, TOC, en-têtes, numérotation
 ├── thesis_flatV11.typ                    # Version aplatie (mono-fichier) du manuscrit (~520 Ko)
 ├── diff9to11_fixed.typ                   # Diff entre versions v9 et v11
 ├── typst_flatten.py                      # Script Python pour aplatir les includes en un seul .typ
+├── flatten_opacity.py                    # Script de traitement d'opacité des figures
+├── fix_pdf.sh (et .old)                  # Scripts de correction des PDF compilés
+├── resume.typ / resume.pdf               # Résumé étendu du manuscrit en français (10-15 pages)
+├── "typst - facile.pdf" / "typst - print.pdf"  # Versions d'impression / lecture du manuscrit
 ├── Phd_thesis_typdiff_v9_to_v11.pdf      # PDF du diff visuel entre v9 et v11
 ├── AGENTS.md                             # Ce fichier — analyse du dépôt, du manuscrit, note
 ├── presentation/
-│   ├── slides.typ                        # Présentation Touying pour la soutenance (72 slides)
-│   └── slides.pdf                        # PDF compilé de la présentation
+│   ├── slides.typ                        # Présentation Touying pour la soutenance (78 pages PDF)
+│   ├── slides.pdf                        # PDF compilé de la présentation
+│   └── (assets)                          # Figures SVG/PDF/PNG, architecture.tex, ref.bib, plot_classification.py
 ├── template/
 │   ├── References.bib                    # Bibliographie BibTeX (167 entrées, 1532 lignes)
 │   ├── customization/
@@ -30,9 +36,9 @@ phd_thesis/
 │   │   ├── resume_fr.typ                 # Résumé en français (257 lignes)
 │   │   ├── introduction.typ              # Introduction générale (78 lignes, ~3 500 mots)
 │   │   ├── model.typ                     # Chap. 2 : Modèle formel (693 lignes, ~6 800 mots)
-│   │   ├── overlay.typ                   # Chap. 3 : État de l'art overlays P2P (862 lignes, ~15 100 mots)
+│   │   ├── overlay.typ                   # Chap. 3 : État de l'art overlays P2P (861 lignes, ~15 100 mots)
 │   │   ├── elevator.typ                  # Chap. 4 : Elevator & Lift (1 372 lignes, ~14 600 mots)
-│   │   ├── machine_learning.typ          # Chap. 5 : État de l'art ML décentralisé (1 485 lignes, ~8 500 mots)
+│   │   ├── machine_learning.typ          # Chap. 5 : État de l'art ML décentralisé (1 482 lignes, ~8 500 mots)
 │   │   ├── heal.typ                      # Chap. 6 : HEAL & FLAIR (1 559 lignes, ~12 500 mots)
 │   │   ├── conclusions_outlook.typ       # Chap. 7 : Conclusions et perspectives (341 lignes, ~4 000 mots)
 │   │   ├── publications.typ              # Liste des publications (27 lignes)
@@ -46,11 +52,16 @@ phd_thesis/
 │   ├── FLAIR/                            # Figures d'évaluation de FLAIR
 │   ├── Victor/                           # Figures de graphes (collaboration stagiaire)
 │   ├── TON/                              # Figures pour l'article TON (simulation PeerSim)
+│   ├── CANDAR/                           # Figures Elevator normal + byzantin (conf. CANDAR)
+│   ├── Dataset/                          # Jeux de données (ex. MNIST_dataset_example.png)
+│   ├── Elevator/                         # Figures Elevator supplémentaires (crash, churn, ...)
 │   └── 1_ieIdnYcxt4kS71uA1QsFGw_arpanet.webp  # Image ARPANET (intro)
 ├── Logos/
 │   ├── SORBONNE UNIVERSITÉ/
 │   ├── LIP6/
 │   ├── CNRS/
+│   ├── LINCS/                            # Logo LINCS (LINCS.png, LINCS_WHITE.png)
+│   ├── logoSuppl.png
 │   └── LICENSE/
 └── .git/
 ```
@@ -88,7 +99,7 @@ phd_thesis/
 - Les chapitres commentés (`simulators.typ`, `variants_heal.typ`) sont exclus du build via `// #include`
 - La date de soutenance est mise à `01/01/1970` (placeholder)
 - Le jury contient des noms génériques `"Prénom Nom"` (à compléter)
-- Les figures sont toutes en PDF vectoriel (sauf une image webp ARPANET)
+- Les figures référencées par les chapitres sont en SVG vectoriel (58 appels `image()`), 2 PNG et 1 webp ARPANET — plus aucun PDF direct dans les appels d'images
 
 ---
 
@@ -98,41 +109,31 @@ phd_thesis/
 
 | Composant | Version | Usage |
 |---|---|---|
-| `touying` | 0.5.5 | Moteur de slides (navigation, overlay, animations) |
-| `themes.metropolis` | (inclus dans touying) | Thème de présentation (en-têtes, footer, barre de progression) |
-| `fletcher` | 0.5.8 | Diagrammes de graphes inline (non utilisé dans les slides actuels) |
+| `touying` | 0.6.1 | Moteur de slides (navigation, overlay, animations) |
+| `themes.simple` | (inclus dans touying) | Thème de présentation (défaut, sobre) |
+| `fletcher` | 0.5.8 | Diagrammes de graphes inline (utilisé : 3 `#fletcher-diagram`, reducer actif) |
+| `lovelace` | 0.3.0 | Pseudocode algorithmique (`pseudocode-list`, `pseudocode`) |
 
 ### Thème et style
 
-- **Thème** : metropolis (inspiré de LaTeX beamer mtheme)
-- **Couleur primaire** : `rgb("#800080")` (violet, cohérent avec le manuscrit)
-- **Couleur secondaire** : `rgb("#23373b")` (en-têtes foncés)
-- **Police** : DejaVu Sans (disponible sur le système), DejaVu Math TeX Gyre pour les équations
-- **Ratio** : 16:9
-- **Footer** : numéro de slide / total + barre de progression
+- **Thème** : `simple` (aucune couleur personnalisée — palette par défaut du thème)
+- **Police** : aucune fonte déclarée (polices par défaut du système)
+- **Ratio** : 16:9 (`aspect-ratio: "16-9"`)
+- **Footer** : `footer: []` (vide, pas de numéro de slide ni barre de progression)
+- **Date de soutenance** : *07 September 2026* (slide titre)
 
-### Structure des slides (72 slides au total)
+### Structure des slides (78 pages PDF compilées)
 
-| Section | Slides | Durée estimée | Contenu |
-|---|---|---|---|
-| **Title** | 1 | — | Page de titre avec logos Sorbonne/LIP6/CNRS |
-| **Opening** | 6 | ~5 min | About me, Research trajectory, NEMO project, Centralisation of AI, Why decentralise, Research question |
-| **Foundations** | 3 | ~3 min | Contributions (C1–C4), Formal model, Failure models |
-| **State of the Art** | 4 | ~5 min | Overlay landscape, Power-law overlays, Decentralised ML landscape, The gap |
-| **Elevator & Lift** | 12 | ~12 min | Intuition, Hub definition, Protocol, Desired properties, Stability proof, Convergence proof, Model vs simulation, Simulation overview, Normal/crash/churn results, TCP/IP deployment, Byzantine attacks, Lift |
-| **HEAL & FLAIR** | 9 | ~10 min | Motivation, Layered architecture, 5-phase protocol, Crash-free results, Convergence speed table, Crash resilience, Churn resilience, Summary table, FLAIR architecture & evaluation |
-| **Conclusions & Outlook** | 4 | ~5 min | Summary of contributions, Limitations, Near-term perspectives, Long-term perspectives |
-| **Thank you** | 1 | — | Slide de fin |
-| **Appendix** | 9 | backup | Publications, Crash detail, Baseline comparison, Byzantine detail, Hub count, Hub crash, Simulation infrastructure, FLAIR detail |
+Le PDF compilé fait **78 pages** — certains `#slide[...]` multi-blocs `][` génèrent plusieurs frames. Sections (`==`) et titres (`=`) :
 
-### Slides clés (narratif de la soutenance)
-
-1. **"About Me"** : diplôme ingénieur 2018 → 4 ans conseil (blockchain/DevOps) → thèse feb. 2023 → séjour Tokyo
-2. **"Research Trajectory"** : 3 étapes visuelles — FL+Blockchain → Gossip Learning → Peer Sampling (les 2 pivots)
-3. **"NEMO Project"** : projet européen H2020, rethink Internet/5G, pivot sécurité→performance
-4. **"The Gap We Fill"** : slide centrale — le bottleneck est au niveau peer sampling, pas learning
-5. **"HEAL: Summary of Results"** : tableau comparatif FL / Gossip / HEAL (✓/✗)
-6. **"Limitations"** : même honnêteté que le manuscrit
+| Section | Contenu |
+|---|---|
+| **Title slide** | « Resilient and Efficient Decentralized Learning », auteurs, 07 September 2026 |
+| `== Me` / `== Plan` | Intro personnelle + plan |
+| `= Context` | FL centralisé, Blockchain-based FL (**marqué `todo`**), Gossip Learning, comparaison FL vs Gossip, Peer sampling |
+| `= Elevator & HEAL protocols` | Architecture, topologie hub & hub sampling, algorithme Elevator, exemple de topologie, Hub Learning Protocol, contextes d'expériences, résilience (crash/churn), byzantin |
+| `= Next steps` | Nœuds hétérogènes, réseau physique (+ une section `==` vide) |
+| `= Appendix` | Algorithmes hub learning, background thread, simulation, métriques, contextes, churn, algorithme FL, hub learning main idea |
 
 ### Commande de compilation
 
@@ -144,11 +145,11 @@ typst compile --root . presentation/slides.typ presentation/slides.pdf
 
 ### Pièges de code (Touying)
 
-- **Pas de `][` dans les `#slide[...]`** : Touying utilise `][` comme séparateur de blocs de contenu. Un `#grid(columns: ..)[cell1][cell2]` à l'intérieur d'un `#slide[]` sera interprété comme deux blocs de slide séparés. Utiliser `#table(...)` à la place pour les grilles multi-cellules.
+- **Pas de `][` dans les `#slide[...]`** : Touying utilise `][` comme séparateur de blocs de contenu — chaque bloc devient une frame séparée (le fichier en contient 5, d'où 78 pages pour ~55 blocs). Un `#grid(columns: ..)[cell1][cell2]` à l'intérieur d'un `#slide[]` sera interprété comme deux blocs de slide séparés. Utiliser `#table(...)` à la place pour les grilles multi-cellules.
 - **Pas de syntaxe LaTeX en mode math** : `\delta` → `delta`, `\subseteq` → `subset.eq`, `\log` → `log`, `\text{...}` → `"..."`, `\frac{a}{b}` → `a/b`, etc.
 - **`str()` n'accepte pas le contenu** : pour les labels numériques dans les grilles, utiliser `str(num)` pour les entiers mais pas pour le contenu Typst.
-- **Fontes** : Fira Sans n'est pas installée sur le système. DejaVu Sans est utilisée comme fallback.
-- **Images** : les chemins sont relatifs au dossier `presentation/` (ex: `../Images/HEAL/...`). Certaines images référencées peuvent ne pas exister (ex: `Elevator_normal_1000_100xp_biggest_component_strong_color_zoom.pdf`).
+- **Warning touying 0.6.1** : à la compilation, un warning apparaît sur `@preview/touying:0.6.1/src/pdfpc.typ` (query `<pdfpc>`) — sans conséquence sur le PDF généré.
+- **Images** : les chemins sont relatifs au dossier `presentation/` (ex: `Elevator_normal_1000_100xp_indegree_color.svg`). Beaucoup de figures sont en SVG dans `presentation/` lui-même.
 
 ---
 
@@ -215,7 +216,7 @@ typst compile --root . presentation/slides.typ presentation/slides.pdf
 | Mots totaux (chapters + appendix) | ~84 000 |
 | Lignes de code Typst | ~10 000 |
 | Références bibliographiques | 167 |
-| Figures / Images | ~373 |
+| Figures / Images | 518 fichiers image dans `Images/` (PDF/SVG/PNG) ; ~143 blocs `figure` dans les chapitres |
 | Définitions formelles | 74+ |
 | Propositions / Preuves | 17+ (chapitre Elevator) |
 | Publications issues de la thèse | 5 (dont 1 Outstanding Paper Award) |
@@ -305,11 +306,12 @@ typst compile --root . presentation/slides.typ presentation/slides.pdf
 ### Incohérences détectées
 
 1. L'abstract mentionne « image and text classification tasks » mais l'évaluation HEAL ne couvre que Spambase (binaire) et MNIST (image). Pas de tâche de classification de texte.
-2. La date de soutenance est `01/01/1970` (placeholder).
+2. La date de soutenance est `01/01/1970` (placeholder) — alors que les slides indiquent *07 September 2026*.
 3. Les membres du jury sont des placeholders (`"Prénom Nom"`, `"Titre"`).
-4. Le chapitre FLAIR mentionne CIFAR-10 dans les figures (`normal_accuracy_Cifar_10_color.pdf`) mais le texte ne semble pas évaluer sur CIFAR-10.
+4. ~~Le chapitre FLAIR mentionne CIFAR-10 dans les figures~~ — **résolu** : le fichier `Images/HEAL/normal_accuracy_Cifar_10_color.{svg,pdf}` existe toujours mais `heal.typ` ne le référence plus (aucune mention « cifar » dans les chapitres).
 5. Le chapitre `simulators.typ` est commenté mais son contenu est référencé indirectement dans le résumé français et l'appendice.
+6. `presentation/slides.typ` a des modifications non commitées (git status : `M`) et contient une slide « Blockchain-based Federated Learning » marquée `todo` + une section `==` vide (l. 531).
 
 ---
 
-*Dernière mise à jour : 2026-05-06 — ajout section présentation*
+*Dernière mise à jour : 2026-08-28 — vérification de l'exactitude : structure, section présentation (touying 0.6.1, simple theme, 78 pages), stats et incohérences*

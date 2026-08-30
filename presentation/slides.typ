@@ -4,8 +4,6 @@
 #import "@preview/touying:0.6.1": *
 #import themes.simple: *
 
-#let fletcher-diagram = touying-reducer.with(reduce: fletcher.diagram, cover: fletcher.hide)
-
 #show: simple-theme.with(
   aspect-ratio: "16-9",
   footer: [],
@@ -33,18 +31,227 @@
   Sorbonne University, LIP6, NPA
   // #footnote[Sorbonne University] <uni> #h(1em)
 
-  24 September 2025
+  07 September 2026
 ]
 
+// == Me
+
+// #slide[
+//   #set align(horizon)
+//   #set align(center)
+
+//   #v(2em)
+//   *Mohamed Amine LEGHERABA*
+//   #v(1.5em)
+
+//   #align(left)[
+//     - #text(weight: "bold")[2018] — Engineering degree from Polytech Sorbonne
+//     - #text(weight: "bold")[2019 – 2023] — Blockchain and peer-to-peer systems
+//     - #text(weight: "bold")[2023 – present] — PhD at LIP6, Sorbonne Université
+//   ]
+// ]
+
+// == Plan
+
 = Context
+
+== Machine Learning
+
+#slide[
+  #set text(size: 18pt)
+  #set align(horizon)
+  #set align(center)
+
+  #let labelbox(pos, ..args) = node(pos, ..args, fill: luma(97%), outset: 3pt)
+  #let title(pos, ..args) = node(pos, ..args, stroke: none, fill: none)
+  #let imagebox(pos, ..args) = node(pos, ..args, shape: rect, stroke: none, fill: none, outset: 0pt, inset: 0pt)
+
+  #fletcher-diagram(
+    node-fill: white,
+    node-stroke: 1pt,
+    {
+      title((0,-2), "Data")
+       node((0, -1.5), image("dog.svg"))
+      title((0,-0.8), "Labels")
+      labelbox((0,0), "Cat")
+      labelbox((1,0), "Dog")
+  })
+]
+
+== Federated Learning building blocks
+
+#slide[
+  #set align(horizon)
+  #set align(center)
+  #set text(size: 9pt)
+
+  #grid(
+    columns: (1fr, 1fr),
+    // LEFT: online learning
+    fletcher-diagram(
+      spacing: (16mm, 10mm),
+      node-stroke: 0.8pt,
+      node-fill: white,
+      {
+      node((0, 0), [Sample $t-1$\ $(x_(t-1), y_(t-1))$], shape: rect, name: <prev>, stroke: gray.lighten(50%))
+      node((0, 1), [*Sample $t$*\ $(x_t, y_t)$], shape: rect, name: <cur>)
+      node((0, 2), [Sample $t+1$\ $(x_(t+1), y_(t+1))$], shape: rect, name: <next>, stroke: gray.lighten(50%))
+      node((1, 1), [*Model*\ $f(x ; theta_t)$], shape: rect, name: <model>)
+      node((2, 1), [*Loss*\ $ell(f(x_t ; theta_t), y_t)$], shape: rect, name: <loss>)
+      node((1, 2.5), [$theta_(t+1) = theta_t - eta nabla ell$], shape: rect, name: <update>)
+      edge(<cur>,    <model>,  marks: "->", label: "(1) forward")
+      edge(<model>,  <loss>,   marks: "->", label: "(2) loss")
+      edge(<loss>,   <update>, marks: "->", label: "(3) backward")
+      edge(<update>, <model>,  marks: "->", label: "(4) update θ")
+    }),
+    // RIGHT: ensemble learning
+    fletcher-diagram(
+      spacing: (14mm, 8mm),
+      node-stroke: 0.8pt,
+      node-fill: white,
+      {
+      node((0, 2), [*Input* $x$], shape: rect, name: <input>)
+      node((1, 0), [Weak learner $f_1$\ $hat(y)_1 = f_1(x)$], shape: rect, name: <f1>)
+      node((1, 1), [Weak learner $f_2$\ $hat(y)_2 = f_2(x)$], shape: rect, name: <f2>)
+      node((1, 2), [Weak learner $f_3$\ $hat(y)_3 = f_3(x)$], shape: rect, name: <f3>)
+      node((1, 3), [Weak learner $f_4$\ $hat(y)_4 = f_4(x)$], shape: rect, name: <f4>)
+      node((1, 4), [Weak learner $f_5$\ $hat(y)_5 = f_5(x)$], shape: rect, name: <f5>)
+      node((2, 2), [*Aggregation*\ $sum_(m=1)^M alpha_m f_m(x)$], shape: rect, name: <agg>)
+      node((3, 2), [*Strong learner*\ $f_"ens"(x)$], shape: rect, name: <strong>)
+      edge(<input>, <f1>, marks: "->")
+      edge(<input>, <f2>, marks: "->")
+      edge(<input>, <f3>, marks: "->")
+      edge(<input>, <f4>, marks: "->")
+      edge(<input>, <f5>, marks: "->")
+      edge(<f1>, <agg>, marks: "->")
+      edge(<f2>, <agg>, marks: "->")
+      edge(<f3>, <agg>, marks: "->")
+      edge(<f4>, <agg>, marks: "->")
+      edge(<f5>, <agg>, marks: "->")
+      edge(<agg>, <strong>, marks: "->")
+    })
+  )
+]
 
 == Federated Learning @mcmahan2017communication
 
 #slide[
   #set align(horizon)
   #set align(center)
-  #image("federated_learning.png", height: 60%) #footnote(link("https://en.wikipedia.org/wiki/Federated_learning"))
-  ]
+
+  #grid(
+    columns: (1fr, 1fr),
+    fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
+      node((-0.5, 0), [*Server*\ global model $theta^((t))$], shape: rect, fill: blue.lighten(70%), stroke: blue.darken(20%) + 0.8pt, name: <server>)
+      node((-1.2, 2), [*Client 1*\ dataset $cal(D)_1$], shape: rect, fill: green.lighten(70%), stroke: green.darken(20%) + 0.8pt, name: <c1>)
+      node((-0.4, 2), [*Client 2*\ dataset $cal(D)_2$], shape: rect, fill: green.lighten(70%), stroke: green.darken(20%) + 0.8pt, name: <c2>)
+      node((0.4, 2), [*Client 3*\ dataset $cal(D)_3$], shape: rect, fill: green.lighten(70%), stroke: green.darken(20%) + 0.8pt, name: <c3>)
+      edge(<server>, <c1>, marks: "<->", stroke: 1pt)
+      edge(<server>, <c2>, marks: "<->", stroke: 1pt)
+      edge(<server>, <c3>, marks: "<->", stroke: 1pt)
+    }),
+    pseudocode-list(
+      booktabs: true,
+      title: [Federated Learning (FedAvg)],
+    )[
+      + *for* $t = 0$ *to* $T - 1$ *do*
+        + server broadcasts $theta^((t))$
+        + *for each* client $i$ *in parallel*: $theta_i arrow.l$ local training (lr $eta$, $E$ steps)
+        + server aggregates: $theta^((t+1)) arrow.l sum w_i theta_i$
+      + *end for*
+    ],
+  )
+]
+
+// == Federated Learning building blocks
+
+// online learning
+
+// ensemble learning
+
+== Blockchain-based Federated Learning
+#slide[
+
+  #set align(horizon)
+  #set align(center)
+
+  #fletcher-diagram(
+    spacing: (20mm, 18mm),
+    node-stroke: 0.8pt,
+    edge-stroke: 1pt,
+
+    // --- Smart contract (center) ---
+    node((1.5, 1),
+      [*Smart contract*\ aggregation logic],
+      shape: rect,
+      fill: rgb("#EF9F27").lighten(50%),
+      stroke: rgb("#BA7517") + 0.8pt,
+      name: <sc>),
+
+    // --- Participants ---
+    node((0, 0),
+      [*Node 1*\ $cal(D)_1$],
+      shape: rect,
+      fill: green.lighten(70%),
+      stroke: green.darken(20%) + 0.8pt,
+      name: <n1>),
+    node((1.5, 0),
+      [*Node 2*\ $cal(D)_2$],
+      shape: rect,
+      fill: green.lighten(70%),
+      stroke: green.darken(20%) + 0.8pt,
+      name: <n2>),
+    node((3, 0),
+      [*Node 3*\ $cal(D)_3$],
+      shape: rect,
+      fill: green.lighten(70%),
+      stroke: green.darken(20%) + 0.8pt,
+      name: <n3>),
+    node((0, 2),
+      [*Node 4*\ $cal(D)_4$],
+      shape: rect,
+      fill: green.lighten(70%),
+      stroke: green.darken(20%) + 0.8pt,
+      name: <n4>),
+    node((3, 2),
+      [*Node 5*\ $cal(D)_5$],
+      shape: rect,
+      fill: green.lighten(70%),
+      stroke: green.darken(20%) + 0.8pt,
+      name: <n5>),
+
+    // --- Peer-to-peer connections between nodes ---
+    edge(<n1>, <n2>, marks: "-"),
+    edge(<n2>, <n3>, marks: "-"),
+    edge(<n3>, <n5>, marks: "-"),
+    edge(<n5>, <n4>, marks: "-"),
+    edge(<n4>, <n1>, marks: "-"),
+    edge(<n1>, <n3>, marks: "-"),
+    edge(<n2>, <n4>, marks: "-"),
+
+    // --- Nodes → smart contract (model upload) ---
+    edge(<n1>, <sc>,
+      marks: "->",
+      label: $theta_1^((t))$,
+      label-side: left),
+    edge(<n2>, <sc>,
+      marks: "->",
+      label: $theta_2^((t))$,
+      label-side: left),
+    edge(<n3>, <sc>,
+      marks: "->",
+      label: $theta_3^((t))$,
+      label-side: right),
+    edge(<n4>, <sc>,
+      marks: "->",
+      label: $theta_4^((t))$,
+      label-side: right),
+    edge(<n5>, <sc>,
+      marks: "->",
+      label: $theta_5^((t))$,
+      label-side: right),
+  )
+]
 
 == Gossip Learning @ormandi2013gossip
 
@@ -80,6 +287,39 @@ node((1.8,0),"5", name: "5", radius: 1em)
 ]
   // #image("gossip_algorithm.png", height: 75%, width: 130%)
   ]
+
+// == Gossip Learning vs Federated Learning
+
+// todo
+
+// Show that it's slow
+
+== Architecture
+
+#slide[
+  #set align(horizon)
+  #set align(center)
+  // #set text(size: 15pt)
+
+#image("architecture.png", width: 60%)
+]
+
+== Peer sampling
+
+#slide[
+  #set align(horizon)
+  #set align(center)
+
+  #fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
+    node((0, 2.2), [*Server*\ peer list $P$], shape: rect,
+      fill: blue.lighten(70%), stroke: blue.darken(20%) + 0.8pt, name: <srv>)
+    node((0, 0), [*Node*], shape: rect,
+      fill: green.lighten(70%), stroke: green.darken(20%) + 0.8pt, name: <nd>)
+    edge(<nd>, <srv>, "-|>", label: [request peers],
+    label-side: left, label-size: 18pt)
+    edge(<srv>, <nd>, "-|>", label: [return random [$\{p_1, ..., p_N\}$]], label-size: 18pt, bend: 30deg)
+  })
+]
 
 == Decentralized peer sampling @stavrou2002lightweight
 
@@ -307,28 +547,6 @@ fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
 )
 ]
 
-== Resilience
-#slide[
-  // #set align(horizon)
-  // #set align(center)
-  // #set text(size: 15pt)
-
-#grid(
-  columns: (1fr, 1fr),
-  image("Elevator_context_1000_100xp_indegree_color.svg", fit: "cover"),
-image("Elevator_context_1000_100xp_diameter_color.svg", fit: "cover")
-)
-
-]
-== Resilience against byzantines attacks (paper submitted to CANDAR 2025)
-#slide[
-  #v(-1cm)
-  #set align(horizon)
-  #set align(center)
-  // #set text(size: 15pt)
-  #image("elevator.ElevatorVCounter_5percentcounter_1000_nb_hubs_100_cycles.svg", width: 60%)
-]
-
 == Hub Learning Protocol @legheraba2025heal
 #slide[
   #set align(horizon)
@@ -386,17 +604,6 @@ to the nodes`, fill: blue.lighten(60%), stroke: dash_hub, inset: 0.5em)
 })
 ]
 
-
-== Architecture
-
-#slide[
-  #set align(horizon)
-  #set align(center)
-  // #set text(size: 15pt)
-
-#image("architecture.png", width: 60%)
-]
-
 == Context of experiments
 #slide[
 
@@ -411,6 +618,29 @@ to the nodes`, fill: blue.lighten(60%), stroke: dash_hub, inset: 0.5em)
   - *Datasets*: Spambase and MNIST 
   - Comparison with Federated Learning, Gossip Learning, Epidemic Learning, GAIA, Chord-based Learning, Fedlay
 ]
+
+== Resilience
+#slide[
+  // #set align(horizon)
+  // #set align(center)
+  // #set text(size: 15pt)
+
+#grid(
+  columns: (1fr, 1fr),
+  image("Elevator_context_1000_100xp_indegree_color.svg", fit: "cover"),
+image("Elevator_context_1000_100xp_diameter_color.svg", fit: "cover")
+)
+
+]
+== Resilience against byzantines attacks 
+#slide[
+  #v(-1cm)
+  #set align(horizon)
+  #set align(center)
+  // #set text(size: 15pt)
+  #image("elevator.ElevatorVCounter_5percentcounter_1000_nb_hubs_100_cycles.svg", width: 60%)
+]
+
 
 // #set text(size: 18pt)
 // == Simulation results
@@ -430,20 +660,20 @@ to the nodes`, fill: blue.lighten(60%), stroke: dash_hub, inset: 0.5em)
   )
 ]
 
-= Work at NII
+// = Next steps
 
-== Heterogeneous nodes
-#set text(size: 20pt)
+// == Heterogeneous nodes
+// #set text(size: 20pt)
 
-- For now, the protocol assumes homogeneous nodes (same capabilities and IID data)
+// - For now, the protocol assumes homogeneous nodes (same capabilities and IID data)
 
-- To adapt the procotol to manage heterogeneous nodes, I propose the following modifications:
+// - To adapt the procotol to manage heterogeneous nodes, I propose the following modifications:
 
-  - Each node will compute a score based on 1) Data quantity, 2) Data diversity, 3) CPU power, 4) Bandwidth, 5) Energy
+//   - Each node will compute a score based on 1) Data quantity, 2) Data diversity, 3) CPU power, 4) Bandwidth, 5) Energy
 
-$ "Score" = w_1 dot Q_n + w_2 dot D_n + w_3 dot C_n + w_4 dot B_n + w_5 dot E_n $
+// $ "Score" = w_1 dot Q_n + w_2 dot D_n + w_3 dot C_n + w_4 dot B_n + w_5 dot E_n $
 
-  - Each node will ask it's neighbors for the score of all it's own neighbors and connect to the nodes that have the higher score until convergence to the hubs
+//   - Each node will ask it's neighbors for the score of all it's own neighbors and connect to the nodes that have the higher score until convergence to the hubs
 
 // #let node_score = formula(
 //   "Score_n = w_1 \cdot Q_n + w_2 \cdot D_n + w_3 \cdot C_n + w_4 \cdot B_n + w_5 \cdot E_n"
@@ -462,20 +692,20 @@ $ "Score" = w_1 dot Q_n + w_2 dot D_n + w_3 dot C_n + w_4 dot B_n + w_5 dot E_n 
 // )
 
 
-== Physical network
-#set text(size: 20pt)
+// == Physical network
+// #set text(size: 20pt)
 
-- For now, the protocol assumes an overlay network (if you have the network address of a node you can contact it)
+// - For now, the protocol assumes an overlay network (if you have the network address of a node you can contact it)
 
-- To adapt the protocol for physical networks, I propose to build a hierarchical topology with 2 levels:
+// - To adapt the protocol for physical networks, I propose to build a hierarchical topology with 2 levels:
 
-  - Local network
-  - Global network
+//   - Local network
+//   - Global network
 
-- We can keep the same protocol (Elevator) for the local networks, but we need a protocol to coordinate the hubs of each local network on the global level (consensus protocol)
+// - We can keep the same protocol (Elevator) for the local networks, but we need a protocol to coordinate the hubs of each local network on the global level (consensus protocol)
 
-- Need to take into account the specific features on the local level:
-  - Personalized learning with 3 levels: Global, Local, Device
+// - Need to take into account the specific features on the local level:
+//   - Personalized learning with 3 levels: Global, Local, Device
 // == Conclusion
 // #slide[
 
@@ -755,4 +985,59 @@ image("churn_1000_100xp_diameter_color.svg", fit: "cover")
 //   - Waits to receive models from other hubs.
 //   - Aggregates all these models to obtain the global model.
 //   - Finally, sends the global model back to the nodes.
+]
+
+== Machine Learning
+
+#slide[
+  #set align(horizon)
+  #set align(center)
+  #set text(size: 9pt)
+
+  // TRAINING LOOP
+  #fletcher-diagram(
+    spacing: (3.5cm, 1.0cm),
+    node-stroke: 1.2pt,
+    node-corner-radius: 4pt,
+    {
+    node((0,0), [Training Data \ $bold(X)$],
+         fill: rgb("#dbeafe"), stroke: rgb("#1d4ed8"), name: <data>)
+    node((2,0), [Labels \ $bold(y)$],
+         fill: rgb("#dbeafe"), stroke: rgb("#1d4ed8"), name: <labels>)
+    node((1,1), [Model $f_theta$],
+         fill: rgb("#fef9c3"), stroke: rgb("#ca8a04"), name: <model>)
+    node((1,2), [Predictions \ $hat(bold(y)) = f_theta(bold(X))$],
+         fill: rgb("#dbeafe"), stroke: rgb("#1d4ed8"), name: <pred>)
+    node((0,3), [Loss \ $cal(L)(hat(bold(y)), bold(y))$],
+         fill: rgb("#fce7f3"), stroke: rgb("#be185d"), name: <loss>)
+    node((2,3), [Optimizer \ $theta arrow.l theta - eta nabla_theta cal(L)$],
+         fill: rgb("#dcfce7"), stroke: rgb("#15803d"), name: <opt>)
+    edge(<data>,   <model>, "->", stroke: 1.5pt, label: [features], label-side: left)
+    edge(<labels>, <model>, "->", stroke: 1.5pt)
+    edge(<model>,  <pred>,  "->", stroke: 1.5pt, label: [forward pass], label-side: left)
+    edge(<pred>,   <loss>,  "->", stroke: 1.5pt)
+    edge(<loss>,   <opt>,   "->", stroke: 1.5pt)
+    edge(<opt>, <model>, "->",
+         label: [backward pass], label-side: right,
+         stroke: (paint: rgb("#15803d"), thickness: 1.5pt),
+         bend: -40deg)
+  })
+
+  #v(0.5em)
+
+  // INFERENCE
+  #fletcher-diagram(
+    spacing: (6.0cm, 1.0cm),
+    node-stroke: 1.2pt,
+    node-corner-radius: 4pt,
+    {
+    node((0,0), [Unseen Data \ $bold(x)_"new" in RR^d$],
+         fill: rgb("#dbeafe"), stroke: rgb("#1d4ed8"), name: <input>)
+    node((1.5,0), [Trained Model \ $f_(theta^*)$],
+         fill: rgb("#fef9c3"), stroke: rgb("#ca8a04"), name: <model2>)
+    node((3,0), [Prediction \ $hat(y) = f_(theta^*)(bold(x)_"new")$],
+         fill: rgb("#dcfce7"), stroke: rgb("#15803d"), name: <output>)
+    edge(<input>, <model2>,  "->", stroke: 1.5pt)
+    edge(<model2>, <output>, "->", stroke: 1.5pt)
+  })
 ]
