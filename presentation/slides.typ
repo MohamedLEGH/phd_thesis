@@ -1,5 +1,6 @@
 #import "@preview/fletcher:0.5.8" as fletcher: node, edge
 
+#import "@preview/cetz:0.4.2"
 #import "@preview/lovelace:0.3.0": *
 #import "@preview/touying:0.6.1": *
 #import themes.simple: *
@@ -136,7 +137,7 @@
   )
 ]
 
-== Blockchain-based Federated Learning
+== Blockchain-based Federated Learning #thanks[#cite(<wang2021systematic>, form: "full")]
 #slide[
 
   #set align(horizon)
@@ -148,7 +149,7 @@
     edge-stroke: 1pt,
 
     // --- Smart contract (center) ---
-    labelbox((1.5, 1),
+    labelbox((1.5, 0.7),
       [*Smart contract*],
       name: <sc>),
 
@@ -156,8 +157,8 @@
     imagebox((0,0), image("computer.svg", width: 70pt), name: <n1>),
     imagebox((1.5,0), image("computer.svg", width: 70pt), name: <n2>),
     imagebox((3,0), image("computer.svg", width: 70pt), name: <n3>),
-    imagebox((0,2), image("computer.svg", width: 70pt), name: <n4>),
-    imagebox((3,2), image("computer.svg", width: 70pt), name: <n5>),
+    imagebox((0,1.3), image("computer.svg", width: 70pt), name: <n4>),
+    imagebox((3,1.3), image("computer.svg", width: 70pt), name: <n5>),
 
     // --- Peer-to-peer connections between nodes ---
     edge(<n1>, <n2>, marks: "-"),
@@ -218,7 +219,44 @@ node((1.8,0),"5", name: "5", radius: 1em)
   #set align(center)
   // #set text(size: 15pt)
 
-#image("architecture.png", width: 60%)
+#cetz.canvas({
+  import cetz.draw: *
+  let w = 8
+  let h = 1.6
+  let spacing = 2
+  let colors = (
+    rgb(70%, 70%, 70%),
+    rgb(75%, 90%, 75%),
+    rgb(75%, 85%, 95%),
+    rgb(85%, 75%, 90%),
+  )
+  let labels = (
+    "Network Layer",
+    "Overlay Layer",
+    "Aggregation Layer",
+    "Application Layer",
+  )
+  let details = (
+    "Physical network",
+    "Elevator",
+    "HEAL",
+    "Supervised ML models",
+  )
+
+  for i in range(4) {
+    rect((0, i*spacing), (w, h + (i*spacing)), name: "rect_"+str(i), fill: colors.at(i))
+    // label centré au centre géométrique du rectangle
+    content((w/2, i*spacing + h/2), labels.at(i), anchor: "center")
+
+    let mid_y = (i*spacing) + h/2
+    let arrow_x_start = w + 0.15
+    let arrow_x_end = w + 1.5
+    let text_x = w + 1.7
+
+    line((arrow_x_start, mid_y), (arrow_x_end, mid_y), mark: (end: ">"))
+    content((text_x, mid_y), anchor: "west", details.at(i))
+  }
+})
 ]
 
 == Peer sampling
@@ -240,46 +278,55 @@ node((1.8,0),"5", name: "5", radius: 1em)
 
 == Decentralized peer sampling #thanks[#cite(<stavrou2002lightweight>, form: "full")]
 
-#slide[#set align(center)
-  #set text(15pt)
-#fletcher-diagram({
-node((0,0.5), "7", stroke: 1pt, name: "7", radius: 0.5em)
-edge("<|-")
-node((0.6,0.5), "1", stroke: 1pt, name: "1", radius: 0.5em, fill: blue.lighten(60%))
-edge(label("4"), "-|>")
-edge(label("2"), "-|>")
-edge(label("3"), "-|>")
-node((1.4,-0.1), "2", stroke: 1pt, name: "2", radius: 0.5em)
-node((0.6,1.2), "3", stroke: 1pt, name: "3", radius: 0.5em)
-node((1.2,0.5), "4", stroke: 1pt, name: "4", radius: 0.5em, fill: green.lighten(60%))
-edge(label("3"), "-|>")
-edge(label("8"), "-|>")
-edge(label("5"), "-|>")
-edge(label("6"), "-|>")
-node((2,-0.1), "5", stroke: 1pt, name: "5", radius: 0.5em)
-node((2,1.2), "6", stroke: 1pt, name: "6", radius: 0.5em)
-node((1.2,1.2), "8", stroke: 1pt, name: "8", radius: 0.5em)
-})
+#slide[
+  #set align(horizon)
+  #set align(center)
+
+  #set text(25pt)
+#grid(
+  columns: (1fr, 1fr),
+  align(center)[
+    #fletcher-diagram({
+    node((0,0.5), "7", stroke: 1pt, name: "7", radius: 0.5em)
+    edge("<|-")
+    node((0.6,0.5), "1", stroke: 1pt, name: "1", radius: 0.5em, fill: blue.lighten(60%))
+    edge(label("4"), "-|>")
+    edge(label("2"), "-|>")
+    edge(label("3"), "-|>")
+    node((1.4,-0.1), "2", stroke: 1pt, name: "2", radius: 0.5em)
+    node((0.6,1.2), "3", stroke: 1pt, name: "3", radius: 0.5em)
+    node((1.2,0.5), "4", stroke: 1pt, name: "4", radius: 0.5em, fill: green.lighten(60%))
+    edge(label("3"), "-|>")
+    edge(label("8"), "-|>")
+    edge(label("5"), "-|>")
+    edge(label("6"), "-|>")
+    node((2,-0.1), "5", stroke: 1pt, name: "5", radius: 0.5em)
+    node((2,1.2), "6", stroke: 1pt, name: "6", radius: 0.5em)
+    node((1.2,1.2), "8", stroke: 1pt, name: "8", radius: 0.5em)
+  })
+  ],
+  align(center)[
+    #fletcher-diagram({
+    node((0,0.5), "7", stroke: 1pt, name: "7", radius: 0.5em)
+    edge("<|-")
+    node((0.6,0.5), "1", stroke: 1pt, name: "1", radius: 0.5em, fill: blue.lighten(60%))
+    edge(label("5"), "-|>")
+    edge(label("8"), "-|>")
+    edge(label("6"), "-|>")
+    node((1.4,-0.1), "2", stroke: 1pt, name: "2", radius: 0.5em)
+    node((0.6,1.2), "3", stroke: 1pt, name: "3", radius: 0.5em)
+    node((1.2,0.5), "4", stroke: 1pt, name: "4", radius: 0.5em, fill: green.lighten(60%))
+    edge(label("1"), "-|>")
+    edge(label("3"), "-|>")
+    edge(label("2"), "-|>")
+    node((2,-0.1), "5", stroke: 1pt, name: "5", radius: 0.5em)
+    node((2,1.2), "6", stroke: 1pt, name: "6", radius: 0.5em)
+    node((1.2,1.2), "8", stroke: 1pt, name: "8", radius: 0.5em)
+  })
+  ],
+)
 #v(0.2em)
-#fletcher-diagram({
-node((0,0.5), "7", stroke: 1pt, name: "7", radius: 0.5em)
-edge("<|-")
-node((0.6,0.5), "1", stroke: 1pt, name: "1", radius: 0.5em, fill: blue.lighten(60%))
-edge(label("5"), "-|>")
-edge(label("8"), "-|>")
-edge(label("6"), "-|>")
-node((1.4,-0.1), "2", stroke: 1pt, name: "2", radius: 0.5em)
-node((0.6,1.2), "3", stroke: 1pt, name: "3", radius: 0.5em)
-node((1.2,0.5), "4", stroke: 1pt, name: "4", radius: 0.5em, fill: green.lighten(60%))
-edge(label("1"), "-|>")
-edge(label("3"), "-|>")
-edge(label("2"), "-|>")
-node((2,-0.1), "5", stroke: 1pt, name: "5", radius: 0.5em)
-node((2,1.2), "6", stroke: 1pt, name: "6", radius: 0.5em)
-node((1.2,1.2), "8", stroke: 1pt, name: "8", radius: 0.5em)
-})
-#v(0.2em)
-#set text(size: 12pt)
+#set text(size: 20pt)
 Before and after a shuffling operation. Node 1 sends addresses {itself, 2, 3} to node 4. Node 4 sends back {5,6,
 8}.
 ]
