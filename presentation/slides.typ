@@ -1,6 +1,8 @@
 #import "@preview/fletcher:0.5.8" as fletcher: node, edge
 
 #import "@preview/cetz:0.4.2"
+#import "@preview/great-theorems:0.1.2": *
+#import "../template/customization/colors.typ": *
 #import "@preview/lovelace:0.3.0": *
 #import "@preview/touying:0.6.1": *
 #import themes.simple: *
@@ -63,7 +65,7 @@
 
 // == Plan
 
-= Context
+// = Context
 
 == Machine Learning
 
@@ -105,6 +107,34 @@
       labelbox((3,-1.3), "Cat", name: <cat_lbl2>)
 
   })
+]
+
+== Datasets & Models
+
+#slide[
+  #set align(horizon)
+  #set align(center)
+  #set text(size: 26pt)
+
+  #v(0.5em)
+  #stack(dir: ltr, spacing: 1.5em,
+    // BLOC 1 : Spambase + Logistic regression (sans boîte)
+    align(center + horizon)[
+      #text(size: 20pt)[*Spambase* + *Logistic regression*]
+      #v(0.3em)
+      #image("spambase_features.png", height: 5.5cm)
+      #v(0.2em)
+      #text(size: 20pt)[4601 emails, binary  \   57 parameters]
+    ],
+    // BLOC 2 : MNIST + LeNet5 (sans boîte)
+    align(center + horizon)[
+      #text(size: 20pt)[*MNIST* + *LeNet5*]
+      #v(0.3em)
+      #image("../Images/Dataset/MNIST_dataset_example.png", height: 5.5cm)
+      #v(0.2em)
+      #text(size: 20pt)[70k digits, 10 classes  \   CNN, ~60k parameters]
+    ],
+  )
 ]
 
 == Federated Learning #thanks[#cite(<mcmahan2017communication>, form: "full")]
@@ -259,6 +289,33 @@ node((1.8,0),"5", name: "5", radius: 1em)
 })
 ]
 
+== Services in a P2P Network
+
+#slide[
+  #set align(horizon)
+  #set align(center)
+  #set text(size: 28pt)
+
+  #v(1.5em)
+  #grid(
+    columns: (1fr, 1fr, 1fr),
+    row-gutter: 2em,
+    column-gutter: 1em,
+    box(width: 100%, height: 3em, fill: luma(92%), stroke: gray.lighten(30%) + 1pt,
+        inset: 0.4em, align(center + horizon)[*Peer sampling*]),
+    box(width: 100%, height: 3em, fill: luma(92%), stroke: gray.lighten(30%) + 1pt,
+        inset: 0.4em, align(center + horizon)[*Peer discovery*]),
+    box(width: 100%, height: 3em, fill: luma(92%), stroke: gray.lighten(30%) + 1pt,
+        inset: 0.4em, align(center + horizon)[*Data request*]),
+    box(width: 100%, height: 3em, fill: luma(92%), stroke: gray.lighten(30%) + 1pt,
+        inset: 0.4em, align(center + horizon)[*Membership management*]),
+    box(width: 100%, height: 3em, fill: luma(92%), stroke: gray.lighten(30%) + 1pt,
+        inset: 0.4em, align(center + horizon)[*Topology management*]),
+    box(width: 100%, height: 3em, fill: luma(92%), stroke: gray.lighten(30%) + 1pt,
+        inset: 0.4em, align(center + horizon)[*Information dissemination*]),
+  )
+]
+
 == Peer sampling
 
 #slide[
@@ -331,15 +388,142 @@ Before and after a shuffling operation. Node 1 sends addresses {itself, 2, 3} to
 8}.
 ]
 
-
-= Elevator & HEAL protocols
-
-== Hub-based topology & Hub sampling #thanks[#cite(<legheraba2024elevator>, form: "full")]
+== Metrics
 
 #slide[
-#set text(size: 15pt)
-- The objective is to obtains an overlay network with *h* defined hubs, with *h* a parameter of the algorithm, and each hub is connected to all the nodes in the networks. The application running on top will be able to take advantage of this overlay to speed up message transmission in the network.
+  // #set align(horizon)
+  #set align(center)
+  #set text(size: 28pt)
 
+  #grid(
+    columns: (1fr, 1fr),
+    align(center)[
+      #text(size: 28pt, weight: "bold")[Overlay]
+      #v(0.5em)
+      #align(left)[
+        - *In-degree distribution*
+        - *Clustering coefficient*
+        - *Average path length*
+        - *Diameter*
+        - *Convergence time*
+      ]
+    ],
+    align(center)[
+      #text(size: 28pt, weight: "bold")[Machine learning]
+      #v(0.5em)
+      #align(left)[
+        - *Accuracy*
+      ]
+    ]
+  )
+]
+
+== Failures
+
+#slide[
+  // #set align(horizon)
+  #set align(center)
+  #set text(size: 28pt)
+
+  #grid(
+    columns: (1fr, 1fr),
+    align(center)[
+      #text(size: 28pt, weight: "bold")[Overlay]
+      #v(0.5em)
+      #align(left)[
+        - *Crash failures*
+        - *Churn* (dynamic joins / leaves)
+        - *Byzantine failures*
+      ]
+    ],
+    align(center)[
+      #text(size: 28pt, weight: "bold")[Machine learning]
+      #v(0.5em)
+      #align(left)[
+        - *Privacy attacks*
+        - *Poisoning attacks*
+      ]
+    ]
+  )
+  #v(1em)
+  #text(size: 14pt)[*Note:* ML-level failures are not addressed in this thesis]
+]
+
+== Architecture
+
+#slide[
+  #set align(horizon)
+  #set align(center)
+  // #set text(size: 15pt)
+
+#cetz.canvas({
+  import cetz.draw: *
+  let w = 8
+  let h = 1.6
+  let spacing = 2
+  let colors = (
+    rgb(70%, 70%, 70%),
+    rgb(75%, 90%, 75%),
+    rgb(75%, 85%, 95%),
+    rgb(85%, 75%, 90%),
+  )
+  let labels = (
+    "Network Layer",
+    "Overlay Layer",
+    "Aggregation Layer",
+    "Application Layer",
+  )
+  let details = (
+    "Physical network",
+    "Elevator",
+    "HEAL",
+    "Supervised ML models",
+  )
+
+  for i in range(4) {
+    rect((0, i*spacing), (w, h + (i*spacing)), name: "rect_"+str(i), fill: colors.at(i))
+    // label centré au centre géométrique du rectangle
+    content((w/2, i*spacing + h/2), labels.at(i), anchor: "center")
+
+    let mid_y = (i*spacing) + h/2
+    let arrow_x_start = w + 0.15
+    let arrow_x_end = w + 1.5
+    let text_x = w + 1.7
+
+    line((arrow_x_start, mid_y), (arrow_x_end, mid_y), mark: (end: ">"))
+    content((text_x, mid_y), anchor: "west", details.at(i))
+  }
+})
+]
+
+
+// = Elevator & HEAL protocols
+
+== Hub-based topology #thanks[#cite(<legheraba2024elevator>, form: "full")]
+
+#slide[
+  #set align(horizon)
+  #set align(center)
+
+  #let hubdef = mathblock(
+    blocktitle: "Definition",
+    fill: rgb(75%, 90%, 75%),
+    stroke: rgb(40%, 65%, 40%),
+    radius: 0.3em,
+    inset: 0.8em,
+  )
+
+  #hubdef(title: "Hub")[
+    Let $G = (V, E)$ be the directed overlay graph, where each node $v in V$ keeps
+    a partial view $P(v) subset.eq V$.
+    #v(0.4em)
+    A node $h in V$ is a *hub* if it appears in the partial view of every node:
+    #v(0.4em)
+    $ forall v in V, quad h in P(v) $
+  ]
+]
+
+#slide[
 - *Preferential Attachment*: Drawing from the concept pioneered by Barabási and Albert @barabasi2002evolution, preferential attachment dictates that new connections in the network are established preferentially with nodes possessing a higher number of existing connections. 
 // This mechanism enables the organic emergence of hubs within the network, with selected nodes naturally assuming central roles based on their connectivity without any explicit distinction other than their number of incoming links.
 
@@ -1134,4 +1318,17 @@ node((1.2,1.2), "8", stroke: 1pt, name: "8", radius: 0.5em)
 #set text(size: 12pt)
 Before and after a shuffling operation. Node 1 sends addresses {itself, 2, 3} to node 4. Node 4 sends back {5,6,
 8}.
+]
+
+== Hub-based topology & Hub sampling #thanks[#cite(<legheraba2024elevator>, form: "full")]
+
+#slide[
+#set text(size: 15pt)
+- The objective is to obtains an overlay network with *h* defined hubs, with *h* a parameter of the algorithm, and each hub is connected to all the nodes in the networks. The application running on top will be able to take advantage of this overlay to speed up message transmission in the network.
+
+- *Preferential Attachment*: Drawing from the concept pioneered by Barabási and Albert @barabasi2002evolution, preferential attachment dictates that new connections in the network are established preferentially with nodes possessing a higher number of existing connections. 
+// This mechanism enables the organic emergence of hubs within the network, with selected nodes naturally assuming central roles based on their connectivity without any explicit distinction other than their number of incoming links.
+
+- *Random Attachment*: Inspired by gossip-based peer sampling algorithms (@stavrou2002lightweight @jelasity2007gossip), random attachment ensures that nodes maintain connections with a representative and diverse subset of the network. 
+// This strategy promotes network robustness by preventing excessive clustering and dependency on specific nodes (hubs). When existing hubs disappear (e.g., due to failures or departure), other nodes within the network are opportunistically elevated to hub status, ensuring continuity and adaptability of the network topology over time.
 ]
