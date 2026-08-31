@@ -322,15 +322,35 @@ node((1.8,0),"5", name: "5", radius: 1em)
   #set align(horizon)
   #set align(center)
 
-  #fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
-    node((0, 2.2), [*Server*\ peer list $P$], shape: rect,
-      fill: blue.lighten(70%), stroke: blue.darken(20%) + 0.8pt, name: <srv>)
-    node((0, 0), [*Node*], shape: rect,
-      fill: green.lighten(70%), stroke: green.darken(20%) + 0.8pt, name: <nd>)
-    edge(<nd>, <srv>, "-|>", label: [request peers],
-    label-side: left, label-size: 18pt)
-    edge(<srv>, <nd>, "-|>", label: [return random [$\{p_1, ..., p_N\}$]], label-size: 18pt, bend: 30deg)
-  })
+  #let pvdef = mathblock(
+    blocktitle: "Definition",
+    fill: rgb(75%, 90%, 75%),
+    stroke: rgb(40%, 65%, 40%),
+    radius: 0.3em,
+    inset: 0.6em,
+  )
+
+  #grid(
+    columns: (1fr, 1fr),
+    column-gutter: 1em,
+    align(center)[
+      #fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
+        node((0, 2.2), [*Server*\ peer list $P$], shape: rect,
+          fill: blue.lighten(70%), stroke: blue.darken(20%) + 0.8pt, name: <srv>)
+        node((0, 0), [*Node*], shape: rect,
+          fill: green.lighten(70%), stroke: green.darken(20%) + 0.8pt, name: <nd>)
+        edge(<nd>, <srv>, "-|>", label: [request peers],
+        label-side: left, label-size: 18pt)
+        edge(<srv>, <nd>, "-|>", label: [return random \ [$\{p_1, ..., p_N\}$]], label-size: 18pt, bend: 30deg)
+      })
+    ],
+    align(center)[
+      #pvdef(title: "Partial View")[
+        The *partial view* of $v$, denoted $P(v)$, is the set of nodes $v$ can send
+        messages to, $P(v) subset.eq V$, with $|P(v)| <= c$, $c << N$,
+        and $P(v) = "neigh"_G (v)$.      ]
+    ]
+  )
 ]
 
 == Decentralized peer sampling #thanks[#cite(<stavrou2002lightweight>, form: "full")]
@@ -523,12 +543,40 @@ Before and after a shuffling operation. Node 1 sends addresses {itself, 2, 3} to
   ]
 ]
 
-#slide[
-- *Preferential Attachment*: Drawing from the concept pioneered by Barabási and Albert @barabasi2002evolution, preferential attachment dictates that new connections in the network are established preferentially with nodes possessing a higher number of existing connections. 
-// This mechanism enables the organic emergence of hubs within the network, with selected nodes naturally assuming central roles based on their connectivity without any explicit distinction other than their number of incoming links.
+== Preferential Attachment
 
-- *Random Attachment*: Inspired by gossip-based peer sampling algorithms (@stavrou2002lightweight @jelasity2007gossip), random attachment ensures that nodes maintain connections with a representative and diverse subset of the network. 
-// This strategy promotes network robustness by preventing excessive clustering and dependency on specific nodes (hubs). When existing hubs disappear (e.g., due to failures or departure), other nodes within the network are opportunistically elevated to hub status, ensuring continuity and adaptability of the network topology over time.
+#slide[
+  #set align(horizon)
+  #set align(center)
+  #set text(size: 22pt)
+
+  #block(width: 90%)[
+    *Preferential Attachment* — drawing from the concept pioneered by
+    Barabási and Albert @barabasi2002evolution, new connections are
+    established preferentially with nodes that already have many connections.
+    #v(0.6em)
+    This enables the organic emergence of hubs: selected nodes naturally
+    assume central roles based on their connectivity, without any explicit
+    distinction other than their number of incoming links.
+  ]
+]
+
+== Random Attachment
+
+#slide[
+  #set align(horizon)
+  #set align(center)
+  #set text(size: 22pt)
+
+  #block(width: 90%)[
+    *Random Attachment* — inspired by gossip-based peer sampling algorithms
+    (@stavrou2002lightweight @jelasity2007gossip), nodes maintain a
+    representative and diverse subset of the network.
+    #v(0.6em)
+    This prevents excessive clustering and dependency on specific hubs. When
+    hubs disappear (failures or departure), other nodes are opportunistically
+    elevated to hub status, ensuring continuity and adaptability.
+  ]
 ]
 
 // == Elevator's Algorithm
@@ -672,6 +720,53 @@ fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
   figure(
   image("Elevator_normal_1000_100xp_indegree_color.svg", width: 90%), caption: [Indegree distribution of a network generated with Elevator, with 1000 nodes and 10 hubs])
 )
+]
+
+== Architecture
+
+#slide[
+  #set align(horizon)
+  #set align(center)
+  // #set text(size: 15pt)
+
+#cetz.canvas({
+  import cetz.draw: *
+  let w = 8
+  let h = 1.6
+  let spacing = 2
+  let colors = (
+    rgb(70%, 70%, 70%),
+    rgb(75%, 90%, 75%),
+    rgb(75%, 85%, 95%),
+    rgb(85%, 75%, 90%),
+  )
+  let labels = (
+    "Network Layer",
+    "Overlay Layer",
+    "Aggregation Layer",
+    "Application Layer",
+  )
+  let details = (
+    "Physical network",
+    "Elevator",
+    "HEAL",
+    "Supervised ML models",
+  )
+
+  for i in range(4) {
+    rect((0, i*spacing), (w, h + (i*spacing)), name: "rect_"+str(i), fill: colors.at(i))
+    // label centré au centre géométrique du rectangle
+    content((w/2, i*spacing + h/2), labels.at(i), anchor: "center")
+
+    let mid_y = (i*spacing) + h/2
+    let arrow_x_start = w + 0.15
+    let arrow_x_end = w + 1.5
+    let text_x = w + 1.7
+
+    line((arrow_x_start, mid_y), (arrow_x_end, mid_y), mark: (end: ">"))
+    content((text_x, mid_y), anchor: "west", details.at(i))
+  }
+})
 ]
 
 == Hub Learning Protocol #thanks[#cite(<legheraba2025heal>, form: "full")]
