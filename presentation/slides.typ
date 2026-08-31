@@ -579,73 +579,36 @@ Before and after a shuffling operation. Node 1 sends addresses {itself, 2, 3} to
   ]
 ]
 
-// == Elevator's Algorithm
-// #slide[
-//   #set align(horizon)
-//   #set align(center)
-//   #set text(size: 15pt)
+== Elevator in a nutshell
 
-//   #pseudocode-list(booktabs: true, title: [Elevator Algorithm (active thread)])[
-//     - initial peer list: *cache*
-//     - cache size: *c*
-//     - desired number of hubs: *h*
-//     - initial backward list: *backward_peers* (empty)
-//     + *loop*
-//       + wait($Delta$)
-//       + frequency_map $arrow.l$ ${}$
-//       + *for* peer in *cache* do
-//         + peer_cache $arrow.l$ send(CACHE_REQUEST, peer)
-//         + frequency_map $arrow.l$ frequency_map $union$ peer_cache
-//       + preferred $arrow.l$ frequency_map.sort().select(*c*)
-//       + preferred_backward $arrow.l$ ${}$
-//       + *for* peer in *preferred* do
-//         + peer_backward_peers $arrow.l$ send(BACKWARD_REQUEST, peer)
-//         + preferred_backward $arrow.l$ preferred_backward $union$ peer_backward_peers
-//       + cache $arrow.l$ ${}$
-//       + cache $arrow.l$ selectRandom(preferred, h) $+$ selectRandom(peer_backward_peers, $c-h$)
-//       ]
-// ]
-
-== Elevator's Algorithm
 #slide[
-  #set align(horizon)
   #set align(center)
-  #set text(size: 13pt)
+  #set text(size: 18pt)
 
-  #pseudocode-list(booktabs: true, title: [Elevator Algorithm (active thread)])[
-    - initial peer list: *cache*
-    - cache size: *c*
-    - desired number of hubs: *h*
-    - initial backward list: *backward_peers* (empty)
-    + *loop*
-      + wait($Delta$)
-      + frequency_map $arrow.l$ ${}$
-      + *for* peer in *cache* do
-        + peer_cache $arrow.l$ send(CACHE_REQUEST, peer)
-        + frequency_map $arrow.l$ frequency_map $union$ peer_cache
-      + preferred $arrow.l$ frequency_map.sort().select(*h*)
-      + preferred_backward $arrow.l$ ${}$
-      + *for* peer in *preferred* do
-        + peer_backward_peer $arrow.l$ send(BACKWARD_REQUEST, peer)
-        + preferred_backward.*add*(peer_backward_peer)
-      + cache $arrow.l$ ${}$
-      + cache $arrow.l$ preferred $union$ preferred_backward
-      + backward_peers $arrow.l$ ${}$
+  #grid(
+    columns: (1fr, 1fr),
+    column-gutter: 1.5em,
+    align(center)[
+      #text(size: 19pt, weight: "bold")[Mechanism]
+      #v(0.6em)
+      #align(left)[
+        1. Each node asks its *neighbours* for *their* neighbour lists.
+        #v(0.5em)
+        2. It connects to the *$h$ most frequent* nodes.
+        #v(0.5em)
+        3. It asks these $h$ hubs for extra incoming connections, to fill a *random subset* of its view.
       ]
-][
-  #set align(horizon)
-  #set align(center)
-  #set text(size: 20pt)
-
-  #pseudocode-list(booktabs: true, title: [Elevator Algorithm (background thread)])[
-   + *loop*
-      + request, peer $arrow.l$ receive()
-      + if request == CACHE_REQUEST then
-        + send(cache, peer)
-        + backward_peers.add(peer)
-      + if request == BACKWARD_REQUEST then
-        + send(randomValue(backward_peers), peer)
+    ],
+    align(center)[
+      #text(size: 19pt, weight: "bold")[Observed]
+      #v(0.6em)
+      #align(left)[
+        - after a few cycles, *hubs emerge* (the preferred $h$ are the same for everyone);
+        - hubs are *elected at random* among the network nodes;
+        - even after *hub failures*, new nodes are elected as hubs.
       ]
+    ]
+  )
 ]
 
 
@@ -720,6 +683,105 @@ fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
   figure(
   image("Elevator_normal_1000_100xp_indegree_color.svg", width: 90%), caption: [Indegree distribution of a network generated with Elevator, with 1000 nodes and 10 hubs])
 )
+]
+
+== Mathematical analysis
+
+#slide[
+  #set align(horizon)
+  #set align(center)
+  #set text(size: 20pt)
+
+  #align(left)[
+    - *Geometric model*: first approximation, but *underestimates* convergence time.
+    #v(0.5em)
+    - *Logistic model*: better fit of simulations (lower RMSE/MAE).
+    #v(0.5em)
+    - Gives a *conservative upper bound* on convergence time.
+    #v(0.5em)
+    - Convergence is still *very fast* in practice.
+  ]
+]
+
+== Simulations
+
+#slide[
+  #set align(horizon)
+  #set align(center)
+  #set text(size: 17pt)
+
+  #grid(
+    columns: (1fr, 1fr),
+    column-gutter: 1.5em,
+    align(center)[
+      #align(left)[
+        PeerSim was *forked and substantially rewritten* for this thesis:
+        - Migrated from *SVN to Git*, build rewritten in *Gradle*;
+        - *Docker* + *GitLab CI/CD*;
+        - *Parallelised* the cycle-based engine;
+        - Failure models from scratch (*crash, churn, Byzantine*);
+        - *compute-metrics* rewritten in *Julia (graph-metrics)*.
+      ]
+    ],
+    align(center)[
+      #text(size: 19pt, weight: "bold")[Parameters]
+      #v(0.6em)
+      #align(left)[
+        - Network size: *N = 1000 nodes*;
+        - *1000 cycles*, repeated *100 times*;
+        - Initial topology: *random k-out graph* with *k = c = 20*;
+        - *h = 10* hubs;
+        - e.g. brutal crash: *50% of nodes* disconnected at cycle *500*.
+      ]
+    ]
+  )
+]
+
+== Resilience
+#slide[
+  // #set align(horizon)
+  // #set align(center)
+  // #set text(size: 15pt)
+
+#grid(
+  columns: (1fr, 1fr),
+  image("Elevator_context_1000_100xp_indegree_color.svg", fit: "cover"),
+image("Elevator_context_1000_100xp_diameter_color.svg", fit: "cover")
+)
+
+]
+== Resilience against byzantines attacks 
+#slide[
+  #v(-1cm)
+  #set align(horizon)
+  #set align(center)
+  // #set text(size: 15pt)
+  #image("elevator.ElevatorVCounter_5percentcounter_1000_nb_hubs_100_cycles.svg", width: 60%)
+]
+
+
+== Real TCP/IP experiments
+
+#slide[
+  #set align(horizon)
+  #set align(center)
+  #set text(size: 16pt)
+
+  #grid(
+    columns: (1fr, 1.3fr),
+    column-gutter: 1.5em,
+    align(center)[
+      #align(left)[
+        - *Go* + *libp2p* over *TCP/IP streams* (+ light *HTTP* per node);
+        - networks of *20 to 50 nodes* on *1–2 machines*;
+        - modes: *synchronous / externally-synchronized / asynchronous*;
+        - *hubs emerge within the first few cycles* — matching theory & simulation.
+      ]
+    ],
+    align(center)[
+      #image("../Images/Victor/graphe_4HUBS_Cycles12.svg", width: 100%)
+    ],
+  )
 ]
 
 == Architecture
@@ -841,27 +903,6 @@ to the nodes`, fill: blue.lighten(60%), stroke: dash_hub, inset: 0.5em)
   - Comparison with Federated Learning, Gossip Learning, Epidemic Learning, GAIA, Chord-based Learning, Fedlay
 ]
 
-== Resilience
-#slide[
-  // #set align(horizon)
-  // #set align(center)
-  // #set text(size: 15pt)
-
-#grid(
-  columns: (1fr, 1fr),
-  image("Elevator_context_1000_100xp_indegree_color.svg", fit: "cover"),
-image("Elevator_context_1000_100xp_diameter_color.svg", fit: "cover")
-)
-
-]
-== Resilience against byzantines attacks 
-#slide[
-  #v(-1cm)
-  #set align(horizon)
-  #set align(center)
-  // #set text(size: 15pt)
-  #image("elevator.ElevatorVCounter_5percentcounter_1000_nb_hubs_100_cycles.svg", width: 60%)
-]
 
 
 // #set text(size: 18pt)
@@ -958,6 +999,192 @@ image("Elevator_context_1000_100xp_diameter_color.svg", fit: "cover")
 // ]
 // == Next steps
 
+
+== FLAIR architecture
+
+#slide[
+  #set align(horizon)
+  #set align(center)
+
+#cetz.canvas({
+  import cetz.draw: *
+  let w = 8
+  let h = 1.6
+  let spacing = 2
+  let colors = (
+    rgb(70%, 70%, 70%),
+    rgb(75%, 90%, 75%),
+    rgb(75%, 85%, 95%),
+    rgb(85%, 75%, 90%),
+  )
+  let labels = (
+    "Network Layer",
+    "Overlay Layer",
+    "Aggregation Layer",
+    "Learning Task Layer",
+  )
+  let details = (
+    "Reliable packet delivery over wireless (IEEE 802.11)",
+    "Resource-aware cluster formation & head election",
+    "Local aggregation within clusters by cluster-heads",
+    "Supervised ML models (classification, regression, ...)",
+  )
+
+  for i in range(4) {
+    rect((0, i*spacing), (w, h + (i*spacing)), name: "rect_"+str(i), fill: colors.at(i))
+    content((w/2, i*spacing + h/2), labels.at(i), anchor: "center")
+
+    let mid_y = (i*spacing) + h/2
+    let arrow_x_start = w + 0.15
+    let arrow_x_end = w + 1.5
+    let text_x = w + 1.7
+
+    line((arrow_x_start, mid_y), (arrow_x_end, mid_y), mark: (end: ">"))
+    content((text_x, mid_y), anchor: "west", text(size: 11pt)[#details.at(i)])
+  }
+})
+]
+
+== FLAIR algorithm
+
+#slide[
+  #set align(horizon)
+  #set align(center)
+  #set text(size: 20pt)
+
+  #block(width: 88%)[
+    FLAIR operates in *rounds* (clustering inspired by LEACH); a fraction $p in (0,1)$ of nodes serve as
+    *cluster-heads* (CHs) each round, and the role *rotates* to balance the load.
+    #v(0.5em)
+    A node eligible (not a CH during the last $1\/p$ rounds) elects itself if
+    $x < T(n)$, with $x tilde "Uniform"(0,1)$ drawn via a *VRF*:
+    #v(0.3em)
+    $T(n) = p dot R_n \/ (1 - p dot (r mod 1\/p))$
+    #v(0.3em)
+    with $R_n = alpha dot "CPU"_n + beta dot "RAM"_n + gamma dot "GPU"_n + delta dot "BW"_n$
+    (resource score; $alpha + beta + gamma + delta = 1$).
+    #v(0.5em)
+    Nodes join the nearest CH; the CH *aggregates locally* within its cluster.
+  ]
+]
+
+== FLAIR simulation results
+
+#slide[
+  #set align(horizon)
+  #set align(center)
+  #set text(size: 20pt)
+
+  #grid(
+    columns: (1fr, 1.2fr),
+    align(center)[
+      #block(width: 95%)[
+        - Static network (100 nodes): *highest accuracy* $approx 0.91$
+          (C-FL / HEAL $approx 0.90$, Gossip $approx 0.88$)
+        - Convergence up to *2.5x faster* than Gaia
+        - Resilient to *permanent / temporary / random crashes*
+          (up to 90% nodes)
+        - Tested under *mobility* and in a *smart farming* scenario
+      ]
+    ],
+    align(center)[
+      #image("../Images/FLAIR/fl_comparison_100n_100e.svg", width: 100%)
+    ],
+  )
+]
+
+
+== Conclusion
+
+#slide[
+  #set align(horizon)
+  #set align(center)
+  #set text(size: 19pt)
+
+  #align(left)[
+    - *Elevator*: a self-organising overlay that makes hubs emerge — provides a
+      *structured overlay* for structured aggregation without any coordinator.
+    - *HEAL*: federated learning directly onto the structured overlay —
+      recovers the efficiency of FL while staying decentralised.
+    - *Lift*: hardens hub election against colluding byzantines (up to 10%).
+    - *FLAIR*: validates the modular architecture in wireless networks (LEACH-style clustering).
+    #v(0.5em)
+    *Answer:* structured aggregation is possible *without centralisation*, if the
+    overlay layer is designed with that goal in mind.
+  ]
+]
+
+== Perspectives — short term
+
+#slide[
+  #set align(horizon)
+  #set align(center)
+  #set text(size: 19pt)
+
+  #align(left)[
+    - *Capability-aware hub election* (heterogeneous nodes) and sensitivity to the initial topology.
+    - Optimise Elevator (message complexity, memory, simplicity).
+    - Address *data heterogeneity* in HEAL (personalisation, locally-weighted aggregation).
+    - A unified *Python simulator* for peer sampling + ML.
+  ]
+
+  #v(1em)
+  #text(size: 15pt, fill: gray)[
+    This work has already begun during a *3-month internship at NII (Tokyo)*.
+  ]
+]
+
+== Perspectives — medium term
+
+#slide[
+  #set align(horizon)
+  #set align(center)
+  #set text(size: 19pt)
+
+  #align(left)[
+    - *Byzantine robustness in the learning layer* (poisoning & privacy attacks), encryption and digital signatures.
+    - *Large-scale real-world deployment* of Elevator and HEAL.
+    - Evaluate HEAL with *large machine-learning models* (hundreds of millions of parameters).
+  ]
+]
+
+== Perspectives — long term
+
+#slide[
+  #set align(horizon)
+  #set align(center)
+  #set text(size: 19pt)
+
+  #align(left)[
+    - Extend HEAL to *unsupervised and reinforcement learning*.
+    - *Vertical federated learning* (different features per participant).
+    - *Formal convergence guarantees* for HEAL (partial participation, non-IID, dynamic topologies).
+    - *Incentive mechanism* against free-riding (e.g. blockchain / Lightning).
+    - *Industrial deployment* of the full stack (autonomous vehicles, drone swarms).
+  ]
+]
+
+
+== Publications
+
+#slide[
+  #set align(horizon)
+  #set align(center)
+  #set text(size: 14pt)
+
+  #align(left)[
+    - #cite(<legheraba2024brief>, form: "full")
+    - #cite(<legheraba2024emergent>, form: "full")
+    - #cite(<legheraba2025lift>, form: "full") — *Outstanding Paper Award*
+    - #cite(<legheraba2025heal>, form: "full")
+    - #cite(<legheraba2025noeuds>, form: "full")
+    - #cite(<legheraba2025etoiles>, form: "full")
+    #v(0.8em)
+    - A journal extension (journal version of this work) has been *submitted to the
+      IEEE/ACM Transactions on Networking*; we are awaiting the *final review*
+      (currently in *minor revision*).
+  ]
+]
 
 #slide[
 == 
@@ -1427,3 +1654,46 @@ Before and after a shuffling operation. Node 1 sends addresses {itself, 2, 3} to
 - *Random Attachment*: Inspired by gossip-based peer sampling algorithms (@stavrou2002lightweight @jelasity2007gossip), random attachment ensures that nodes maintain connections with a representative and diverse subset of the network. 
 // This strategy promotes network robustness by preventing excessive clustering and dependency on specific nodes (hubs). When existing hubs disappear (e.g., due to failures or departure), other nodes within the network are opportunistically elevated to hub status, ensuring continuity and adaptability of the network topology over time.
 ]
+
+== Elevator's Algorithm
+#slide[
+  #set align(horizon)
+  #set align(center)
+  #set text(size: 13pt)
+
+  #pseudocode-list(booktabs: true, title: [Elevator Algorithm (active thread)])[
+    - initial peer list: *cache*
+    - cache size: *c*
+    - desired number of hubs: *h*
+    - initial backward list: *backward_peers* (empty)
+    + *loop*
+      + wait($Delta$)
+      + frequency_map $arrow.l$ ${}$
+      + *for* peer in *cache* do
+        + peer_cache $arrow.l$ send(CACHE_REQUEST, peer)
+        + frequency_map $arrow.l$ frequency_map $union$ peer_cache
+      + preferred $arrow.l$ frequency_map.sort().select(*h*)
+      + preferred_backward $arrow.l$ ${}$
+      + *for* peer in *preferred* do
+        + peer_backward_peer $arrow.l$ send(BACKWARD_REQUEST, peer)
+        + preferred_backward.*add*(peer_backward_peer)
+      + cache $arrow.l$ ${}$
+      + cache $arrow.l$ preferred $union$ preferred_backward
+      + backward_peers $arrow.l$ ${}$
+      ]
+][
+  #set align(horizon)
+  #set align(center)
+  #set text(size: 20pt)
+
+  #pseudocode-list(booktabs: true, title: [Elevator Algorithm (background thread)])[
+   + *loop*
+      + request, peer $arrow.l$ receive()
+      + if request == CACHE_REQUEST then
+        + send(cache, peer)
+        + backward_peers.add(peer)
+      + if request == BACKWARD_REQUEST then
+        + send(randomValue(backward_peers), peer)
+      ]
+]
+
