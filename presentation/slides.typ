@@ -112,16 +112,28 @@
   #set align(horizon)
   #set align(center)
 
-  #fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
-    imagebox((0, 1), image("server.svg", width: 70pt), name: <server>)
-    imagebox((-0.4, 2), image("smartphone.svg", width: 60pt), name: <c1>)
-    imagebox((0, 2), image("smartphone.svg", width: 60pt), name: <c2>)
-    imagebox((0.4, 2), image("smartphone.svg", width: 60pt), name: <c3>)
+  #grid(
+    columns: (1fr, 1fr),
+    align(center)[
+      #fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
+        imagebox((0, 1), image("server.svg", width: 70pt), name: <server>)
+        imagebox((-0.4, 2), image("smartphone.svg", width: 60pt), name: <c1>)
+        imagebox((0, 2), image("smartphone.svg", width: 60pt), name: <c2>)
+        imagebox((0.4, 2), image("smartphone.svg", width: 60pt), name: <c3>)
 
-    edge(<server>, <c1>, marks: "<->", stroke: 1pt)
-    edge(<server>, <c2>, marks: "<->", stroke: 1pt)
-    edge(<server>, <c3>, marks: "<->", stroke: 1pt)
-  })
+        edge(<server>, <c1>, marks: "<->", stroke: 1pt)
+        edge(<server>, <c2>, marks: "<->", stroke: 1pt)
+        edge(<server>, <c3>, marks: "<->", stroke: 1pt)
+      })
+    ],
+    align(left)[
+      #text(size: 20pt)[
+        - *Decentralizes the computation load*
+        #v(0.8em)
+        - *Keeps data local* : only models are shared
+      ]
+    ]
+  )
 ]
 
 == Blockchain-based Federated Learning
@@ -228,29 +240,7 @@ node((1.8,0),"5", name: "5", radius: 1em)
 
 == Decentralized peer sampling #thanks[#cite(<stavrou2002lightweight>, form: "full")]
 
-#slide[
-  #set align(horizon)
-  #set align(center)
-  #set text(size: 13pt)
-
-  #pseudocode-list(booktabs: true, title: [PROOFS Algorithm (active thread)])[
-    - initial peer list: *cache*
-    - cache size: *c*
-    - shuffle length: *l*
-    - node address: *p*
-    + *loop*
-      + wait($Delta$)
-      + subset $arrow.l$ selectRandomSubset(cache, l)
-      + q $arrow.l$ selectRandom(subset)
-      + subset.remove(q)
-      + subset.add(p)
-      + send(q, subset)
-      + $"subset"_q$ $arrow.l$ receive(q)
-      + $"subset"_q$.remove(p)
-      + $"subset"_q$.removeAll(cache)
-      + cache $arrow.l$ $"subset"_q$ 
-  ]
-][#set align(center)
+#slide[#set align(center)
   #set text(15pt)
 #fletcher-diagram({
 node((0,0.5), "7", stroke: 1pt, name: "7", radius: 0.5em)
@@ -1029,4 +1019,72 @@ image("churn_1000_100xp_diameter_color.svg", fit: "cover")
     edge(<input>, <model2>,  "->", stroke: 1.5pt)
     edge(<model2>, <output>, "->", stroke: 1.5pt)
   })
+]
+
+== Decentralized peer sampling #thanks[#cite(<stavrou2002lightweight>, form: "full")]
+
+#slide[
+  #set align(horizon)
+  #set align(center)
+  #set text(size: 13pt)
+
+  #pseudocode-list(booktabs: true, title: [PROOFS Algorithm (active thread)])[
+    - initial peer list: *cache*
+    - cache size: *c*
+    - shuffle length: *l*
+    - node address: *p*
+    + *loop*
+      + wait($Delta$)
+      + subset $arrow.l$ selectRandomSubset(cache, l)
+      + q $arrow.l$ selectRandom(subset)
+      + subset.remove(q)
+      + subset.add(p)
+      + send(q, subset)
+      + $"subset"_q$ $arrow.l$ receive(q)
+      + $"subset"_q$.remove(p)
+      + $"subset"_q$.removeAll(cache)
+      + cache $arrow.l$ $"subset"_q$ 
+  ]
+][#set align(center)
+  #set text(15pt)
+#fletcher-diagram({
+node((0,0.5), "7", stroke: 1pt, name: "7", radius: 0.5em)
+edge("<|-")
+node((0.6,0.5), "1", stroke: 1pt, name: "1", radius: 0.5em, fill: blue.lighten(60%))
+edge(label("4"), "-|>")
+edge(label("2"), "-|>")
+edge(label("3"), "-|>")
+node((1.4,-0.1), "2", stroke: 1pt, name: "2", radius: 0.5em)
+node((0.6,1.2), "3", stroke: 1pt, name: "3", radius: 0.5em)
+node((1.2,0.5), "4", stroke: 1pt, name: "4", radius: 0.5em, fill: green.lighten(60%))
+edge(label("3"), "-|>")
+edge(label("8"), "-|>")
+edge(label("5"), "-|>")
+edge(label("6"), "-|>")
+node((2,-0.1), "5", stroke: 1pt, name: "5", radius: 0.5em)
+node((2,1.2), "6", stroke: 1pt, name: "6", radius: 0.5em)
+node((1.2,1.2), "8", stroke: 1pt, name: "8", radius: 0.5em)
+})
+#v(0.2em)
+#fletcher-diagram({
+node((0,0.5), "7", stroke: 1pt, name: "7", radius: 0.5em)
+edge("<|-")
+node((0.6,0.5), "1", stroke: 1pt, name: "1", radius: 0.5em, fill: blue.lighten(60%))
+edge(label("5"), "-|>")
+edge(label("8"), "-|>")
+edge(label("6"), "-|>")
+node((1.4,-0.1), "2", stroke: 1pt, name: "2", radius: 0.5em)
+node((0.6,1.2), "3", stroke: 1pt, name: "3", radius: 0.5em)
+node((1.2,0.5), "4", stroke: 1pt, name: "4", radius: 0.5em, fill: green.lighten(60%))
+edge(label("1"), "-|>")
+edge(label("3"), "-|>")
+edge(label("2"), "-|>")
+node((2,-0.1), "5", stroke: 1pt, name: "5", radius: 0.5em)
+node((2,1.2), "6", stroke: 1pt, name: "6", radius: 0.5em)
+node((1.2,1.2), "8", stroke: 1pt, name: "8", radius: 0.5em)
+})
+#v(0.2em)
+#set text(size: 12pt)
+Before and after a shuffling operation. Node 1 sends addresses {itself, 2, 3} to node 4. Node 4 sends back {5,6,
+8}.
 ]
