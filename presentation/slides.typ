@@ -46,22 +46,23 @@
   07 September 2026
 ]
 
-// == Me
+== Me
 
-// #slide[
-//   #set align(horizon)
-//   #set align(center)
+#slide[
+  #set align(horizon)
+  #set align(center)
 
-//   #v(2em)
-//   *Mohamed Amine LEGHERABA*
-//   #v(1.5em)
+  #v(2em)
+  *Mohamed Amine LEGHERABA*
+  #v(1.5em)
 
-//   #align(left)[
-//     - #text(weight: "bold")[2018] — Engineering degree from Polytech Sorbonne
-//     - #text(weight: "bold")[2019 – 2023] — Blockchain and peer-to-peer systems
-//     - #text(weight: "bold")[2023 – present] — PhD at LIP6, Sorbonne Université
-//   ]
-// ]
+  #align(left)[
+    - #text(weight: "bold")[2018] — Engineering degree from Polytech Sorbonne
+    - #text(weight: "bold")[2019 – 2023] — Blockchain engineer at *Sia Partners*, then *Deloitte*
+    - #text(weight: "bold")[2023 – present] — PhD at LIP6, Sorbonne Université
+    - #text(weight: "bold")[Next] — Blockchain & AI consultant at *Temeritati*
+  ]
+]
 
 // == Plan
 
@@ -495,7 +496,7 @@ Before and after a shuffling operation. Node 1 sends addresses {itself, 2, 3} to
   )
   let details = (
     "Physical network",
-    "Elevator",
+    underline("Elevator"),
     "HEAL",
     "Supervised ML models",
   )
@@ -552,7 +553,7 @@ Before and after a shuffling operation. Node 1 sends addresses {itself, 2, 3} to
 
   #block(width: 90%)[
     *Preferential Attachment* — drawing from the concept pioneered by
-    Barabási and Albert @barabasi2002evolution, new connections are
+    Barabási and Albert #thanks[#cite(<barabasi2002evolution>, form: "full")], new connections are
     established preferentially with nodes that already have many connections.
     #v(0.6em)
     This enables the organic emergence of hubs: selected nodes naturally
@@ -570,7 +571,7 @@ Before and after a shuffling operation. Node 1 sends addresses {itself, 2, 3} to
 
   #block(width: 90%)[
     *Random Attachment* — inspired by gossip-based peer sampling algorithms
-    (@stavrou2002lightweight @jelasity2007gossip), nodes maintain a
+    #thanks[#cite(<stavrou2002lightweight>, form: "full")] #thanks[#cite(<jelasity2007gossip>, form: "full")], nodes maintain a
     representative and diverse subset of the network.
     #v(0.6em)
     This prevents excessive clustering and dependency on specific hubs. When
@@ -693,13 +694,9 @@ fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
   #set text(size: 20pt)
 
   #align(left)[
-    - *Geometric model*: first approximation, but *underestimates* convergence time.
-    #v(0.5em)
-    - *Logistic model*: better fit of simulations (lower RMSE/MAE).
-    #v(0.5em)
-    - Gives a *conservative upper bound* on convergence time.
-    #v(0.5em)
-    - Convergence is still *very fast* in practice.
+    - *Proof of stability*: once converged, the set of $h$ hubs stays constant (w.h.p.).
+    - *Proof of convergence*: the network converges (w.h.p.) to exactly $h$ hubs.
+    - *Fast convergence*: in *$O(log N)$* protocol cycles.
   ]
 ]
 
@@ -708,7 +705,7 @@ fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
 #slide[
   #set align(horizon)
   #set align(center)
-  #set text(size: 17pt)
+  #set text(size: 20pt)
 
   #grid(
     columns: (1fr, 1fr),
@@ -720,7 +717,6 @@ fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
         - *Docker* + *GitLab CI/CD*;
         - *Parallelised* the cycle-based engine;
         - Failure models from scratch (*crash, churn, Byzantine*);
-        - *compute-metrics* rewritten in *Julia (graph-metrics)*.
       ]
     ],
     align(center)[
@@ -811,7 +807,7 @@ image("Elevator_context_1000_100xp_diameter_color.svg", fit: "cover")
   let details = (
     "Physical network",
     "Elevator",
-    "HEAL",
+    underline("HEAL"),
     "Supervised ML models",
   )
 
@@ -1040,7 +1036,7 @@ to the nodes`, fill: blue.lighten(60%), stroke: dash_hub, inset: 0.5em)
     let text_x = w + 1.7
 
     line((arrow_x_start, mid_y), (arrow_x_end, mid_y), mark: (end: ">"))
-    content((text_x, mid_y), anchor: "west", text(size: 11pt)[#details.at(i)])
+    content((text_x, mid_y), anchor: "west", text(size: 20pt)[#details.at(i)])
   }
 })
 ]
@@ -1196,7 +1192,7 @@ to the nodes`, fill: blue.lighten(60%), stroke: dash_hub, inset: 0.5em)
 
 = Appendix
 
-== Federated Learning @mcmahan2017communication
+== Federated Learning #thanks[#cite(<mcmahan2017communication>, form: "full")]
 
 #slide[
   #set align(horizon)
@@ -1363,7 +1359,7 @@ to the nodes`, fill: blue.lighten(60%), stroke: dash_hub, inset: 0.5em)
   #set align(center)
   #set text(size: 19pt)
 
-- Simulations done with the Java PeerSim @p2p09-peersim simulator (modified), 
+- Simulations done with the Java PeerSim #thanks[#cite(<p2p09-peersim>, form: "full")] simulator (modified), 
 with the cycle based mode
 
 - Comparaisons against 3 peer sampling algorithms : Newscast, Proofs and Phenix (Power-law) 
@@ -1648,10 +1644,10 @@ Before and after a shuffling operation. Node 1 sends addresses {itself, 2, 3} to
 #set text(size: 15pt)
 - The objective is to obtains an overlay network with *h* defined hubs, with *h* a parameter of the algorithm, and each hub is connected to all the nodes in the networks. The application running on top will be able to take advantage of this overlay to speed up message transmission in the network.
 
-- *Preferential Attachment*: Drawing from the concept pioneered by Barabási and Albert @barabasi2002evolution, preferential attachment dictates that new connections in the network are established preferentially with nodes possessing a higher number of existing connections. 
+- *Preferential Attachment*: Drawing from the concept pioneered by Barabási and Albert #thanks[#cite(<barabasi2002evolution>, form: "full")], preferential attachment dictates that new connections in the network are established preferentially with nodes possessing a higher number of existing connections. 
 // This mechanism enables the organic emergence of hubs within the network, with selected nodes naturally assuming central roles based on their connectivity without any explicit distinction other than their number of incoming links.
 
-- *Random Attachment*: Inspired by gossip-based peer sampling algorithms (@stavrou2002lightweight @jelasity2007gossip), random attachment ensures that nodes maintain connections with a representative and diverse subset of the network. 
+- *Random Attachment*: Inspired by gossip-based peer sampling algorithms (#thanks[#cite(<stavrou2002lightweight>, form: "full")] #thanks[#cite(<jelasity2007gossip>, form: "full")]), random attachment ensures that nodes maintain connections with a representative and diverse subset of the network. 
 // This strategy promotes network robustness by preventing excessive clustering and dependency on specific nodes (hubs). When existing hubs disappear (e.g., due to failures or departure), other nodes within the network are opportunistically elevated to hub status, ensuring continuity and adaptability of the network topology over time.
 ]
 
