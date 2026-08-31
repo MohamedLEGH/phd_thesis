@@ -4,6 +4,11 @@
 #import "@preview/touying:0.6.1": *
 #import themes.simple: *
 
+#let thanks(body) = {
+  footnote(numbering: _ => [\*])[#body]
+  counter(footnote).update(n => n - 1)
+}
+
 #show: simple-theme.with(
   aspect-ratio: "16-9",
   footer: [],
@@ -15,6 +20,10 @@
 
 #let pseudocode = pseudocode.with(..my-lovelace-defaults)
 #let pseudocode-list = pseudocode-list.with(..my-lovelace-defaults)
+
+#let labelbox(pos, ..args) = node(pos, ..args, fill: luma(97%), outset: 3pt)
+#let title(pos, ..args) = node(pos, ..args, stroke: none, fill: none)
+#let imagebox(pos, ..args) = node(pos, ..args, shape: rect, stroke: none, fill: none, outset: 0pt, inset: 0pt)
 
 // cetz and fletcher bindings for touying
 // #let cetz-canvas = touying-reducer.with(reduce: cetz.canvas, cover: cetz.draw.hide.with(bounds: true))
@@ -62,10 +71,6 @@
   #set align(horizon)
   #set align(center)
 
-  #let labelbox(pos, ..args) = node(pos, ..args, fill: luma(97%), outset: 3pt)
-  #let title(pos, ..args) = node(pos, ..args, stroke: none, fill: none)
-  #let imagebox(pos, ..args) = node(pos, ..args, shape: rect, stroke: none, fill: none, outset: 0pt, inset: 0pt)
-
   #fletcher-diagram(
     node-fill: white,
     node-stroke: 1pt,
@@ -101,96 +106,23 @@
   })
 ]
 
-== Federated Learning building blocks
-
-#slide[
-  #set align(horizon)
-  #set align(center)
-  #set text(size: 9pt)
-
-  #grid(
-    columns: (1fr, 1fr),
-    // LEFT: online learning
-    fletcher-diagram(
-      spacing: (16mm, 10mm),
-      node-stroke: 0.8pt,
-      node-fill: white,
-      {
-      node((0, 0), [Sample $t-1$\ $(x_(t-1), y_(t-1))$], shape: rect, name: <prev>, stroke: gray.lighten(50%))
-      node((0, 1), [*Sample $t$*\ $(x_t, y_t)$], shape: rect, name: <cur>)
-      node((0, 2), [Sample $t+1$\ $(x_(t+1), y_(t+1))$], shape: rect, name: <next>, stroke: gray.lighten(50%))
-      node((1, 1), [*Model*\ $f(x ; theta_t)$], shape: rect, name: <model>)
-      node((2, 1), [*Loss*\ $ell(f(x_t ; theta_t), y_t)$], shape: rect, name: <loss>)
-      node((1, 2.5), [$theta_(t+1) = theta_t - eta nabla ell$], shape: rect, name: <update>)
-      edge(<cur>,    <model>,  marks: "->", label: "(1) forward")
-      edge(<model>,  <loss>,   marks: "->", label: "(2) loss")
-      edge(<loss>,   <update>, marks: "->", label: "(3) backward")
-      edge(<update>, <model>,  marks: "->", label: "(4) update θ")
-    }),
-    // RIGHT: ensemble learning
-    fletcher-diagram(
-      spacing: (14mm, 8mm),
-      node-stroke: 0.8pt,
-      node-fill: white,
-      {
-      node((0, 2), [*Input* $x$], shape: rect, name: <input>)
-      node((1, 0), [Weak learner $f_1$\ $hat(y)_1 = f_1(x)$], shape: rect, name: <f1>)
-      node((1, 1), [Weak learner $f_2$\ $hat(y)_2 = f_2(x)$], shape: rect, name: <f2>)
-      node((1, 2), [Weak learner $f_3$\ $hat(y)_3 = f_3(x)$], shape: rect, name: <f3>)
-      node((1, 3), [Weak learner $f_4$\ $hat(y)_4 = f_4(x)$], shape: rect, name: <f4>)
-      node((1, 4), [Weak learner $f_5$\ $hat(y)_5 = f_5(x)$], shape: rect, name: <f5>)
-      node((2, 2), [*Aggregation*\ $sum_(m=1)^M alpha_m f_m(x)$], shape: rect, name: <agg>)
-      node((3, 2), [*Strong learner*\ $f_"ens"(x)$], shape: rect, name: <strong>)
-      edge(<input>, <f1>, marks: "->")
-      edge(<input>, <f2>, marks: "->")
-      edge(<input>, <f3>, marks: "->")
-      edge(<input>, <f4>, marks: "->")
-      edge(<input>, <f5>, marks: "->")
-      edge(<f1>, <agg>, marks: "->")
-      edge(<f2>, <agg>, marks: "->")
-      edge(<f3>, <agg>, marks: "->")
-      edge(<f4>, <agg>, marks: "->")
-      edge(<f5>, <agg>, marks: "->")
-      edge(<agg>, <strong>, marks: "->")
-    })
-  )
-]
-
-== Federated Learning @mcmahan2017communication
+== Federated Learning #thanks[#cite(<mcmahan2017communication>, form: "full")]
 
 #slide[
   #set align(horizon)
   #set align(center)
 
-  #grid(
-    columns: (1fr, 1fr),
-    fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
-      node((-0.5, 0), [*Server*\ global model $theta^((t))$], shape: rect, fill: blue.lighten(70%), stroke: blue.darken(20%) + 0.8pt, name: <server>)
-      node((-1.2, 2), [*Client 1*\ dataset $cal(D)_1$], shape: rect, fill: green.lighten(70%), stroke: green.darken(20%) + 0.8pt, name: <c1>)
-      node((-0.4, 2), [*Client 2*\ dataset $cal(D)_2$], shape: rect, fill: green.lighten(70%), stroke: green.darken(20%) + 0.8pt, name: <c2>)
-      node((0.4, 2), [*Client 3*\ dataset $cal(D)_3$], shape: rect, fill: green.lighten(70%), stroke: green.darken(20%) + 0.8pt, name: <c3>)
-      edge(<server>, <c1>, marks: "<->", stroke: 1pt)
-      edge(<server>, <c2>, marks: "<->", stroke: 1pt)
-      edge(<server>, <c3>, marks: "<->", stroke: 1pt)
-    }),
-    pseudocode-list(
-      booktabs: true,
-      title: [Federated Learning (FedAvg)],
-    )[
-      + *for* $t = 0$ *to* $T - 1$ *do*
-        + server broadcasts $theta^((t))$
-        + *for each* client $i$ *in parallel*: $theta_i arrow.l$ local training (lr $eta$, $E$ steps)
-        + server aggregates: $theta^((t+1)) arrow.l sum w_i theta_i$
-      + *end for*
-    ],
-  )
+  #fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
+    imagebox((0, 1), image("server.svg", width: 70pt), name: <server>)
+    imagebox((-0.4, 2), image("smartphone.svg", width: 60pt), name: <c1>)
+    imagebox((0, 2), image("smartphone.svg", width: 60pt), name: <c2>)
+    imagebox((0.4, 2), image("smartphone.svg", width: 60pt), name: <c3>)
+
+    edge(<server>, <c1>, marks: "<->", stroke: 1pt)
+    edge(<server>, <c2>, marks: "<->", stroke: 1pt)
+    edge(<server>, <c3>, marks: "<->", stroke: 1pt)
+  })
 ]
-
-// == Federated Learning building blocks
-
-// online learning
-
-// ensemble learning
 
 == Blockchain-based Federated Learning
 #slide[
@@ -204,44 +136,16 @@
     edge-stroke: 1pt,
 
     // --- Smart contract (center) ---
-    node((1.5, 1),
-      [*Smart contract*\ aggregation logic],
-      shape: rect,
-      fill: rgb("#EF9F27").lighten(50%),
-      stroke: rgb("#BA7517") + 0.8pt,
+    labelbox((1.5, 1),
+      [*Smart contract*],
       name: <sc>),
 
     // --- Participants ---
-    node((0, 0),
-      [*Node 1*\ $cal(D)_1$],
-      shape: rect,
-      fill: green.lighten(70%),
-      stroke: green.darken(20%) + 0.8pt,
-      name: <n1>),
-    node((1.5, 0),
-      [*Node 2*\ $cal(D)_2$],
-      shape: rect,
-      fill: green.lighten(70%),
-      stroke: green.darken(20%) + 0.8pt,
-      name: <n2>),
-    node((3, 0),
-      [*Node 3*\ $cal(D)_3$],
-      shape: rect,
-      fill: green.lighten(70%),
-      stroke: green.darken(20%) + 0.8pt,
-      name: <n3>),
-    node((0, 2),
-      [*Node 4*\ $cal(D)_4$],
-      shape: rect,
-      fill: green.lighten(70%),
-      stroke: green.darken(20%) + 0.8pt,
-      name: <n4>),
-    node((3, 2),
-      [*Node 5*\ $cal(D)_5$],
-      shape: rect,
-      fill: green.lighten(70%),
-      stroke: green.darken(20%) + 0.8pt,
-      name: <n5>),
+    imagebox((0,0), image("computer.svg", width: 70pt), name: <n1>),
+    imagebox((1.5,0), image("computer.svg", width: 70pt), name: <n2>),
+    imagebox((3,0), image("computer.svg", width: 70pt), name: <n3>),
+    imagebox((0,2), image("computer.svg", width: 70pt), name: <n4>),
+    imagebox((3,2), image("computer.svg", width: 70pt), name: <n5>),
 
     // --- Peer-to-peer connections between nodes ---
     edge(<n1>, <n2>, marks: "-"),
@@ -250,33 +154,11 @@
     edge(<n5>, <n4>, marks: "-"),
     edge(<n4>, <n1>, marks: "-"),
     edge(<n1>, <n3>, marks: "-"),
-    edge(<n2>, <n4>, marks: "-"),
-
-    // --- Nodes → smart contract (model upload) ---
-    edge(<n1>, <sc>,
-      marks: "->",
-      label: $theta_1^((t))$,
-      label-side: left),
-    edge(<n2>, <sc>,
-      marks: "->",
-      label: $theta_2^((t))$,
-      label-side: left),
-    edge(<n3>, <sc>,
-      marks: "->",
-      label: $theta_3^((t))$,
-      label-side: right),
-    edge(<n4>, <sc>,
-      marks: "->",
-      label: $theta_4^((t))$,
-      label-side: right),
-    edge(<n5>, <sc>,
-      marks: "->",
-      label: $theta_5^((t))$,
-      label-side: right),
   )
 ]
 
-== Gossip Learning @ormandi2013gossip
+== Gossip Learning #thanks[#cite(<ormandi2013gossip>, form: "full")]
+
 
 #slide[
   #set align(horizon)
@@ -344,12 +226,12 @@ node((1.8,0),"5", name: "5", radius: 1em)
   })
 ]
 
-== Decentralized peer sampling @stavrou2002lightweight
+== Decentralized peer sampling #thanks[#cite(<stavrou2002lightweight>, form: "full")]
 
 #slide[
   #set align(horizon)
   #set align(center)
-  #set text(size: 16pt)
+  #set text(size: 13pt)
 
   #pseudocode-list(booktabs: true, title: [PROOFS Algorithm (active thread)])[
     - initial peer list: *cache*
@@ -369,7 +251,7 @@ node((1.8,0),"5", name: "5", radius: 1em)
       + cache $arrow.l$ $"subset"_q$ 
   ]
 ][#set align(center)
-  #set text(20pt)
+  #set text(15pt)
 #fletcher-diagram({
 node((0,0.5), "7", stroke: 1pt, name: "7", radius: 0.5em)
 edge("<|-")
@@ -415,7 +297,8 @@ Before and after a shuffling operation. Node 1 sends addresses {itself, 2, 3} to
 
 = Elevator & HEAL protocols
 
-== Hub-based topology & Hub sampling @legheraba2024elevator
+== Hub-based topology & Hub sampling #thanks[#cite(<legheraba2024elevator>, form: "full")]
+
 #slide[
 #set text(size: 15pt)
 - The objective is to obtains an overlay network with *h* defined hubs, with *h* a parameter of the algorithm, and each hub is connected to all the nodes in the networks. The application running on top will be able to take advantage of this overlay to speed up message transmission in the network.
@@ -570,11 +453,11 @@ fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
 )
 ]
 
-== Hub Learning Protocol @legheraba2025heal
+== Hub Learning Protocol #thanks[#cite(<legheraba2025heal>, form: "full")]
 #slide[
   #set align(horizon)
   #set align(center)
-#set text(size: 23pt)
+#set text(size: 19pt)
 
 #fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
 let dash_node = (paint: green, dash: "dashed")
@@ -770,7 +653,90 @@ image("Elevator_context_1000_100xp_diameter_color.svg", fit: "cover")
 
 = Appendix
 
+== Federated Learning @mcmahan2017communication
 
+#slide[
+  #set align(horizon)
+  #set align(center)
+
+  #grid(
+    columns: (1fr, 1fr),
+    fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
+      node((-0.5, 0), [*Server*\ global model $theta^((t))$], shape: rect, fill: blue.lighten(70%), stroke: blue.darken(20%) + 0.8pt, name: <server>)
+      node((-1.2, 2), [*Client 1*\ dataset $cal(D)_1$], shape: rect, fill: green.lighten(70%), stroke: green.darken(20%) + 0.8pt, name: <c1>)
+      node((-0.4, 2), [*Client 2*\ dataset $cal(D)_2$], shape: rect, fill: green.lighten(70%), stroke: green.darken(20%) + 0.8pt, name: <c2>)
+      node((0.4, 2), [*Client 3*\ dataset $cal(D)_3$], shape: rect, fill: green.lighten(70%), stroke: green.darken(20%) + 0.8pt, name: <c3>)
+      edge(<server>, <c1>, marks: "<->", stroke: 1pt)
+      edge(<server>, <c2>, marks: "<->", stroke: 1pt)
+      edge(<server>, <c3>, marks: "<->", stroke: 1pt)
+    }),
+    pseudocode-list(
+      booktabs: true,
+      title: [Federated Learning (FedAvg)],
+    )[
+      + *for* $t = 0$ *to* $T - 1$ *do*
+        + server broadcasts $theta^((t))$
+        + *for each* client $i$ *in parallel*: $theta_i arrow.l$ local training (lr $eta$, $E$ steps)
+        + server aggregates: $theta^((t+1)) arrow.l sum w_i theta_i$
+      + *end for*
+    ],
+  )
+]
+
+== Federated Learning building blocks
+
+#slide[
+  #set align(horizon)
+  #set align(center)
+  #set text(size: 9pt)
+
+  #grid(
+    columns: (1fr, 1fr),
+    // LEFT: online learning
+    fletcher-diagram(
+      spacing: (16mm, 10mm),
+      node-stroke: 0.8pt,
+      node-fill: white,
+      {
+      node((0, 0), [Sample $t-1$\ $(x_(t-1), y_(t-1))$], shape: rect, name: <prev>, stroke: gray.lighten(50%))
+      node((0, 1), [*Sample $t$*\ $(x_t, y_t)$], shape: rect, name: <cur>)
+      node((0, 2), [Sample $t+1$\ $(x_(t+1), y_(t+1))$], shape: rect, name: <next>, stroke: gray.lighten(50%))
+      node((1, 1), [*Model*\ $f(x ; theta_t)$], shape: rect, name: <model>)
+      node((2, 1), [*Loss*\ $ell(f(x_t ; theta_t), y_t)$], shape: rect, name: <loss>)
+      node((1, 2.5), [$theta_(t+1) = theta_t - eta nabla ell$], shape: rect, name: <update>)
+      edge(<cur>,    <model>,  marks: "->", label: "(1) forward")
+      edge(<model>,  <loss>,   marks: "->", label: "(2) loss")
+      edge(<loss>,   <update>, marks: "->", label: "(3) backward")
+      edge(<update>, <model>,  marks: "->", label: "(4) update θ")
+    }),
+    // RIGHT: ensemble learning
+    fletcher-diagram(
+      spacing: (14mm, 8mm),
+      node-stroke: 0.8pt,
+      node-fill: white,
+      {
+      node((0, 2), [*Input* $x$], shape: rect, name: <input>)
+      node((1, 0), [Weak learner $f_1$\ $hat(y)_1 = f_1(x)$], shape: rect, name: <f1>)
+      node((1, 1), [Weak learner $f_2$\ $hat(y)_2 = f_2(x)$], shape: rect, name: <f2>)
+      node((1, 2), [Weak learner $f_3$\ $hat(y)_3 = f_3(x)$], shape: rect, name: <f3>)
+      node((1, 3), [Weak learner $f_4$\ $hat(y)_4 = f_4(x)$], shape: rect, name: <f4>)
+      node((1, 4), [Weak learner $f_5$\ $hat(y)_5 = f_5(x)$], shape: rect, name: <f5>)
+      node((2, 2), [*Aggregation*\ $sum_(m=1)^M alpha_m f_m(x)$], shape: rect, name: <agg>)
+      node((3, 2), [*Strong learner*\ $f_"ens"(x)$], shape: rect, name: <strong>)
+      edge(<input>, <f1>, marks: "->")
+      edge(<input>, <f2>, marks: "->")
+      edge(<input>, <f3>, marks: "->")
+      edge(<input>, <f4>, marks: "->")
+      edge(<input>, <f5>, marks: "->")
+      edge(<f1>, <agg>, marks: "->")
+      edge(<f2>, <agg>, marks: "->")
+      edge(<f3>, <agg>, marks: "->")
+      edge(<f4>, <agg>, marks: "->")
+      edge(<f5>, <agg>, marks: "->")
+      edge(<agg>, <strong>, marks: "->")
+    })
+  )
+]
 
 == Hub Learning algorithms
 #slide[
