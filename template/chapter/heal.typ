@@ -1292,8 +1292,12 @@ of $E_"round" = 1$ FL epoch per round.
 ) <tab:flair-experiments>
 
 Experiment 1 evaluates learning performance in a static network of 100 nodes under
-fault-free conditions, serving as the primary comparative benchmark against C-FL, Gaia,
-HEAL, and Gossip Learning.
+fault-free and full-connectivity conditions, and is the only experiment that compares
+FLAIR with the baselines (C-FL, Gaia, HEAL, and Gossip Learning). Under this setting
+every node can reach every other node directly, so that the communication topology
+required by each baseline remains faithfully realizable without further adaptation of
+the protocols to the radio range. Experiments 2 to 4, described below, evaluate FLAIR
+on its own.
 
 Experiment 2 examines resilience under three types of node dropout: permanent crashes,
 where nodes leave the system at the start of the second round and do not return;

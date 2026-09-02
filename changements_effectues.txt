@@ -397,5 +397,26 @@ about ns-3 simulating the full network stack):
   integration are reported in the Appendix (@sec:flair-ns3)."
 
 --------------------------------------------------------------------------------
+COMMENT 11
+--------------------------------------------------------------------------------
+Affected section : Chapter 6, FLAIR protocol, Experimental setup > Experimental scenarios
+                   (Experiment 1)
+                   file : template/chapter/heal.typ
+
+Reviewer comment (verbatim) :
+  "The simulation compares FLAIR with HEAL, Gaia, and gossip learning. However, it is
+  not clear how these baselines were adapted to work in the wireless setting"
+
+Change made :
+  The description of Experiment 1 was clarified. It is now stated explicitly that (i)
+  this experiment is the ONLY one that compares FLAIR with the baselines (C-FL, Gaia,
+  HEAL, Gossip Learning); (ii) it is run under full (perfect) wireless connectivity,
+  i.e. every node can reach every other node directly; and (iii) consequently NO
+  adaptation of these baseline algorithms to the radio range was needed: under this
+  full-connectivity setting, the communication topology required by each baseline
+  (central server for C-FL, local/global servers for Gaia, hubs for HEAL, random peers
+  for Gossip Learning) remains faithfully realizable as-is. Experiments 2 to 4 evaluate
+  FLAIR on its own and therefore do not involve any of the other baselines.
+--------------------------------------------------------------------------------
 (to be completed with the following comments)
 ================================================================================
