@@ -231,5 +231,38 @@ New text (relevant sentence) :
   convergence toward hubs when Byzantine nodes are absent."
 
 --------------------------------------------------------------------------------
+COMMENT 6
+--------------------------------------------------------------------------------
+Affected section : Chapter 4 (Elevator), Theoretical Analysis, Convergence
+                   Proposition convergence2 (referred to by the reviewer as
+                   Proposition 4.3.3)
+                   file : template/chapter/elevator.typ
+
+Reviewer comment (verbatim) :
+  "The statement of Proposition 4.3.3 is a bit confusing because it seems to say that
+  if the network already has H hubs, for example, an additional hub would appear with
+  high probability, which is actually not true. So I think the proposition should be:
+  if the network contains one to h-1 hubs, then an additional hub will eventually
+  appear."
+
+Change made :
+  The statement of the proposition (prop:convergence2) was restricted: instead of
+  requiring merely "at least one hub" — which would also cover the case where the
+  network already has h hubs, where the emergence of an additional hub is actually not
+  expected — the proposition now states the condition precisely as the number of hubs
+  being "between one and h-1". This is consistent with the rest of the convergence
+  argument (the number of hubs increases until it reaches exactly h, and cannot
+  decrease below h once h is reached). The associated proof remains unchanged and is
+  valid under the restricted condition.
+
+Old text :
+  "If the network contains at least one hub, an additional hub will eventually appear
+  with high probability."
+
+New text :
+  "If the network contains between one and $h-1$ hubs, an additional hub will
+  eventually appear with high probability."
+
+--------------------------------------------------------------------------------
 (to be completed with the following comments)
 ================================================================================

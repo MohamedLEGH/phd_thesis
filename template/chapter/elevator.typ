@@ -683,7 +683,7 @@ Even if after a protocol cycle the network is temporarily not strongly connected
 ]
 
 #proposition[
-If the network contains at least one hub, an additional hub will eventually appear with high probability.
+If the network contains between one and $h-1$ hubs, an additional hub will eventually appear with high probability.
 ] <prop:convergence2>
 
 #proof[
