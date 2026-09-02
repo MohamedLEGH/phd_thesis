@@ -968,9 +968,13 @@ any central coordinator or global knowledge.
 The protocol operates in rounds. Two mechanisms are central to its design. First, a
 target fraction $p in (0,1)$ of nodes is expected to serve as CHs in each round,
 ensuring probabilistic load balancing across the network. Second, every node evaluates a
-Verifiable Random Function (VRF) @micali1999verifiable, which produces a publicly verifiable random value in
-$[0,1]$. This primitive prevents manipulation of elections and guarantees fairness, while
-remaining lightweight enough for resource-constrained environments.
+Verifiable Random Function (VRF) @micali1999verifiable, which produces a random value in
+$[0,1]$ that cannot be biased by the node and is publicly verifiable. However, actually
+verifying such a value requires an external mechanism that exposes the node's VRF output
+(e.g. a public register), which falls outside the scope of this thesis. Under the
+fault-free setting considered here, the VRF primarily ensures fairness by making the
+election draw unpredictable, while remaining lightweight enough for resource-constrained
+environments.
 
 _Phase 1: Cluster-head selection_
 
@@ -1009,8 +1013,14 @@ Each node computes its own resource score $R_n$ independently and autonomously, 
 only local information from its operating system. No global resource monitoring or
 centralized collection is required. This weighted combination biases elections toward
 resource-rich nodes while preserving the probabilistic load-balancing properties of
-LEACH. The use of VRF guarantees that elections remain tamper-resistant and publicly
-verifiable.
+LEACH. The VRF ensures that the random draw underlying the election is both
+unpredictable and publicly verifiable, preventing a node from biasing its own draw or
+manipulating the random process. Within the non-adversarial setting considered here, in
+which nodes are assumed to report their resources honestly, this suffices to keep the
+election fair and auditable; the resource score $R_n$ itself remains self-reported.
+Detecting nodes that would misreport their capabilities (e.g. their actual CPU, RAM,
+GPU, or bandwidth) to inflate their election probability is an open and non-trivial
+direction for strengthening the protocol.
 #figure(
   pseudocode-list(booktabs: true)[
     - target CH ratio: *p*

@@ -299,5 +299,41 @@ Concretely, the following references were updated (each now explicit as in the A
     regression (@def:logistic-regression, given in the Appendix, @sec:appendix_ml).
 
 --------------------------------------------------------------------------------
+COMMENT 8
+--------------------------------------------------------------------------------
+Affected section : Chapter 6 (HEAL/FLAIR), FLAIR protocol, Overlay Layer
+                   (resource-aware cluster-head selection and the use of VRF)
+                   file : template/chapter/heal.typ
+
+Reviewer comment (verbatim) :
+  "The description of the FLAIR protocol states that the protocol uses verifiable random
+  functions to guarantee that the election of cluster heads remains tamper-resistant and
+  verifiable. However, there is nothing that prevents a cluster head from cheating about
+  its available CPU, RAM, GPU, or bandwidth. Given this, do verifiable random functions
+  really provide anything useful?"
+
+Change made :
+  Two passages that over-claimed the guarantee provided by verifiable random functions
+  (VRF) were reformulated so that the text now states precisely what a VRF guarantees
+  and what it does not, and explicitly situates the discussion in a fault-free setting.
+
+  - In the general description of the protocol, the claim that the VRF "prevents
+    manipulation of elections and guarantees fairness" was replaced by a more precise
+    statement: the VRF produces a random value that cannot be biased by the node and is
+    publicly verifiable, but actually verifying such a value requires an external
+    mechanism exposing the node's VRF output (e.g. a public register), which falls
+    outside the scope of the thesis. In the fault-free setting considered, the VRF
+    primarily ensures fairness by making the election draw unpredictable.
+
+  - In the resource-aware CH election paragraph, the claim that the VRF "guarantees
+    that elections remain tamper-resistant" was replaced by a statement that the VRF
+    makes the election draw unpredictable and publicly verifiable, preventing a node
+    from biasing its own draw. It is now made explicit that this is addressed in a
+    non-adversarial setting in which nodes are assumed to report their resources
+    honestly, so that the resource score R_n remains self-reported, and that detecting
+    nodes misreporting their capabilities (CPU, RAM, GPU, bandwidth) to inflate their
+    election probability is an open and non-trivial direction.
+
+--------------------------------------------------------------------------------
 (to be completed with the following comments)
 ================================================================================
