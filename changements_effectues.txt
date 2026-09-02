@@ -117,5 +117,42 @@ New text :
   partial view maintained by each node."
 
 --------------------------------------------------------------------------------
+COMMENT 3
+--------------------------------------------------------------------------------
+Affected section : Chapter 3 ("Overlay Management in Peer to Peer Systems"),
+                   Section 3.2 "Structured Networks"
+                   file : template/chapter/overlay.typ
+
+Reviewer comment (verbatim) :
+  "I found the formulation that says "structured peer-to-peer overlay networks are mostly
+  implemented through distributed hash tables" somewhat confusing. It is actually the
+  other way around: distributed hash tables are built by defining a structured peer-to-peer
+  overlay."
+
+Change made :
+  The opening sentence of the paragraph that described structured networks in terms of
+  Distributed Hash Tables was reformulated so that the DHT/structured-overlay relationship
+  is now stated correctly: a DHT is presented as an application built on top of a
+  structured peer-to-peer overlay (rather than structured networks being "implemented
+  through" DHTs). The rest of the paragraph (how nodes and data are mapped, consistent
+  hashing, etc.) is unchanged.
+
+  Other occurrences of a similar relation were checked elsewhere in the manuscript:
+  they either state the relationship correctly (e.g. "Structured overlays are typically
+  co-designed with a specific application, such as distributed hash tables or key-value
+  stores") or refer to "DHT-based systems" without replicating the problematic
+  "implemented through" formulation, so no other change was needed.
+
+Old text :
+  "Structured peer-to-peer networks are most commonly implemented through
+  Distributed Hash Tables (DHTs), which provide a scalable and fully decentralized
+  mechanism for data storage and retrieval."
+
+New text :
+  "Distributed Hash Tables (DHTs), which provide a scalable and fully decentralized
+  mechanism for data storage and retrieval, are among the most widely deployed
+  applications built on top of structured peer-to-peer networks."
+
+--------------------------------------------------------------------------------
 (to be completed with the following comments)
 ================================================================================
