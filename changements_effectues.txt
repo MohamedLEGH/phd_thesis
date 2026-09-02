@@ -154,5 +154,45 @@ New text :
   applications built on top of structured peer-to-peer networks."
 
 --------------------------------------------------------------------------------
+COMMENT 4
+--------------------------------------------------------------------------------
+Affected section : Chapter 3 ("Overlay Management in Peer to Peer Systems"),
+                   Section 2.3 "Peer Sampling Service" (introduction of the service)
+                   file : template/chapter/overlay.typ
+
+Reviewer comment (verbatim) :
+  " It is not strictly true that a peer-sampling service returns an overlay graph that
+  converges toward a random graph, because a random graph does not have a fixed
+  out-degree, whereas the graph resulting from a peer-sampling service has a constant
+  out-degree. So, the graph resembles a random graph, but it is not strictly a random
+  graph in the Erdos-Renyi sense"
+
+Change made :
+  The sentence claiming that the overlay graph induced by a peer sampling service
+  "converges toward a random graph" was reformulated. It now states that this graph
+  resembles a random graph in which each node has a fixed number of outgoing neighbors
+  (i.e. a random k-out graph, more formally a directed random graph with fixed
+  outdegree, defined in the Appendix), rather than implying a convergence to a strict
+  Erdős-Rényi random graph. This correction also anchors the wording to the formal
+  definition already present in the Appendix (@def:Directed-Random-Graph), which was
+  previously never referenced from the body of the manuscript.
+
+  Other occurrences of a "random graph" relation were reviewed: the remaining mentions
+  either use hedged wording ("approximate", "approach", "closest approximation",
+  "converges to the properties of a random graph") or are descriptions of results
+  reported from the literature, so they were left unchanged.
+
+Old text :
+  "Since the goal of a peer sampling service is to return a uniformly random node, the
+  overlay graph induced by such a service naturally converges toward a random graph
+  (see @sec:random-graph)."
+
+New text :
+  "Since the goal of a peer sampling service is to return a uniformly random node, the
+  overlay graph induced by such a service resembles a random graph in which each node
+  has a fixed number of outgoing neighbors — a random k-out graph, more formally a
+  directed random graph with fixed outdegree (see @def:Directed-Random-Graph)."
+
+--------------------------------------------------------------------------------
 (to be completed with the following comments)
 ================================================================================
