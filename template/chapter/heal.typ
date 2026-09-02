@@ -1304,7 +1304,9 @@ where nodes leave the system at the start of the second round and do not return;
 temporary crashes, where nodes remain inactive for 15 time units (equivalent to 3 rounds
 of 5 epochs) before resuming, with repeated failures injected once accuracy begins to
 stabilize; and random dropouts, where nodes intermittently disconnect and reconnect
-throughout training, creating highly unpredictable availability patterns.
+throughout training, creating highly unpredictable availability patterns. As in
+Experiment 1, the underlying wireless network is fully connected; the only disruptions
+come from the injected node dropouts.
 
 Experiment 3 investigates the effect of node mobility on learning performance. Two
 connectivity scenarios are considered. In the perfect connectivity scenario, all nodes
@@ -1314,11 +1316,16 @@ resulting in temporary disconnections as nodes move. Five well-known mobility mo
 @bai2004survey are simulated: RandomWaypoint, RandomWalk, RandomDirection,
 Gauss-Markov, and ConstantVelocity.
 
-Experiment 4 demonstrates FLAIR in a realistic smart farming application. The network
-consists of 80 fixed sensors that continuously sample environmental parameters (soil
-moisture, temperature, humidity) and 20 mobile robotic nodes that autonomously navigate
-the field and relay model updates between clusters, bridging connectivity gaps. Learning
-is performed on the Watering the Plants dataset @nelakurthi2021plants.
+Experiment 4 demonstrates FLAIR in a realistic smart farming application, and is not
+run under fully connected wireless conditions. The network consists of 80 fixed sensors
+that continuously sample environmental parameters (soil moisture, temperature,
+humidity), together with 20 mobile robotic nodes that autonomously navigate the field.
+Fixed sensors located in the same area interact with one another, forming separate
+clusters; radio connectivity between these clusters is not available. Model updates are
+propagated from one cluster to another by the mobile robots, which physically carry the
+aggregated models as they move across the field, thereby bridging the connectivity gaps
+between distant locations. Learning is performed on the Watering the Plants dataset
+@nelakurthi2021plants.
 
 === Results
 

@@ -418,5 +418,31 @@ Change made :
   for Gossip Learning) remains faithfully realizable as-is. Experiments 2 to 4 evaluate
   FLAIR on its own and therefore do not involve any of the other baselines.
 --------------------------------------------------------------------------------
+COMMENT 12
+--------------------------------------------------------------------------------
+Affected section : Chapter 6, FLAIR protocol, Experimental setup > Experimental scenarios
+                   (description of Experiments 2 and 4)
+                   file : template/chapter/heal.typ
+
+Reviewer comment (verbatim) :
+  "In terms of experiments, are experiments 1, 2, and 4 in a fully connected setting,
+  and is only experiment 3 considering range-limited connectivity? It may be good to
+  explicitly say when an experiment is run in a fully connected setting."
+
+Change made :
+  The connectivity setting is now made explicit for every experiment.
+  - Experiment 1 (already clarified in a previous change) is run under full (perfect)
+    wireless connectivity.
+  - Experiment 2 now explicitly states that, as in Experiment 1, the underlying
+    wireless network is fully connected, and that the only disruptions come from the
+    injected node dropouts.
+  - Experiment 3 already contrasts perfect vs. range-limited connectivity (it is the
+    only experiment that considers range-limited connectivity).
+  - Experiment 4 is now explicitly described as NOT run under fully connected wireless
+    conditions: fixed sensors located in the same area interact with one another,
+    forming separate clusters without radio connectivity between them, and model updates
+    are propagated between clusters by the mobile robots, which physically carry the
+    aggregated models as they move (bridging connectivity gaps).
+--------------------------------------------------------------------------------
 (to be completed with the following comments)
 ================================================================================
