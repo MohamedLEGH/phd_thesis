@@ -388,7 +388,7 @@ The Aggregation Layer exposes two primary artifacts to the Application Layer abo
 
 The Application Layer constitutes the topmost component of the protocol stack, interfacing with the Aggregation Layer to retrieve the current global model and contribute locally trained updates. In HEAL, the application is a machine learning model itself, as formally defined in @chap:learning.
 
-HEAL is designed to support any supervised machine learning model (as defined in @def:supervised-ml), without imposing structural constraints on the model architecture. Linear regressors, support vector machines, and deep neural networks are all valid instantiations, provided that three conditions are satisfied. First, the model must be trainable via gradient descent, as local training relies on iterative parameter updates driven by a differentiable loss function. Second, each node must hold a local dataset partitioned into a training set, used to update the model parameters, and a test set, used to evaluate model quality independently of the training process. Third, all nodes must represent their models in a compatible parameter format, so that model averaging during the aggregation phase is well-defined.
+HEAL is designed to support any supervised machine learning model (as defined in @def:supervised-ml, given in the Appendix, @sec:appendix_ml), without imposing structural constraints on the model architecture. Linear regressors, support vector machines, and deep neural networks are all valid instantiations, provided that three conditions are satisfied. First, the model must be trainable via gradient descent, as local training relies on iterative parameter updates driven by a differentiable loss function. Second, each node must hold a local dataset partitioned into a training set, used to update the model parameters, and a test set, used to evaluate model quality independently of the training process. Third, all nodes must represent their models in a compatible parameter format, so that model averaging during the aggregation phase is well-defined.
 
 The aggregation function used in HEAL, Average SGD (defined in @def:average-sgd), computes a simple uniform average of the received model parameters. This approach implicitly assumes that the local datasets are independently and identically distributed (IID) across nodes, meaning that each node's data is drawn from the same underlying distribution. While this assumption simplifies the convergence analysis and is standard in introductory federated learning literature @mcmahan2017communication, it does not always hold in practice: nodes in a real deployment may hold data with significantly different statistical properties, a setting commonly referred to as non-IID or heterogeneous data. The study of decentralized learning under non-IID data distributions, and the design of aggregation strategies robust to such heterogeneity, lie beyond the scope of this thesis and are left as directions for future work.
 
@@ -488,15 +488,15 @@ All simulations were run on 16 vCPU, using 64G of memory, on a cluster composed 
 ==== Learning Tasks
 
 We evaluate our protocol on two learning tasks: 1) binary classification and 2) multinomial
-classification, as defined in the previous chapter (@def:binary-classification and
-@def:multinomial-classification). Binary classification constitutes a straightforward
+classification, as defined in the Appendix (@def:binary-classification and
+@def:multinomial-classification, given in @sec:appendix_ml). Binary classification constitutes a straightforward
 baseline that allows us to verify the correctness of the protocol, whilst multinomial
 classification is more complex, enabling us to compare our protocol more precisely with
 other decentralised protocols.
 
 The binary classification task is evaluated on the Spambase dataset (@sec:datasets), which
 comprises 4601 samples split into 90% for training and 10% for testing. We use a logistic
-regression model (@def:logistic-regression) — a simple model that is sufficient for this
+regression model (@def:logistic-regression, given in the Appendix, @sec:appendix_ml) — a simple model that is sufficient for this
 dataset — with 57 parameters (excluding the bias) and a binary output. The model is
 trained using SGD with a learning rate of $0.1$ and a batch size of 32.
 

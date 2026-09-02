@@ -264,5 +264,40 @@ New text :
   eventually appear with high probability."
 
 --------------------------------------------------------------------------------
+COMMENT 7
+--------------------------------------------------------------------------------
+Affected sections : Chapters 3, 5 and 6 — all references to definitions located in
+                    the Appendix.
+                    files : template/chapter/overlay.typ
+                            template/chapter/machine_learning.typ
+                            template/chapter/heal.typ
+
+Reviewer comment (verbatim) :
+  "Chapter 5 makes many references to definitions 1.*. However, these definitions are
+  not in the body of the thesis, but in the appendix. The text should clearly specify
+  that they are in the appendix."
+
+Change made :
+  A systematic survey of all the references in the body chapters (3, 5, 6) to formal
+  definitions located in the Appendix was performed. At each such reference, the text
+  now explicitly indicates that the definition is given in the Appendix (and points to
+  the relevant Appendix section). In addition, in Chapter 6, an erroneous reference
+  "as defined in the previous chapter" was corrected to "as defined in the Appendix",
+  since the binary/multinomial classification definitions are in the Appendix, not in
+  the previous chapter.
+
+Concretely, the following references were updated (each now explicit as in the Appendix):
+  - Chapter 3 (overlay.typ): directed random graph with fixed outdegree
+    (see @def:Directed-Random-Graph, given in the Appendix, @sec:random-graph).
+  - Chapter 5 (machine_learning.typ): local loss function (see @def:loss-function,
+    given in the Appendix, @sec:appendix_ml) — 2 occurrences; accuracy
+    (the definition of accuracy given in the Appendix, @def:accuracy, @sec:appendix_ml).
+  - Chapter 6 (heal.typ): supervised machine learning model (@def:supervised-ml, given
+    in the Appendix, @sec:appendix_ml); binary and multinomial classification, "as
+    defined in the Appendix (@def:binary-classification and @def:multinomial-classification,
+    given in @sec:appendix_ml)" (previously wrongly "in the previous chapter"); logistic
+    regression (@def:logistic-regression, given in the Appendix, @sec:appendix_ml).
+
+--------------------------------------------------------------------------------
 (to be completed with the following comments)
 ================================================================================

@@ -341,7 +341,7 @@ at each protocol step.
 === Decentralized learning objective
 
 Having defined the learning node, we can now state the
-global learning objective. Each learning node $i$ defines a local empirical loss $L_i (theta)$ (see @def:loss-function).
+global learning objective. Each learning node $i$ defines a local empirical loss $L_i (theta)$ (see @def:loss-function, given in the Appendix, @sec:appendix_ml).
 
 The global objective of the decentralized learning system is to
 collectively minimise the aggregate loss over all nodes, in the sense
@@ -389,7 +389,7 @@ efficient.
 While convergence in the sense of @def:dl-convergence is defined in
 terms of the global loss $L_"global"$, it is useful in practice to
 complement this criterion with a more interpretable metric. Building
-on @def:accuracy, we define the global accuracy of the decentralized
+on the definition of accuracy given in the Appendix (@def:accuracy, @sec:appendix_ml), we define the global accuracy of the decentralized
 learning system as the average accuracy across all nodes, evaluated
 on their respective local test datasets.
 
@@ -478,8 +478,7 @@ and admits strong theoretical guarantees under standard assumptions.
 
 #definition(title: "Average SGD")[
 At each iteration $t$, every node $i$ performs a local stochastic
-gradient descent step on its local objective $L_i$ (see
-@def:loss-function):
+gradient descent step on its local objective $L_i$ (see @def:loss-function, given in the Appendix, @sec:appendix_ml):
 $
 theta_(t+1/2) = theta_t - eta nabla_theta L_i (theta_t),
 $

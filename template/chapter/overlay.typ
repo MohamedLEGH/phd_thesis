@@ -260,7 +260,7 @@ Peer sampling services can be implemented in a centralized manner, where a centr
 Alternatively, peer sampling can be implemented in a fully decentralized way, where nodes continuously exchange and update peer information using only local interactions.
 Decentralized peer sampling services are more scalable and allow the construction of fully decentralized peer-to-peer systems that don't need to rely on a centralized service.
 
-Since the goal of a peer sampling service is to return a uniformly random node, the overlay graph induced by such a service resembles a random graph in which each node has a fixed number of outgoing neighbors — a *random k-out graph*, more formally a directed random graph with fixed outdegree (see @def:Directed-Random-Graph).
+Since the goal of a peer sampling service is to return a uniformly random node, the overlay graph induced by such a service resembles a random graph in which each node has a fixed number of outgoing neighbors — a *random k-out graph*, more formally a directed random graph with fixed outdegree (see @def:Directed-Random-Graph, given in the Appendix, @sec:random-graph).
 
 #definition(title: "Decentralized Peer Sampling Service")[
 A decentralized peer sampling service is a randomized local function
