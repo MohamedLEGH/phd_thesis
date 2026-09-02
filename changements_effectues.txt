@@ -194,5 +194,42 @@ New text :
   directed random graph with fixed outdegree (see @def:Directed-Random-Graph)."
 
 --------------------------------------------------------------------------------
+COMMENT 5
+--------------------------------------------------------------------------------
+Affected section : Chapter 4 (Elevator), Section 4.2.6 "Lift protocol"
+                   file : template/chapter/elevator.typ
+
+Reviewer comment (verbatim) :
+  "In Section 4.2.6, the formulation "we hope that our protocol will have no impact" or
+  "we hope that our protocol will be more efficient" is somewhat unusual. It would be
+  better to use a formulation such as "we designed our protocol to be more efficient,"
+  and so on."
+
+Change made :
+  The formulation of intent expressed with "we hope that" in the presentation of the
+  Lift protocol was replaced by an assertive statement of design intent: Lift is now
+  described as being designed to be more efficient than Elevator in terms of resilience
+  when Byzantine nodes are active, and to have no impact on protocol performance and
+  convergence when Byzantine nodes are absent.
+
+  Other occurrences of vague/hedged formulations similar to "we hope" were reviewed:
+  the expression "is the author's hope" at the very end of the thesis (Conclusions) is
+  kept, as it belongs to the concluding remarks on the expected impact of the work,
+  where such a formulation is appropriate; the expression "is expected to serve as CHs"
+  expresses a statistical expectation, not an unassertive wish, so it was left
+  unchanged.
+
+Old text (relevant sentence) :
+  "If Byzantine nodes are active, we hope that our new protocol will be more efficient
+  than Elevator in terms of resilience, and if Byzantine nodes are not active, we hope
+  that the protocol will have no impact on protocol performance and convergence towards
+  hubs."
+
+New text (relevant sentence) :
+  "Lift is designed to be more efficient than Elevator in terms of resilience when
+  Byzantine nodes are active, while having no impact on protocol performance and
+  convergence toward hubs when Byzantine nodes are absent."
+
+--------------------------------------------------------------------------------
 (to be completed with the following comments)
 ================================================================================
