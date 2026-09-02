@@ -84,5 +84,38 @@ Text added at the end of the section (after the "sequential cycle model") :
   cycles — yields the same qualitative behavior as the synchronous one."
 
 --------------------------------------------------------------------------------
+COMMENT 2
+--------------------------------------------------------------------------------
+Affected section : Chapter 3 ("Overlay Management in Peer to Peer Systems"),
+                   Section 3.1 "Metrics", sub-section "Degree Distribution"
+                   file : template/chapter/overlay.typ
+
+Reviewer comment (verbatim) :
+  "At the beginning of Chapter 3, when talking about degree distribution, the text
+  mentions unstructured peer-to-peer overlays, but the term \"unstructured\" has not yet
+  been defined. It is only defined later in the document."
+
+Change made :
+  The opening sentence of the Degree Distribution paragraph, which used the term
+  "unstructured peer-to-peer overlays" before that term had been introduced (the
+  structured/unstructured classification is only defined later in the chapter, in
+  the "Structured Networks" section), was reformulated so that it no longer relies
+  on the as-yet-undefined term. Since the statement (the outdegree is constrained by
+  design and remains approximately constant, equal to the fixed size of the partial
+  view) holds for all overlays under the model adopted in the thesis, not only for
+  unstructured ones, it is now anchored in the system model instead of a network
+  class.
+
+Old text :
+  "In most unstructured peer-to-peer overlays, the outdegree is constrained by design
+  and remains approximately constant, as it corresponds to the fixed size of the
+  partial view maintained by each node."
+
+New text :
+  "In the overlay model adopted in this thesis, the outdegree is constrained by design
+  and remains approximately constant, as it corresponds to the fixed size of the
+  partial view maintained by each node."
+
+--------------------------------------------------------------------------------
 (to be completed with the following comments)
 ================================================================================

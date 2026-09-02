@@ -71,7 +71,7 @@ expected distribution — such as an unexpected concentration of indegree on a s
 subset of nodes — may signal undesired behaviour in the overlay protocol, such as load
 imbalance or the unintended emergence of bottlenecks.
 
-In most unstructured peer-to-peer overlays, the outdegree is constrained by design and
+In the overlay model adopted in this thesis, the outdegree is constrained by design and
 remains approximately constant, as it corresponds to the fixed size of the partial view
 maintained by each node. Consequently, structural heterogeneity primarily appears in the
 indegree distribution. In overlays that approximate random graphs, the indegree
