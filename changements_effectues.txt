@@ -365,5 +365,37 @@ Added text (after "Each cluster thus runs a fully self-contained learning proces
   properties below."
 
 --------------------------------------------------------------------------------
+COMMENT 10
+--------------------------------------------------------------------------------
+Affected section : Chapter 6, FLAIR protocol, Experimental setup > Simulation
+                   environment
+                   file : template/chapter/heal.typ
+
+Reviewer comment (verbatim) :
+  "In the ns-3 simulations, the text in Chapter 6 could clarify earlier whether the
+  implementation includes all the learning algorithms, whether these are not simulated,
+  or whether they are run on a third-party system. This is explained later in the
+  appendix, but the experimental setup would benefit from making it explicit."
+
+Change made :
+  The "Simulation environment" paragraph was extended to make explicit, from the start
+  of the experimental setup, the status of the machine learning component in the ns-3
+  simulations: the machine learning models are not simulated — they are actually
+  trained, and this training is executed directly inside ns-3 (in C++), without any
+  third-party or external learning framework. It is further made explicit that all the
+  baseline algorithms, as well as the models, are included and re-implemented in ns-3
+  to ensure strict comparability. The fine-grained integration details remain in the
+  Appendix (new cross-reference to @sec:flair-ns3).
+
+New text (second half of the "Simulation environment" paragraph, after the sentence
+about ns-3 simulating the full network stack):
+  "In our setup, the machine learning component is not simulated: the models are
+  actually trained, and this training is executed directly inside ns-3 (in C++),
+  without resorting to any third-party or external learning framework. All baseline
+  algorithms — as well as the models — are thus included and re-implemented in ns-3 to
+  ensure strict comparability under identical network conditions. The details of this
+  integration are reported in the Appendix (@sec:flair-ns3)."
+
+--------------------------------------------------------------------------------
 (to be completed with the following comments)
 ================================================================================

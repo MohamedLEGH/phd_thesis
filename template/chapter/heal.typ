@@ -1197,7 +1197,7 @@ scenarios considered.
 
 ==== Simulation environment
 
-All experiments were conducted using ns-3 @riley2010ns, a discrete-event network simulator that provides faithful modeling of IEEE 802.11 wireless communications, including ad-hoc mode and single-hop transmissions. Unlike Gossipy, which simulates the networking layer whilst performing real model training, ns-3 simulates the full network stack, including wireless channel conditions, interference, and packet scheduling. All baseline protocols were re-implemented in ns-3 (in C++) to ensure strict comparability under identical network conditions.
+All experiments were conducted using ns-3 @riley2010ns, a discrete-event network simulator that provides faithful modeling of IEEE 802.11 wireless communications, including ad-hoc mode and single-hop transmissions. Unlike Gossipy, which simulates the networking layer whilst performing real model training, ns-3 simulates the full network stack, including wireless channel conditions, interference, and packet scheduling. In our setup, the machine learning component is not simulated: the models are actually trained, and this training is executed directly inside ns-3 (in C++), without resorting to any third-party or external learning framework. All baseline algorithms — as well as the models — are thus included and re-implemented in ns-3 to ensure strict comparability under identical network conditions. The details of this integration are reported in the Appendix (@sec:flair-ns3).
 
 All simulations were run on a dedicated server equipped with two Intel Xeon E5-2660 v3
 processors (10 cores, 2 threads per core, 2.6 GHz base frequency), 125 GB of RAM, and
