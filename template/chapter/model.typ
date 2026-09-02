@@ -495,12 +495,7 @@ In our model, we abstract away from synchronization issues at the physical or ne
 We assume that message transmission is instantaneous and reliable, i.e., messages are neither delayed nor lost.  
 As a consequence, we do not consider timing, buffering, or failures at the communication level.
 
-At the overlay level, however, synchronization still plays a conceptual role.  
-In real-world peer-to-peer systems, nodes operate fully asynchronously: there is no global clock, and each node evolves at its own pace based on local events and message arrivals.  
-While this behavior accurately reflects practical systems, it makes mathematical analysis and simulation significantly more complex.
-
-To enable a tractable and precise formalization, we introduce an abstract notion of time based on *protocol steps* and *protocol cycles*.  
-These notions do not represent real time, but rather logical execution units that allow us to reason about the global evolution of the system in a structured manner.
+At the overlay level, however, synchronization still plays a conceptual role. The model adopted in this thesis is a *synchronous*, round-based model: time is partitioned into logical *protocol cycles*, and we assume that every node executes exactly one *protocol step* per cycle. This is a deliberate modeling choice, made to keep the mathematical analysis and the simulation of the protocols tractable.
 
 #definition(title: "Protocol Step")[
 A *protocol step* is defined as a single execution of the protocol pseudocode by one node.
@@ -534,6 +529,8 @@ This model corresponds to a fully synchronous execution, where cycles act as glo
 In the *sequential cycle model*, nodes execute their protocol steps one after another within a cycle, following a random order.  
 Each node updates its local state immediately upon execution and may emit messages that can be observed by nodes executing later in the same cycle.  
 As a result, the state of the system may evolve during the cycle itself.
+
+The synchronous, round-based model described above is a modeling abstraction, not an assumption about the physical execution of the protocols. In practice, the protocols presented in this thesis can execute asynchronously, exactly as real-world peer-to-peer systems do: no global clock is required, each node progresses at its own pace, and cycles remain purely logical units. This is confirmed by the experimental validation reported in @chap:elevator, where an asynchronous execution mode — in which nodes wait a random duration between cycles — yields the same qualitative behavior as the synchronous one.
 
 === Self Organization
 

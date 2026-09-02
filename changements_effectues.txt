@@ -1,0 +1,88 @@
+================================================================================
+CHANGES MADE TO THE PHD THESIS MANUSCRIPT
+(reviewer comments taken into account)
+================================================================================
+
+Reference commit (BEFORE the changes):
+  hash  : 9fa4da83d86c6198e8baae82d89c390d2384f8f1
+  msg   : "Présentation : slide Me décommentée (Sia Partners, Deloitte, Temeritati),
+           citations @ remplacees par #thanks"
+
+This commit corresponds to the state of the manuscript before any change
+related to the reviewers' comments. To compute the "diff" with the final
+version:
+    git diff 9fa4da83d86c6198e8baae82d89c390d2384f8f1
+
+--------------------------------------------------------------------------------
+COMMENT 1
+--------------------------------------------------------------------------------
+Affected section : Chapter 2 ("Model"), Section 2.3.1 "Synchronization"
+                   file : template/chapter/model.typ
+
+Reviewer comment (verbatim) :
+  "In Section 2.3.1, \"Synchronization,\" the description of synchronization in
+  overlay networks is somewhat confusing. At the beginning, the text says that
+  the systems are fully asynchronous, but the thesis then introduces an abstract
+  notion of time, which actually makes them synchronous. It would be useful to
+  state this more clearly: that the model is synchronous, but that the protocols
+  may be applicable in an asynchronous setting."
+
+Change made :
+  1. The opening paragraphs of the section (which discussed the time
+     abstraction) were rewritten to state explicitly, from the outset, that the
+     model adopted in this thesis is a SYNCHRONOUS, round-based model (time is
+     partitioned into logical protocol cycles, and every node executes exactly
+     one protocol step per cycle), and that this is a deliberate modeling choice
+     made to keep the mathematical analysis and the simulation tractable.
+     -> The word "synchronous" is now explicit in the presentation of the model
+        (it was previously absent).
+
+  2. A note was added at the end of the section (after the presentation of the
+     two execution models, i.e. the synchronous cycle model and the sequential
+     cycle model) clarifying that this synchronous, round-based model is a
+     modeling abstraction, NOT an assumption about the physical execution of
+     the protocols: in practice, the protocols can execute asynchronously,
+     exactly as real-world peer-to-peer systems do (no global clock required,
+     each node progresses at its own pace, cycles remain purely logical units).
+     This claim is supported by the experimental validation reported in the
+     Elevator chapter (reference @chap:elevator), where an asynchronous
+     execution mode (nodes wait a random duration between cycles) yields the
+     same qualitative behavior as the synchronous one.
+
+  Note : the previous passage describing the asynchrony of real systems at the
+         beginning of the section was removed to avoid redundancy with the
+         end-of-section note (which now addresses the asynchronous setting).
+
+Old text (section introduction, before modification) :
+  "At the overlay level, however, synchronization still plays a conceptual role.
+  In real-world peer-to-peer systems, nodes operate fully asynchronously: there
+  is no global clock, and each node evolves at its own pace based on local events
+  and message arrivals. While this behavior accurately reflects practical
+  systems, it makes mathematical analysis and simulation significantly more
+  complex. To enable a tractable and precise formalization, we introduce an
+  abstract notion of time based on protocol steps and protocol cycles. These
+  notions do not represent real time, but rather logical execution units that
+  allow us to reason about the global evolution of the system in a structured
+  manner."
+
+New text (section introduction) :
+  "At the overlay level, however, synchronization still plays a conceptual role.
+  The model adopted in this thesis is a synchronous, round-based model: time is
+  partitioned into logical protocol cycles, and we assume that every node
+  executes exactly one protocol step per cycle. This is a deliberate modeling
+  choice, made to keep the mathematical analysis and the simulation of the
+  protocols tractable."
+
+Text added at the end of the section (after the "sequential cycle model") :
+  "The synchronous, round-based model described above is a modeling abstraction,
+  not an assumption about the physical execution of the protocols. In practice,
+  the protocols presented in this thesis can execute asynchronously, exactly as
+  real-world peer-to-peer systems do: no global clock is required, each node
+  progresses at its own pace, and cycles remain purely logical units. This is
+  confirmed by the experimental validation reported in @chap:elevator, where an
+  asynchronous execution mode — in which nodes wait a random duration between
+  cycles — yields the same qualitative behavior as the synchronous one."
+
+--------------------------------------------------------------------------------
+(to be completed with the following comments)
+================================================================================
