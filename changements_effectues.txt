@@ -335,5 +335,35 @@ Change made :
     election probability is an open and non-trivial direction.
 
 --------------------------------------------------------------------------------
+COMMENT 9
+--------------------------------------------------------------------------------
+Affected section : Chapter 6, FLAIR protocol, Aggregation Layer
+                   file : template/chapter/heal.typ
+
+Reviewer comment (verbatim) :
+  "In the description of the aggregation layer, it is initially unclear why each cluster
+  runs a fully contained learning process, and it becomes clear only later that the
+  actual cluster heads change at each iteration. This should be made clear from the
+  beginning."
+
+Change made :
+  A short paragraph was added right after the statement that each cluster runs a fully
+  self-contained learning process. It now explains, from the outset, that this design is
+  made possible by the fact that cluster-heads are re-elected at each round: although
+  each cluster learns in isolation during a given round, the rotation of cluster-heads
+  causes the aggregated models to be progressively redistributed across clusters over
+  successive rounds, ensuring global mixing without any inter-cluster communication. It
+  also indicates that this point is developed in detail in the architectural properties
+  below, so that the reader is no longer left puzzled at the Aggregation Layer stage.
+
+Added text (after "Each cluster thus runs a fully self-contained learning process."):
+  "This design is made possible by the fact that cluster-heads are re-elected at each
+  round: although each cluster learns in isolation during a given round, the rotation
+  of cluster-heads causes the aggregated models to be progressively redistributed
+  across clusters over successive rounds, ensuring global mixing without any
+  inter-cluster communication. This point is developed in detail in the architectural
+  properties below."
+
+--------------------------------------------------------------------------------
 (to be completed with the following comments)
 ================================================================================

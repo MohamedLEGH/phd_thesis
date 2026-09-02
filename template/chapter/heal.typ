@@ -1091,6 +1091,11 @@ independently, removing the need for any global coordination between clusters. U
 HEAL, where hubs exchange aggregated models with one another before redistribution,
 FLAIR performs aggregation exclusively at the cluster-head level, with no inter-cluster
 communication. Each cluster thus runs a fully self-contained learning process.
+This design is made possible by the fact that cluster-heads are re-elected at each
+round: although each cluster learns in isolation during a given round, the rotation of
+cluster-heads causes the aggregated models to be progressively redistributed across
+clusters over successive rounds, ensuring global mixing without any inter-cluster
+communication. This point is developed in detail in the architectural properties below.
 
 _Phase 1: Local training_
 
