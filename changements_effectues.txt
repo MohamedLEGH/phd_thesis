@@ -13,9 +13,20 @@ related to the reviewers' comments. To compute the "diff" with the final
 version:
     git diff 9fa4da83d86c6198e8baae82d89c390d2384f8f1
 
---------------------------------------------------------------------------------
+================================================================================
+GENERAL COMMENTS
+================================================================================
+
+(to be completed after receiving the reviewer's general comments)
+
+
+================================================================================
+DETAILED COMMENTS
+================================================================================
+
 COMMENT 1
 --------------------------------------------------------------------------------
+
 Affected section : Chapter 2 ("Model"), Section 2.3.1 "Synchronization"
                    file : template/chapter/model.typ
 
@@ -84,8 +95,10 @@ Text added at the end of the section (after the "sequential cycle model") :
   cycles — yields the same qualitative behavior as the synchronous one."
 
 --------------------------------------------------------------------------------
+
 COMMENT 2
 --------------------------------------------------------------------------------
+
 Affected section : Chapter 3 ("Overlay Management in Peer to Peer Systems"),
                    Section 3.1 "Metrics", sub-section "Degree Distribution"
                    file : template/chapter/overlay.typ
@@ -117,8 +130,10 @@ New text :
   partial view maintained by each node."
 
 --------------------------------------------------------------------------------
+
 COMMENT 3
 --------------------------------------------------------------------------------
+
 Affected section : Chapter 3 ("Overlay Management in Peer to Peer Systems"),
                    Section 3.2 "Structured Networks"
                    file : template/chapter/overlay.typ
@@ -154,8 +169,10 @@ New text :
   applications built on top of structured peer-to-peer networks."
 
 --------------------------------------------------------------------------------
+
 COMMENT 4
 --------------------------------------------------------------------------------
+
 Affected section : Chapter 3 ("Overlay Management in Peer to Peer Systems"),
                    Section 2.3 "Peer Sampling Service" (introduction of the service)
                    file : template/chapter/overlay.typ
@@ -194,8 +211,10 @@ New text :
   directed random graph with fixed outdegree (see @def:Directed-Random-Graph)."
 
 --------------------------------------------------------------------------------
+
 COMMENT 5
 --------------------------------------------------------------------------------
+
 Affected section : Chapter 4 (Elevator), Section 4.2.6 "Lift protocol"
                    file : template/chapter/elevator.typ
 
@@ -231,8 +250,10 @@ New text (relevant sentence) :
   convergence toward hubs when Byzantine nodes are absent."
 
 --------------------------------------------------------------------------------
+
 COMMENT 6
 --------------------------------------------------------------------------------
+
 Affected section : Chapter 4 (Elevator), Theoretical Analysis, Convergence
                    Proposition convergence2 (referred to by the reviewer as
                    Proposition 4.3.3)
@@ -264,8 +285,10 @@ New text :
   eventually appear with high probability."
 
 --------------------------------------------------------------------------------
+
 COMMENT 7
 --------------------------------------------------------------------------------
+
 Affected sections : Chapters 3, 5 and 6 — all references to definitions located in
                     the Appendix.
                     files : template/chapter/overlay.typ
@@ -299,8 +322,10 @@ Concretely, the following references were updated (each now explicit as in the A
     regression (@def:logistic-regression, given in the Appendix, @sec:appendix_ml).
 
 --------------------------------------------------------------------------------
+
 COMMENT 8
 --------------------------------------------------------------------------------
+
 Affected section : Chapter 6 (HEAL/FLAIR), FLAIR protocol, Overlay Layer
                    (resource-aware cluster-head selection and the use of VRF)
                    file : template/chapter/heal.typ
@@ -335,8 +360,10 @@ Change made :
     election probability is an open and non-trivial direction.
 
 --------------------------------------------------------------------------------
+
 COMMENT 9
 --------------------------------------------------------------------------------
+
 Affected section : Chapter 6, FLAIR protocol, Aggregation Layer
                    file : template/chapter/heal.typ
 
@@ -365,8 +392,10 @@ Added text (after "Each cluster thus runs a fully self-contained learning proces
   properties below."
 
 --------------------------------------------------------------------------------
+
 COMMENT 10
 --------------------------------------------------------------------------------
+
 Affected section : Chapter 6, FLAIR protocol, Experimental setup > Simulation
                    environment
                    file : template/chapter/heal.typ
@@ -397,8 +426,10 @@ about ns-3 simulating the full network stack):
   integration are reported in the Appendix (@sec:flair-ns3)."
 
 --------------------------------------------------------------------------------
+
 COMMENT 11
 --------------------------------------------------------------------------------
+
 Affected section : Chapter 6, FLAIR protocol, Experimental setup > Experimental scenarios
                    (Experiment 1)
                    file : template/chapter/heal.typ
@@ -418,8 +449,10 @@ Change made :
   for Gossip Learning) remains faithfully realizable as-is. Experiments 2 to 4 evaluate
   FLAIR on its own and therefore do not involve any of the other baselines.
 --------------------------------------------------------------------------------
+
 COMMENT 12
 --------------------------------------------------------------------------------
+
 Affected section : Chapter 6, FLAIR protocol, Experimental setup > Experimental scenarios
                    (description of Experiments 2 and 4)
                    file : template/chapter/heal.typ
@@ -444,8 +477,10 @@ Change made :
     are propagated between clusters by the mobile robots, which physically carry the
     aggregated models as they move (bridging connectivity gaps).
 --------------------------------------------------------------------------------
+
 COMMENT 13
 --------------------------------------------------------------------------------
+
 Affected : simulation figures (zoom windows) embedded in the manuscript
            (FLAIR results, Chapter 6)
 
@@ -470,5 +505,6 @@ Change made :
   now embeds the regenerated PDF figures. It is expected that the tighter zoom will
   make the differences between the lines easier to read.
 --------------------------------------------------------------------------------
+
 (to be completed with the following comments)
 ================================================================================
