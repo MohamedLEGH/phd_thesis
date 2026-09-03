@@ -1342,7 +1342,7 @@ scalability of decentralized designs with the efficiency of clustering, providin
 superior performance in static deployments.
 
 #figure(
-  image("../../Images/FLAIR/fl_comparison_100n_100e.svg", width: 90%),
+  image("../../Images/FLAIR/fl_comparison_100n_100e.pdf", width: 90%),
   caption: [Accuracy evolution of FLAIR and baselines in static networks (100 nodes).],
 ) <fig:flair-comparison>
 
@@ -1352,32 +1352,32 @@ superior performance in static deployments.
 In the baseline case without dropout, FLAIR stabilized around $0.90$ accuracy.
 
 #figure(
-  image("../../Images/FLAIR/leach_fault_recurring_1_epoch_per_round.svg", width: 95%),
+  image("../../Images/FLAIR/leach_fault_recurring_1_epoch_per_round.pdf", width: 95%),
   caption: [Accuracy evolution of FLAIR under recurring fault conditions (1 epoch per round).],
 ) <fig:flair-leach_fault_recurring_1epoch>
 
 #figure(
-  image("../../Images/FLAIR/leach_fault_permanent_1_epoch_per_round.svg", width: 95%),
+  image("../../Images/FLAIR/leach_fault_permanent_1_epoch_per_round.pdf", width: 95%),
   caption: [Accuracy evolution of FLAIR under permanent fault conditions (1 epoch per round).],
 ) <fig:flair-leach_fault_permanent_1epoch>
 
 #figure(
-  image("../../Images/FLAIR/leach_fault_random_1_epoch_per_round.svg", width: 95%),
+  image("../../Images/FLAIR/leach_fault_random_1_epoch_per_round.pdf", width: 95%),
   caption: [Accuracy evolution of FLAIR under random fault conditions (1 epoch per round).],
 ) <fig:flair-leach_fault_random_1epoch>
 
 #figure(
-  image("../../Images/FLAIR/leach_fault_recurring_3_epochs_per_round.svg", width: 95%),
+  image("../../Images/FLAIR/leach_fault_recurring_3_epochs_per_round.pdf", width: 95%),
   caption: [Accuracy evolution of FLAIR under recurring fault conditions (3 epochs per round).],
 ) <fig:flair-leach_fault_recurring_3epochs>
 
 #figure(
-  image("../../Images/FLAIR/leach_fault_permanent_3_epochs_per_round.svg", width: 95%),
+  image("../../Images/FLAIR/leach_fault_permanent_3_epochs_per_round.pdf", width: 95%),
   caption: [Accuracy evolution of FLAIR under permanent fault conditions (3 epochs per round).],
 ) <fig:flair-leach_fault_permanent_3epochs>
 
 #figure(
-  image("../../Images/FLAIR/leach_fault_random_3_epochs_per_round.svg", width: 95%),
+  image("../../Images/FLAIR/leach_fault_random_3_epochs_per_round.pdf", width: 95%),
   caption: [Accuracy evolution of FLAIR under random fault conditions (3 epochs per round).],
 ) <fig:flair-leach_fault_random_3epochs>
 
@@ -1437,12 +1437,12 @@ indicate that FLAIR is resilient to mobility effects and that its clustering mec
 effectively adapts to dynamic topologies.
 
 #figure(
-  image("../../Images/FLAIR/mobility_perfect.svg", width: 90%),
+  image("../../Images/FLAIR/mobility_perfect.pdf", width: 90%),
   caption: [Accuracy evolution of FLAIR under five mobility patterns with perfect connectivity.],
 ) <fig:flair-mobility_perfect>
 
 #figure(
-  image("../../Images/FLAIR/mobility_range_limited.svg", width: 90%),
+  image("../../Images/FLAIR/mobility_range_limited.pdf", width: 90%),
   caption: [Accuracy evolution of FLAIR under five mobility patterns with range-limited connectivity.],
 ) <fig:flair-mobility_range_limited>
 
@@ -1455,7 +1455,7 @@ Both configurations converge near the centralized baseline of 71.9%, with final
 accuracies of 71.2% and 71.4% respectively.
 
 #figure(
-  image("../../Images/FLAIR/fl_rounds_comparison.svg", width: 90%),
+  image("../../Images/FLAIR/fl_rounds_comparison.pdf", width: 90%),
   caption: [Accuracy evolution on the Watering the Plants dataset under the smart
   farming setup (80 fixed sensors + 20 mobile robots). Two local update settings
   ($E_"round" = 1$ vs. $E_"round" = 3$) are compared against the centralized baseline
@@ -1472,17 +1472,17 @@ FLAIR demonstrates graceful degradation and rapid recovery, underscoring its
 practicality for real-world IoT deployments.
 
 #figure(
-  image("../../Images/FLAIR/smart_leach_fault_permanent.svg", width: 95%),
+  image("../../Images/FLAIR/smart_leach_fault_permanent.pdf", width: 95%),
   caption: [Accuracy evolution of FLAIR under permanent fault conditions in the smart farming scenario.],
 ) <fig:flair-smart_fault_permanent>
 
 #figure(
-  image("../../Images/FLAIR/smart_leach_fault_recurring.svg", width: 95%),
+  image("../../Images/FLAIR/smart_leach_fault_recurring.pdf", width: 95%),
   caption: [Accuracy evolution of FLAIR under recurring fault conditions in the smart farming scenario.],
 ) <fig:flair-smart_fault_recurring>
 
 #figure(
-  image("../../Images/FLAIR/smart_leach_fault_random.svg", width: 95%),
+  image("../../Images/FLAIR/smart_leach_fault_random.pdf", width: 95%),
   caption: [Accuracy evolution of FLAIR under random fault conditions in the smart farming scenario.],
 ) <fig:flair-smart_fault_random>
 
