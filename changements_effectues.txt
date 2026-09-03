@@ -136,14 +136,17 @@ Change made :
   - Elevator is followed by its publication @legheraba2024emergent.
   - Lift is followed by @legheraba2025lift.
   - HEAL is followed by @legheraba2025heal.
-  - FLAIR, whose full paper is not yet paginated, is followed by a citation to its
-    open-access arXiv version (@boutebicha2026flair, freely accessible), noting that
-    it was accepted and presented at NETYS 2026.
-  In addition, the "Publications" section now reports that the FLAIR paper has been
-  accepted and presented at the 14th International Conference on Networked Systems
-  (NETYS 2026) and will appear in its proceedings (Springer LNCS), citing that
-  conference version (@boutebicha2026netys). Two corresponding bibliographic entries
-  were added: the NETYS conference proceedings entry and the arXiv version.
+  - FLAIR is followed by its conference publication at the 14th International
+    Conference on Networked Systems (NETYS 2026, @boutebicha2026netys). Consistently
+    with the other contributions, the version cited is the peer-reviewed conference
+    one (not the arXiv preprint), and its bibliographic entry carries a "to appear"
+    note while the proceedings are not yet paginated.
+  Each published contribution is signalled in the text with a "has been published
+  in" phrasing (rather than a bare citation). The "Publications" section lists the
+  HEAL (legheraba2025heal) and FLAIR/NETYS 2026 (boutebicha2026netys) entries
+  together under a common "international conferences" heading. A separate arXiv
+  version of the FLAIR paper is also kept in the bibliography file for archival
+  purposes, but is not displayed since it is no longer cited in the text.
   The conclusion (Chapter 7) was left unchanged, since the connection is now made
   directly in the introduction, as the reviewer invited.
 ================================================================================
