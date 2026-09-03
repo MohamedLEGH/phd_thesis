@@ -144,7 +144,10 @@ Change made :
   Each published contribution is signalled in the text with a "has been published
   in" phrasing (rather than a bare citation). The "Publications" section lists the
   HEAL (legheraba2025heal) and FLAIR/NETYS 2026 (boutebicha2026netys) entries
-  together under a common "international conferences" heading. A separate arXiv
+  together, under the same heading as the other chapters using the consistent
+  wording "The contributions of Chapter 6 have been published in the proceedings of
+  the following international conferences" (rather than "Part of the contributions"),
+  since all the work of Chapter 6 - HEAL and FLAIR - is published. A separate arXiv
   version of the FLAIR paper is also kept in the bibliography file for archival
   purposes, but is not displayed since it is no longer cited in the text.
   The conclusion (Chapter 7) was left unchanged, since the connection is now made

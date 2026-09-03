@@ -13,7 +13,7 @@ international conferences:
 
 #cite(<legheraba2025lift>, form: "full"). This publication received the *Outstanding Paper Award* in its category.
 
-Part of the contributions of @chap:heal have been published in the proceedings of the following international conferences:
+The contributions of @chap:heal have been published in the proceedings of the following international conferences:
 
 #cite(<legheraba2025heal>, form: "full")
 
