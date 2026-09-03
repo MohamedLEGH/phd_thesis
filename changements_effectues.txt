@@ -44,6 +44,26 @@ Change made :
   the outset.
 
 
+
+General Comment (2)
+
+Reviewer comment (verbatim) :
+  "Second, the initial question posed by the thesis mentions malicious
+  participants. However, malicious participants are only considered in the context
+  of the Lift protocol, which is not evaluated in combination with the
+  machine-learning algorithms. This is understandable given the limited time
+  available for a PhD, but it would be useful to clarify this from the beginning so
+  that the reader does not expect to see Byzantine behavior addressed in Chapter 6."
+
+Change made :
+  A footnote is appended to the first occurrence of "malicious behaviour" in the
+  Introduction, clarifying the scope from the outset: malicious behaviour is studied
+  at the overlay level, where an adversary could manipulate the hub election
+  (addressed by the Lift protocol, Chapter 4, Elevator); defending the machine-learning
+  layer itself against Byzantine or poisoning attacks (e.g. manipulated model
+  updates) lies outside the scope of this work, and this point is revisited in the
+  limitations and outlook (Chapter 7). This avoids raising the expectation that
+  Byzantine behaviour will be addressed in the learning evaluation of Chapter 6.
 ================================================================================
 DETAILED COMMENTS
 ================================================================================
