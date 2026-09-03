@@ -64,6 +64,25 @@ Change made :
   updates) lies outside the scope of this work, and this point is revisited in the
   limitations and outlook (Chapter 7). This avoids raising the expectation that
   Byzantine behaviour will be addressed in the learning evaluation of Chapter 6.
+
+General Comment (3)
+
+Reviewer comment (verbatim) :
+  "Third, the review of the state of the art in Chapter 3 is somewhat lengthy and
+  possibly too detailed. It would be useful to have a more concise description that
+  highlights what is actually relevant to the presented algorithms. In particular,
+  going all the way back to the very first peer sampling protocols and describing
+  them in detail is probably unnecessary. Now that this is done, it can be left as
+  is, but this should be kept in mind for future writing."
+
+Response :
+  We thank the reviewer for this feedback. We acknowledge that the state-of-the-art
+  review in Chapter 3 is lengthy and goes into much historical detail. As the
+  reviewer points out that this can be left as is, we do not make further changes to
+  the manuscript for this point; however, we will keep this remark in mind for future
+  writing (articles and the dissertation defense exhibition), where we will aim for a
+  more concise survey that highlights only what is directly relevant to the proposed
+  algorithms.
 ================================================================================
 DETAILED COMMENTS
 ================================================================================
