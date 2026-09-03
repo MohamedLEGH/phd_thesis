@@ -17,6 +17,10 @@ Part of the contributions of @chap:heal have been published in the proceedings 
 
 #cite(<legheraba2025heal>, form: "full")
 
+The contribution of @chap:heal concerning FLAIR has been accepted and presented at the 14th International Conference on Networked Systems (NETYS 2026), and will appear in its proceedings:
+
+#cite(<boutebicha2026netys>, form: "full")
+
 The contributions of @chap:elevator and @chap:heal have also been presented in the proceedings of the
 following French national congresses, respectively:
 

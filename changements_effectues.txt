@@ -119,6 +119,33 @@ Change made :
   This aligns the conclusion with the nuanced literature review of Chapter 5 and
   acknowledges the dependence of the observed baseline performance on implementation
   and parameter settings.
+
+General Comment (5)
+
+Reviewer comment (verbatim) :
+  "Finally, although the thesis includes a dedicated Publications section after the
+  conclusion, the introduction and conclusion do not explicitly connect the main
+  contributions to the corresponding published papers. Since several parts of the
+  work have already appeared in conference publications, it would be useful to
+  mention this in the introduction, typically when presenting the contributions, or
+  possibly in the conclusion."
+
+Change made :
+  The main contributions are now explicitly tied to their publications where they are
+  presented in the Introduction (Contributions section).
+  - Elevator is followed by its publication @legheraba2024emergent.
+  - Lift is followed by @legheraba2025lift.
+  - HEAL is followed by @legheraba2025heal.
+  - FLAIR, whose full paper is not yet paginated, is followed by a citation to its
+    open-access arXiv version (@boutebicha2026flair, freely accessible), noting that
+    it was accepted and presented at NETYS 2026.
+  In addition, the "Publications" section now reports that the FLAIR paper has been
+  accepted and presented at the 14th International Conference on Networked Systems
+  (NETYS 2026) and will appear in its proceedings (Springer LNCS), citing that
+  conference version (@boutebicha2026netys). Two corresponding bibliographic entries
+  were added: the NETYS conference proceedings entry and the arXiv version.
+  The conclusion (Chapter 7) was left unchanged, since the connection is now made
+  directly in the introduction, as the reviewer invited.
 ================================================================================
 DETAILED COMMENTS
 ================================================================================
