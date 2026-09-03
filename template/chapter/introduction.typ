@@ -1,5 +1,7 @@
 #import "@preview/fletcher:0.5.8" as fletcher: diagram, node, edge
 
+#import "@preview/cetz:0.4.2"
+
 #import "@preview/lovelace:0.3.0": *
 
 #import "@preview/theorion:0.4.1": *
@@ -47,7 +49,67 @@ This raises the central question of this thesis: is it possible to build a decen
 
 == Contributions
 
-This thesis makes four original contributions at the intersection of peer-to-peer networking and decentralised machine learning.
+The work presented in this thesis is organised around a unifying architectural
+view. Decentralised learning of the kind investigated here is not a single
+protocol but a *layered architecture* of four layers: a *Network Layer*
+responsible for low-level communication; an *Overlay Layer* that maintains the
+logical topology and decides which nodes talk to which; an *Aggregation Layer*
+that combines locally trained models; and an *Application Layer* that carries
+out the learning task. The key design intuition of this thesis is that these
+layers must be designed *together*: in particular, the overlay layer should be
+engineered so as to make efficient global aggregation possible, instead of being
+treated as an independent concern. Each layer exposes a narrow interface and can
+be replaced independently of the others, which is what later allows the very
+same architecture to be instantiated in different physical settings.
+
+#figure(
+cetz.canvas({
+  import cetz.draw: *
+  let w = 4
+  let h = 1.4
+  let spacing = 2
+  let colors = (
+    rgb(70%, 70%, 70%),
+    rgb(75%, 90%, 75%),
+    rgb(75%, 85%, 95%),
+    rgb(85%, 75%, 90%),
+  )
+  let labels = (
+    "Network Layer",
+    "Overlay Layer",
+    "Aggregation Layer",
+    "Application Layer",
+  )
+  let details = (
+    "Physical network &\nTCP/IP stack",
+    "P2P topology &\nneighbor management",
+    "Aggregation protocol &\nparameter fusion",
+    "Supervised ML models\n(SVM, NN, ...)",
+  )
+
+  for i in range(4) {
+    rect((0, i*spacing), (w, h + (i*spacing)), name: "rect_"+str(i), fill: colors.at(i))
+    content("rect_"+str(i), labels.at(i))
+
+    let mid_y = (i*spacing) + h/2
+    let arrow_x_start = w + 0.15
+    let arrow_x_end = w + 0.6
+    let text_x = w + 0.7
+
+    line((arrow_x_start, mid_y), (arrow_x_end, mid_y), mark: (end: ">"))
+    content((text_x, mid_y), anchor: "west", details.at(i))
+  }
+}), alt: "Layered architecture of decentralised learning showing four stacked layers: Network, Overlay, Aggregation, and Application", caption: [The four-layer architecture of decentralised learning used throughout this thesis.]
+) <fig:architecture-intro>
+
+To the best of our knowledge, such an architecture --- in which a structured
+overlay is explicitly designed as the substrate for machine-learning aggregation,
+with independently replaceable layers spanning both the networking and the
+learning stacks --- has not been proposed before in the context of decentralised
+machine learning. Building on this view, the contributions of this thesis instantiate
+this architecture piece by piece. The thesis makes four original contributions
+at the intersection of peer-to-peer networking and decentralised machine
+learning.
 
 The first contribution is *Elevator*, a decentralised peer sampling protocol that organises nodes into a hub-and-spoke overlay through a lightweight, self-organising random election mechanism. Elevator requires no pre-assigned coordinator, makes no assumption about the application running on top of it, and is designed to tolerate node crashes and churn. By elevating a dynamic subset of nodes to the role of hubs, it introduces a structured aggregation topology into an otherwise flat peer-to-peer network, without sacrificing the decentralised nature of the system.
 

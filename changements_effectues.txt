@@ -17,7 +17,31 @@ version:
 GENERAL COMMENTS
 ================================================================================
 
-(to be completed after receiving the reviewer's general comments)
+General Comment (1)
+
+Reviewer comment (verbatim) :
+  "First, I would like to point out that, since the thesis presents what is
+  essentially an architecture for decentralized learning, the presentation would
+  benefit from introducing this architecture (consisting of the four layers) at the
+  very beginning. This could possibly be done in the introduction, in Chapter 3, or
+  in an additional short chapter before describing the actual Elevator and Lift
+  protocols. Because this architecture is then later reused across different
+  machine-learning algorithms, it would be useful to have a sense from the beginning
+  that the thesis has a unitary view."
+
+Change made :
+  The four-layer architecture (Network / Overlay / Aggregation / Application) that
+  underpins the thesis is now introduced at the very beginning of the Introduction,
+  at the head of the "Contributions" section. The new passage presents this
+  architecture, embeds the layered-diagram figure (the same cetz schematic that is
+  used in the HEAL chapter), explains the key design intuition (the overlay layer is
+  engineered so as to make efficient global aggregation possible), and states, to the
+  best of our knowledge, that such an architecture for decentralized machine learning
+  — in which a structured overlay is explicitly the substrate for ML aggregation,
+  with independently replaceable layers — has not been proposed before. It then
+  announces that the four contributions (Elevator, Lift, HEAL, FLAIR) instantiate
+  this architecture layer by layer, giving the reader the unitary view requested from
+  the outset.
 
 
 ================================================================================
