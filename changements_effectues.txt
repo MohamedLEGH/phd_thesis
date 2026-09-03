@@ -83,6 +83,42 @@ Response :
   writing (articles and the dissertation defense exhibition), where we will aim for a
   more concise survey that highlights only what is directly relevant to the proposed
   algorithms.
+
+General Comment (4)
+
+Reviewer comment (verbatim) :
+  "Fourth, Chapter 5 makes a nuanced claim about gossip learning: it states that
+  gossip learning converges more slowly than federated learning because it lacks
+  coordinated global synchronization, but it then cites prior work showing that
+  gossip learning can sometimes match the convergence quality of federated learning
+  in practice. In this light, the stronger claim made in the conclusion chapter,
+  namely that gossip learning consistently underperforms federated learning in both
+  convergence speed and final model accuracy, seems insufficiently supported by the
+  literature review. The weaker performance of the specific gossip-learning baseline
+  in the experiments may also depend on implementation choices or parameter settings,
+  so this point should be stated more carefully."
+
+Change made :
+  The strong claim in the Conclusion (Chapter 7) that gossip learning consistently
+  underperforms federated learning was nuanced in two places.
+  - First paragraph (General conclusions): gossip learning is now said to generally
+    underperform federated learning in convergence speed and, in most settings, in
+    final accuracy (rather than consistently), pointing out that this gap is not
+    systematic since the literature reports instances where gossip learning can
+    reach the convergence quality of federated learning once adequately configured
+    (as discussed in the literature review, Chapter 5). It is also stressed that
+    achieving competitive behaviour with gossip learning requires a comparatively
+    careful configuration of parameters, which makes it a less reliable substrate.
+    The passage then explains that, by contrast, our approach relies less on such
+    delicate configuration because it introduces structured global aggregation on
+    top of a decentralised overlay, so we are correspondingly more confident of
+    approaching the convergence speed of federated learning.
+  - Later paragraph: "systematic underperformance ... as documented in Chapter 5"
+    was replaced by "generally leads to underperformance ... (as discussed, this gap
+    can narrow, and sometimes close, when gossip learning is adequately configured)".
+  This aligns the conclusion with the nuanced literature review of Chapter 5 and
+  acknowledges the dependence of the observed baseline performance on implementation
+  and parameter settings.
 ================================================================================
 DETAILED COMMENTS
 ================================================================================

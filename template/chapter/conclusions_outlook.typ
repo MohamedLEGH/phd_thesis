@@ -4,7 +4,7 @@
 
 == General conclusions
 
-This thesis was motivated by a fundamental question: can federated learning be conducted in a truly decentralised manner? The initial intuition pointed toward blockchain as a natural substrate for decentralised coordination. However, a systematic survey of the state of the art revealed an existing paradigm — gossip learning — that already eliminates the central server. The problem, well-documented in the literature, is that gossip learning consistently underperforms federated learning in both convergence speed and final model accuracy, precisely because it lacks any form of structured aggregation. This observation shifted the research question to a lower level of the stack: rather than modifying the learning algorithm itself, we asked whether the underlying communication topology could be engineered to recover the benefits of structured aggregation, while preserving full decentralisation. This led us to survey the peer sampling and overlay management literature, in search of protocols capable of shaping the network toward a topology that would support efficient global aggregation.
+This thesis was motivated by a fundamental question: can federated learning be conducted in a truly decentralised manner? The initial intuition pointed toward blockchain as a natural substrate for decentralised coordination. However, a systematic survey of the state of the art revealed an existing paradigm — gossip learning — that already eliminates the central server. Yet gossip learning generally underperforms federated learning, both in convergence speed and, in most settings, in final model accuracy, precisely because it lacks any form of structured aggregation. This underperformance is not, however, systematic: the literature reports instances in which gossip learning can reach the convergence quality of federated learning once the algorithms are adequately configured (@chap:learning). In practice, achieving competitive behaviour with gossip learning thus requires a comparatively careful configuration of parameters, which makes it a less reliable substrate for recovering the efficiency of a centralised reference. By contrast, because our approach introduces structured global aggregation on top of a decentralised overlay, it relies less on such delicate configuration and we are correspondingly more confident of approaching the convergence speed of federated learning. This observation shifted the research question to a lower level of the stack: rather than modifying the learning algorithm itself, we asked whether the underlying communication topology could be engineered to recover the benefits of structured aggregation, while preserving full decentralisation. This led us to survey the peer sampling and overlay management literature, in search of protocols capable of shaping the network toward a topology that would support efficient global aggregation.
 
 Several families of protocols have been proposed, yet none was designed with the explicit goal of structuring the overlay to support global aggregation — in particular, none considered the deliberate emergence of hub nodes as a design objective.
 Random-walk and multi-hop gossip protocols accelerate information propagation by
@@ -25,8 +25,10 @@ server coordinates model aggregation; the question of full decentralisation
 receives comparatively little attention. Blockchain-based approaches do eliminate
 the central coordinator, but they rely on complete communication graphs and do
 not scale to large networks. Gossip learning protocols are scalable and genuinely
-decentralised, yet their lack of global aggregation leads to systematic
-underperformance relative to federated learning, as documented in @chap:learning.
+decentralised, yet their lack of global aggregation generally leads to
+underperformance relative to federated learning in convergence speed and, in
+most settings, in final accuracy (as discussed in @chap:learning, this gap can
+narrow, and sometimes close, when gossip learning is adequately configured).
 The result is a clear gap: no existing protocol simultaneously achieves
 decentralisation, scalability, and aggregation efficiency.
 
