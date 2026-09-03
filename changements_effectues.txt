@@ -444,5 +444,31 @@ Change made :
     are propagated between clusters by the mobile robots, which physically carry the
     aggregated models as they move (bridging connectivity gaps).
 --------------------------------------------------------------------------------
+COMMENT 13
+--------------------------------------------------------------------------------
+Affected : simulation figures (zoom windows) embedded in the manuscript
+           (FLAIR results, Chapter 6)
+
+Reviewer comment (verbatim) :
+  "Figure 79 and the following figures have a small box that concentrates on a small
+  portion of the graph, but it would be useful to zoom in not only on the x-axis but
+  also on the y-axis to better distinguish the differences between the different
+  lines."
+
+Change made :
+  The zoom windows (the small inset boxes) of the accuracy figures were regenerated
+  with reduced x-axis ranges so that the early phase of the curves, where the
+  differences between the algorithms/crash levels are most visible, fills the inset
+  more. The aim is to make the differences between the lines more readable.
+  Concretely, the comparison figure (Figure 79) now zooms on cycles 0-10 instead of
+  0-20; fault figures zoom on a tighter window (e.g. recurring on 5-20 instead of
+  5-35, permanent 3 epochs per round on 0-10), and the smart-farming recurring figure
+  zooms on 0-20 instead of 0-40. Figures that were already clearly readable were left
+  unchanged.
+  A new version of the generation script (figures_genZoomY.py in the FLAIR simulation
+  repo) was produced, run, and its outputs were copied into Images/FLAIR/; the chapter
+  now embeds the regenerated PDF figures. It is expected that the tighter zoom will
+  make the differences between the lines easier to read.
+--------------------------------------------------------------------------------
 (to be completed with the following comments)
 ================================================================================
