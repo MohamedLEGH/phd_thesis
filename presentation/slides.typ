@@ -5,7 +5,7 @@
 #import "../template/customization/colors.typ": *
 #import "@preview/lovelace:0.3.0": *
 #import "@preview/touying:0.6.1": *
-#import themes.simple: *
+#import themes.university: *
 
 // touying: university
 // nombre de page
@@ -17,9 +17,15 @@
   counter(footnote).update(n => n - 1)
 }
 
-#show: simple-theme.with(
+#show: university-theme.with(
   aspect-ratio: "16-9",
-  footer: [],
+  config-info(
+    title: [Peer-to-peer protocols for efficient and resilient decentralized learning],
+    short-title: [PhD defense],
+    author: [Mohamed Amine Legheraba],
+    institution: [LIP6 · Sorbonne Université],
+    date: [September 7, 2026],
+  ),
 )
 
 #let my-lovelace-defaults = (
@@ -71,7 +77,7 @@
   #set align(horizon)
   #set align(center)
 
-  #image("nemo_stack_clean.png")
+  #image("nemo_stack_clean.png", width: 464pt)
 ]
 
 // == Plan
