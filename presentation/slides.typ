@@ -13,7 +13,7 @@
 // footer plutot que header
 
 #let thanks(body) = {
-  footnote(numbering: _ => [\*])[#body]
+  footnote(numbering: _ => [\*])[#text(size: 9pt)[#body]]
   counter(footnote).update(n => n - 1)
 }
 
@@ -126,7 +126,7 @@
   })
 ]
 
-== Federated Learning #thanks[#cite(<mcmahan2017communication>, form: "full")]
+== Federated Learning
 
 #slide[
   #set align(horizon)
@@ -136,24 +136,35 @@
     columns: (1fr, 1fr),
     align(center)[
       #fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
-        imagebox((0, 1), image("server.svg", width: 70pt), name: <server>)
-        imagebox((-0.4, 2), image("smartphone.svg", width: 60pt), name: <c1>)
-        imagebox((0, 2), image("smartphone.svg", width: 60pt), name: <c2>)
-        imagebox((0.4, 2), image("smartphone.svg", width: 60pt), name: <c3>)
+        imagebox((0, 0.5), image("server.svg", width: 100pt), name: <server>)
+        imagebox((-0.6, 2), image("smartphone.svg", width: 100pt), name: <c1>)
+        imagebox((0, 2), image("smartphone.svg", width: 100pt), name: <c2>)
+        imagebox((0.6, 2), image("smartphone.svg", width: 100pt), name: <c3>)
 
-        edge(<server>, <c1>, marks: "<->", stroke: 1pt)
-        edge(<server>, <c2>, marks: "<->", stroke: 1pt)
-        edge(<server>, <c3>, marks: "<->", stroke: 1pt)
+        edge(<server>, <c1>, marks: "<->", stroke: 3pt)
+        edge(<server>, <c2>, marks: "<->", stroke: 3pt)
+        edge(<server>, <c3>, marks: "<->", stroke: 3pt)
       })
     ],
     align(left)[
-      #text(size: 20pt)[
-        - *Decentralizes the computation load*
-        #v(0.8em)
-        - *Keeps data local* : only models are shared
+      #text(size: 19pt)[
+        #pseudocode-list(booktabs: true, title: [Server])[
+          + *loop*
+            + received_models $arrow.l$ collect(clients)
+            + global_model $arrow.l$ merge(received_models)
+            + broadcast(global_model)
+        ]
+        #pseudocode-list(booktabs: true, title: [Client])[
+          + *loop*
+            + local_model $arrow.l$ train(model, local_data)
+            + send(local_model, server)
+            + model $arrow.l$ receive(global_model)
+        ]
       ]
     ]
   )
+
+  #text(size: 12pt)[#cite(<mcmahan2017communication>, form: "full")]
 ]
 
 == Structured vs Unstructured networks
@@ -196,7 +207,7 @@
   )
 ]
 
-== Gossip Learning #thanks[#cite(<ormandi2013gossip>, form: "full")]
+== Gossip Learning
 #slide[
   #set align(horizon)
   #set align(center)
@@ -233,6 +244,8 @@
         + send(peer, model)
     ],
   )
+
+  #text(size: 12pt)[#cite(<ormandi2013gossip>, form: "full")]
 ]
 
 // == Gossip Learning vs Federated Learning
@@ -325,7 +338,7 @@
   )
 ]
 
-== Decentralized peer sampling #thanks[#cite(<stavrou2002lightweight>, form: "full")]
+== Decentralized peer sampling
 
 #slide[
   #set align(horizon)
@@ -378,6 +391,8 @@
 #set text(size: 20pt)
 Before and after a shuffling operation. Node 1 sends addresses {itself, 2, 3} to node 4. Node 4 sends back {5,6,
 8}.
+
+#text(size: 12pt)[#cite(<stavrou2002lightweight>, form: "full")]
 ]
 
 == Metrics
@@ -491,7 +506,7 @@ Before and after a shuffling operation. Node 1 sends addresses {itself, 2, 3} to
 
 // = Elevator & HEAL protocols
 
-== Hub-based topology #thanks[#cite(<legheraba2024elevator>, form: "full")]
+== Hub-based topology
 
 #slide[
   #set align(horizon)
@@ -513,6 +528,10 @@ Before and after a shuffling operation. Node 1 sends addresses {itself, 2, 3} to
     #v(0.4em)
     $ forall v in V, quad h in P(v) $
   ]
+
+  #v(0.5em)
+
+  #text(size: 12pt)[#cite(<legheraba2024emergent>, form: "full")]
 ]
 
 == Preferential Attachment
@@ -816,7 +835,7 @@ image("Elevator_context_1000_100xp_diameter_color.svg", fit: "cover")
 })
 ]
 
-== Hub Learning Protocol #thanks[#cite(<legheraba2025heal>, form: "full")]
+== Hub Learning Protocol
 #slide[
   #set align(horizon)
   #set align(center)
@@ -871,6 +890,8 @@ to the nodes`, fill: blue.lighten(60%), stroke: dash_hub, inset: 0.5em)
     edge(label("6"), label("1"), "-|>")
     edge(label("6"), label("5"), "-|>")
 })
+  #text(size: 12pt)[#cite(<legheraba2025heal>, form: "full")]
+
 ]
 
 == Datasets & Models
@@ -1194,7 +1215,7 @@ to the nodes`, fill: blue.lighten(60%), stroke: dash_hub, inset: 0.5em)
 
 = Appendix
 
-== Federated Learning #thanks[#cite(<mcmahan2017communication>, form: "full")]
+== Federated Learning
 
 #slide[
   #set align(horizon)
@@ -1222,6 +1243,8 @@ to the nodes`, fill: blue.lighten(60%), stroke: dash_hub, inset: 0.5em)
       + *end for*
     ],
   )
+
+  #text(size: 12pt)[#cite(<mcmahan2017communication>, form: "full")]
 ]
 
 == Federated Learning building blocks
@@ -1572,7 +1595,7 @@ image("churn_1000_100xp_diameter_color.svg", fit: "cover")
   })
 ]
 
-== Decentralized peer sampling #thanks[#cite(<stavrou2002lightweight>, form: "full")]
+== Decentralized peer sampling
 
 #slide[
   #set align(horizon)
@@ -1638,9 +1661,11 @@ node((1.2,1.2), "8", stroke: 1pt, name: "8", radius: 0.5em)
 #set text(size: 12pt)
 Before and after a shuffling operation. Node 1 sends addresses {itself, 2, 3} to node 4. Node 4 sends back {5,6,
 8}.
+
+#text(size: 12pt)[#cite(<stavrou2002lightweight>, form: "full")]
 ]
 
-== Hub-based topology & Hub sampling #thanks[#cite(<legheraba2024elevator>, form: "full")]
+== Hub-based topology & Hub sampling
 
 #slide[
 #set text(size: 15pt)
@@ -1651,6 +1676,8 @@ Before and after a shuffling operation. Node 1 sends addresses {itself, 2, 3} to
 
 - *Random Attachment*: Inspired by gossip-based peer sampling algorithms (#thanks[#cite(<stavrou2002lightweight>, form: "full")] #thanks[#cite(<jelasity2007gossip>, form: "full")]), random attachment ensures that nodes maintain connections with a representative and diverse subset of the network. 
 // This strategy promotes network robustness by preventing excessive clustering and dependency on specific nodes (hubs). When existing hubs disappear (e.g., due to failures or departure), other nodes within the network are opportunistically elevated to hub status, ensuring continuity and adaptability of the network topology over time.
+
+#text(size: 12pt)[#cite(<legheraba2024emergent>, form: "full")]
 ]
 
 == Elevator's Algorithm
@@ -1695,7 +1722,7 @@ Before and after a shuffling operation. Node 1 sends addresses {itself, 2, 3} to
       ]
 ]
 
-== Blockchain-based Federated Learning #thanks[#cite(<wang2021systematic>, form: "full")]
+== Blockchain-based Federated Learning
 #slide[
 
   #set align(horizon)
@@ -1726,6 +1753,8 @@ Before and after a shuffling operation. Node 1 sends addresses {itself, 2, 3} to
     edge(<n4>, <n1>, marks: "-"),
     edge(<n1>, <n3>, marks: "-"),
   )
+
+  #text(size: 12pt)[#cite(<huang2023blockchain>, form: "full")]
 ]
 
 == Services in a P2P Network
