@@ -19,16 +19,12 @@ meilleur de moi-même. Je n'aurais pas pu espérer meilleurs encadrants.
 Je remercie les membres de mon comité de suivi individuel,
 Luciana Arantes et Fabien Mathieu, pour leur accompagnement lors des
 réunions annuelles et leurs conseils avisés sur la conduite de la
-thèse.
-
-Je remercie chaleureusement Bruno Baynat pour son accompagnement
+thèse. Je remercie chaleureusement Bruno Baynat pour son accompagnement
 durant près d'un an autour de la preuve de convergence et de
 stabilité d'Elevator. Les nombreuses pistes que nous avons explorées
 ensemble autour des chaînes de Markov, les allers-retours, les
 reformulations, ont été une expérience intellectuelle aussi exigeante
-qu'enrichissante.
-
-Je remercie également Megumi Kaneko pour son accueil au National
+qu'enrichissante. Je remercie également Megumi Kaneko pour son accueil au National
 Institute of Informatics de Tokyo durant mes trois mois de stage.
 Sa patience, son aide précieuse dans mes travaux de recherche, et
 son attention à mon intégration au sein de l'équipe ont rendu cette
@@ -41,16 +37,12 @@ J'ai également une pensée toute particulière pour les stagiaires avec
 qui j'ai eu la chance de collaborer : Alicia, Nour, Victor et Ihssan. Leur
 implication, leur curiosité et leur sérieux ont été d'une aide
 considérable dans mes travaux, et les résultats de cette thèse leur
-doivent beaucoup.
-
-Merci à tous les doctorants et membres du LIP6 que j'ai croisés au fil de ces
+doivent beaucoup. Merci à tous les doctorants et membres du LIP6 que j'ai croisés au fil de ces
 années, pour les discussions scientifiques, les pauses café, et tout
 ce qui fait la richesse d'une vie de laboratoire. Merci également
 à l'ensemble des chercheurs et à l'organisation du LINCS, institution
 si singulière, dont j'ai eu le privilège de côtoyer le monde durant
-ces années de thèse.
-
-Je remercie l'administration de Sorbonne Université, du LIP6 et de
+ces années de thèse. Je remercie l'administration de Sorbonne Université, du LIP6 et de
 l'école doctorale EDITE pour leur accompagnement tout au long de ce
 parcours. Je suis profondément fier et honoré d'avoir réalisé mon
 doctorat au sein d'une institution aussi prestigieuse.
