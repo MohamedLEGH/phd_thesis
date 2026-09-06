@@ -248,11 +248,16 @@
   #text(size: 12pt)[#cite(<ormandi2013gossip>, form: "full")]
 ]
 
-// == Gossip Learning vs Federated Learning
+== Gossip Learning vs Federated Learning
 
-// todo
+#slide[
+  #set align(horizon)
+  #set align(center)
 
-// Show that it's slow
+  #image("gossip_results.png", height: 80%)
+
+  #text(size: 12pt)[#cite(<hegedHus2021decentralized>, form: "full")]
+]
 
 == Architecture
 
