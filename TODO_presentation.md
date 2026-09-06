@@ -2,9 +2,9 @@
 
 Travail à faire sur la présentation, à traiter élément par élément.
 
-1. Améliorer l'aspect graphique de la slide sur le supervised learning.
+1. ~~Améliorer l'aspect graphique de la slide sur le supervised learning.~~ ✅ **FAIT** — titres du diagramme (Training, Data, Labels, Model, Prediction, Trained Model) mis en gras.
 2. ~~Améliorer la slide sur le federated learning (ajouter un court pseudo-code).~~ ✅ **FAIT** — schéma agrandi + 2 pseudo-codes (Server/Client) en vrai pseudocode (affectations `←`, loop), citation McMahan en bas de slide.
-3. Ajouter une slide de comparaison gossip learning vs federated learning.
+3. ~~Ajouter une slide de comparaison gossip learning vs federated learning.~~ ✅ **FAIT** — slide activée avec figure `gossip_results.png` + citation Hegedűs et al. 2021 (JPDC).
 4. Rajouter le plan sur la slide architecture.
 5. Revoir le code de FLAIR pour comprendre en détails les simu.
 6. Mettre les axes sur les figures.
