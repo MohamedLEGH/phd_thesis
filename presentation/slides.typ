@@ -103,7 +103,7 @@
       labelbox((-2.7,-0.9), "Dog", name: <dog_lbl>)
       labelbox((-2,-0.9), "Cat", name: <cat_lbl>)
       imagebox((-0.6, -1.3), image("machine.svg", width: 120pt), name: <ml>)
-      title((-0.7, -0.7), [*Model*])
+      title((-0.6, -0.7), [*Model*])
 
       // flèche du couple (image chat + label Cat) vers le modèle
       edge(<cat_lbl>, <ml>, "->")
@@ -254,9 +254,37 @@
   #set align(horizon)
   #set align(center)
 
-  #image("gossip_results.png", height: 80%)
+  #image("gossip_results.png", height: 86%)
 
   #text(size: 12pt)[#cite(<hegedHus2021decentralized>, form: "full")]
+]
+
+== State of the Art Summary
+
+#slide[
+  #set align(horizon)
+  #set align(center)
+  #set text(size: 14pt)
+
+  #let ok = text(fill: green)[✓]
+  #let no = text(fill: red)[✗]
+
+  #table(
+    columns: (auto, auto, auto, auto, auto, auto),
+    inset: 6pt,
+    align: (left, center, center, center, center, center),
+    table.header(
+      [], [*Decentralized*], [*Local data*], [*Fast convergence*], [*Fault-tolerant*], [*No overlay overhead*],
+    ),
+    [*Centralized learning*], no, no, ok, no, ok,
+    [*Federated learning*], no, ok, ok, no, ok,
+    [*Decentralized learning* (structured net.)], ok, ok, ok, no, no,
+    [*Gossip learning*], ok, ok, no, ok, ok,
+    [*Local learning*], ok, ok, stack(spacing: 2pt, no, text(size: 9pt)[no generalizing model]), ok, ok,
+  )
+
+  #v(0.8em)
+  #text(size: 16pt, weight: "bold")[No single solution is fully satisfactory]
 ]
 
 == Architecture
