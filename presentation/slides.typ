@@ -159,45 +159,81 @@
 == Structured vs Unstructured networks
 
 #slide[
-  show differences
+  #set align(horizon)
+  #set align(center)
+
+  #grid(
+    columns: (1fr, 1fr),
+    column-gutter: 2em,
+
+    fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
+      node((0,0), name: "1", radius: 1em)
+      edge(label("5"), "-", stroke: 1pt)
+      edge(label("2"), "-", stroke: 1pt)
+      node((0.3,1), name: "2", radius: 1em)
+      edge(label("5"), "-", stroke: 1pt)
+      edge(label("3"), "-", stroke: 1pt)
+      node((1,1.5), name: "3", radius: 1em)
+      node((1.8,1), name: "4", radius: 1em)
+      edge(label("5"), "-", stroke: 1pt)
+      node((1.8,0), name: "5", radius: 1em)
+    }),
+
+    fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
+      node((0,1), name: "1", radius: 1em)
+      edge(label("5"), "-", stroke: 1pt)
+      edge(label("6"), "-", stroke: 1pt)
+      node((2,1), name: "2", radius: 1em)
+      edge(label("4"), "-", stroke: 1pt)
+      edge(label("3"), "-", stroke: 1pt)
+      node((1.5,1.8), name: "3", radius: 1em)
+      edge(label("6"), "-", stroke: 1pt)
+      node((1.5,0.2), name: "4", radius: 1em)
+      edge(label("5"), "-", stroke: 1pt)
+      node((0.5,0.2), name: "5", radius: 1em)
+      node((0.5,1.8), name: "6", radius: 1em)
+    }),
+  )
 ]
 
 == Gossip Learning #thanks[#cite(<ormandi2013gossip>, form: "full")]
-
-
 #slide[
   #set align(horizon)
   #set align(center)
-#fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
-node((0,0),"1", name: "1", radius: 1em)
-edge(label("5"), "-")
-edge(label("2"), "-")
-node((0.3,1),"2", name: "2", radius: 1em)
-edge(label("5"), "-")
-edge(label("5"), stroke: 1pt + blue, "<-|", bend: 25deg, label: "peer to peer model aggregation", label-size: 7pt, label-side: right, label-sep: 0.4em, label-angle: right, "dashed")
-edge(label("3"), "-")
-node((1,1.5),"3", name: "3", radius: 1em)
-node((1.8,1),"4", name: "4", radius: 1em)
-edge(label("5"), "-")
-node((1.8,0),"5", name: "5", radius: 1em)
-})][
-  #set align(center)
+  #set text(size: 22pt)
 
-#pseudocode-list(
-  booktabs: true,
-  title: [Gossip Learning (main thread)],
-)[
-  - ML model: *model*
-  - List of neighbors : *cache*
-  // + model $arrow.l$ initModel()
-  + *loop*
-    + Wait for *Δ* time units
-    + peer $arrow.l$ selectRandom(cache)
-    + send(peer, model)
+  #grid(
+    columns: (1fr, 1fr),
+    column-gutter: 1.5em,
+
+    fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
+      node((0,0), "1", name: "1", radius: 1em)
+      edge(label("5"), "-")
+      edge(label("2"), "-")
+      node((0.3,1), "2", name: "2", radius: 1em)
+      edge(label("5"), "-")
+      edge(label("5"), stroke: 1pt + blue, "<-|", bend: 25deg, label: "peer to peer model aggregation", label-size: 7pt, label-side: right, label-sep: 0.4em, label-angle: right, "dashed")
+      edge(label("3"), "-")
+      node((1,1.5), "3", name: "3", radius: 1em)
+      node((1.8,1), "4", name: "4", radius: 1em)
+      edge(label("5"), "-")
+      node((1.8,0), "5", name: "5", radius: 1em)
+    }),
+
+    pseudocode-list(
+      booktabs: true,
+      title: [Gossip Learning (main thread)],
+    )[
+      - ML model: *model*
+      - List of neighbors : *cache*
+      // + model $arrow.l$ initModel()
+      + *loop*
+        + Wait for *Δ* time units
+        + peer $arrow.l$ selectRandom(cache)
+        + send(peer, model)
+    ],
+  )
 ]
-  // #image("gossip_algorithm.png", height: 75%, width: 130%)
-  ]
-
 
 // == Gossip Learning vs Federated Learning
 
