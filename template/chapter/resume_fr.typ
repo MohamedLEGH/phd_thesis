@@ -13,24 +13,29 @@ stockage décentralisés, ou plus récemment de plateformes d'apprentissage
 automatique collaboratif. Dans ce contexte, les architectures pair à
 pair occupent une place particulière : elles permettent de coordonner
 un grand nombre de nœuds sans recourir à une autorité centrale, ce qui
-les rend intrinsèquement résistantes aux pannes, passables à l'échelle,
+les rend intrinsèquement résistantes aux pannes, extensibles,
 et respectueuses de la confidentialité des données. Cependant, concevoir
 des protocoles pair à pair qui soient à la fois efficaces, robustes aux
 défaillances, et capables de supporter des charges applicatives
 complexes comme l'apprentissage automatique reste un défi ouvert.
 
-Cette thèse s'inscrit dans ce contexte et propose deux contributions
-principales. La première, Elevator, est un protocole de gestion de
-topologie pair à pair basé sur l'élection dynamique de nœuds hubs,
-formant une structure d'overlay hiérarchique à deux niveaux. La
-seconde, HEAL (Hub Enhanced Adaptive Learning), est un cadre
-d'apprentissage fédéré décentralisé construit sur Elevator, qui tire
-parti de la structure hub pour accélérer la convergence des modèles
-d'apprentissage tout en préservant les propriétés de robustesse de
-l'overlay sous-jacent. Un protocole complémentaire, FLAIR (Federated
-Learning with Adaptive Integrity-preserving Randomness), est également
-introduit comme alternative adaptée aux contraintes des réseaux sans
-fil physiques.
+Cette thèse s'inscrit dans ce contexte et propose une architecture en
+couches pour l'apprentissage décentralisé, qui sépare le substrat de
+communication de la logique d'apprentissage. Sa contribution principale
+est une architecture composée d'une couche overlay, responsable de la
+topologie du réseau, et d'une couche d'apprentissage fédéré
+décentralisé construite au-dessus. La couche overlay est instanciée
+par Elevator, un protocole de gestion de topologie pair à pair basé
+sur l'élection dynamique de nœuds hubs, formant une structure
+d'overlay hiérarchique à deux niveaux ; Elevator est complété par
+Lift, qui renforce sa robustesse face aux nœuds byzantins. La couche
+d'apprentissage est instanciée par HEAL (Hub Enhanced Adaptive
+Learning), un cadre d'apprentissage fédéré décentralisé construit sur
+Elevator, qui tire parti de la structure hub pour accélérer la
+convergence des modèles tout en préservant les propriétés de robustesse
+de l'overlay sous-jacent. Nous proposons également d'adapter cette
+architecture aux contraintes des réseaux sans fil physiques avec FLAIR
+(Federated Learning with Adaptive Integrity-preserving Randomness).
 
 La thèse débute par l'introduction d'un modèle formel du système
 qui sert de socle à l'ensemble des contributions. Ce modèle définit
@@ -147,7 +152,7 @@ L'apprentissage fédéré est présenté dans sa formulation
 canonique centralisée, telle qu'elle a été introduite par FedAvg.
 Cette approche, bien qu'efficace, repose sur un serveur central qui
 agrège les mises à jour des clients à chaque ronde, ce qui en limite
-la passage à l'échelle et la résistance aux pannes.
+le passage à l'échelle et la résistance aux pannes.
 
 L'apprentissage fédéré décentralisé est ensuite introduit comme
 alternative naturelle. Dans ce paradigme, il n'existe plus de
@@ -168,11 +173,12 @@ Le sixième chapitre présente HEAL et FLAIR, les contributions
 applicatives de la thèse. HEAL est un cadre d'apprentissage fédéré
 décentralisé qui s'appuie sur la structure hub d'Elevator pour
 organiser l'agrégation des modèles en plusieurs phases successives.
-L'architecture de HEAL est organisée en trois couches. La couche
-overlay, fournie par Elevator, détermine la topologie du réseau et
-l'identité des hubs à chaque cycle. La couche d'agrégation définit
-le protocole d'échange et de fusion des modèles entre nœuds. La
-couche applicative interface HEAL avec la tâche d'apprentissage
+L'architecture de HEAL est organisée en quatre couches. La couche
+réseau prend en charge la communication de bas niveau entre les nœuds.
+La couche overlay, fournie par Elevator, détermine la topologie du
+réseau et l'identité des hubs à chaque cycle. La couche d'agrégation
+définit le protocole d'échange et de fusion des modèles entre nœuds.
+La couche applicative interface HEAL avec la tâche d'apprentissage
 concrète — classification d'images, classification de texte — via
 une abstraction de modèle local.
 
@@ -203,7 +209,7 @@ fil physiques. FLAIR s'appuie sur LEACH, un protocole d'élection de
 têtes de grappe (cluster heads) initialement développé pour les
 réseaux de capteurs. Dans FLAIR, l'élection des têtes de grappe
 repose sur un score calculé à partir des capacités physiques de
-chaque nœud (bande passante disponible, puissance de calcul, mémoire, ...). Les nœuds présentant les meilleures capacités sont élus
+chaque nœud (bande passante disponible, puissance de calcul, mémoire, etc.). Les nœuds présentant les meilleures capacités sont élus
 têtes de grappe et assument le rôle d'agrégateurs de modèles pour
 leur grappe respective. Cette approche permet d'adapter
 naturellement la charge d'agrégation aux nœuds les plus capables
