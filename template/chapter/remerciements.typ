@@ -60,7 +60,7 @@ mon père. À mes frères, et en particulier à toi, Iskander,
 qui as toi-même soutenu ta thèse l'année dernière après cinq ans de
 doctorat dans des conditions difficiles.
 
-À toi, Shehrazade, ma très chère fiancée, que j'ai eu la chance de
+À toi, Shehrazade, ma très chère #strike[fiancée] épouse#footnote[Nous nous sommes mariés le 4 juillet 2026.], que j'ai eu la chance de
 rencontrer durant cette thèse : merci pour ton soutien sans faille
 durant la rédaction de ce manuscrit, pour ta patience, et pour la lumière que tu apportes chaque jour.
 

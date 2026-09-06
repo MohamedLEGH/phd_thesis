@@ -49,51 +49,69 @@
       lastname: "TIXEUIL"
     ),
   ),
-  date: datetime(day: 01, month: 01, year: 1970),
+  date: datetime(day: 07, month: 09, year: 2026),
   // date: "xx/xx/xx",
   // date: datetime.today(),
   examboard: (
     (
       firstname: "Maria",
       lastname: "POTOP-BUTUCARU",
-      title: "Titre",
+      title: "Professeure",
       role: "Directrice de thèse"
     ),
     (
       firstname: "Sébastien",
       lastname: "TIXEUIL",
-      title: "Titre",
-      role: "Directeur de thèse"
+      title: "Professeur",
+      role: "Co-directeur de thèse"
     ),
     (
-      firstname: "Prénom",
-      lastname: "Nom",
-      title: "Titre",
-      role: "Rapporteur⸱euse"
+      firstname: "Davide",
+      lastname: "FREY",
+      title: "Chargé de recherche",
+      role: "Rapporteur"
     ),
     (
-      firstname: "Prénom",
-      lastname: "Nom",
-      title: "Titre",
-      role: "Rapporteur⸱euse"
+      firstname: "Mohamed",
+      lastname: "MOSBAH",
+      title: "Professeur",
+      role: "Rapporteur"
     ),
     (
-      firstname: "Prénom",
-      lastname: "Nom",
-      title: "Titre",
-      role: "Examinateur·rice"
+      firstname: "Luciana",
+      lastname: "ARANTES",
+      title: "Maîtresse de conférences",
+      role: "Examinatrice"
     ),
     (
-      firstname: "Prénom",
-      lastname: "Nom",
-      title: "Titre",
-      role: "Examinateur·rice"
+      firstname: "Pascal",
+      lastname: "FELBER",
+      title: "Professeur",
+      role: "Examinateur"
     ),
     (
-      firstname: "Prénom",
-      lastname: "Nom",
-      title: "Titre",
-      role: "Invité·e"
+      firstname: "François",
+      lastname: "TAIANI",
+      title: "Professeur",
+      role: "Examinateur"
+    ),
+    (
+      firstname: "Véronique",
+      lastname: "VÉQUE",
+      title: "Professeure",
+      role: "Examinatrice"
+    ),
+    (
+      firstname: "Megumi",
+      lastname: "KANEKO",
+      title: "",
+      role: "Invitée"
+    ),
+    (
+      firstname: "Kenza",
+      lastname: "HARKOUKEN SAIAH",
+      title: "",
+      role: "Invitée"
     ),
   ),
   license-logo: image("Logos/LICENSE/by-nc-nd.eu.svg", height: 32pt, alt: "logo license"),
