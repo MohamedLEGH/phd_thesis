@@ -600,7 +600,7 @@ Furthermore, the probability that a new potential hub appears in two consecutive
 
 Finally, we consider the scenario where a potential hub is elected randomly by all nodes in the network, and this potential hub has an ID smaller than one of the existing hubs. In this case, the potential hub may replace an existing hub, causing the set of hubs to change. To prove (iii), we need to prove that with high probability, this scenario will not happen.
 
-We aim to compute the probability $p(x)$ that the intersection of all $N$ subsets $A_k$ contains exactly $x$ elements, where $x in \{0, 1, dots, m}$, and $m=c-h$.
+Let $A_k$ denote the set of the $m = c-h$ non-hub successors of node $k$, chosen uniformly at random among the $n = N - h$ non-hub nodes (the $h$ hub slots of node $k$'s cache being already occupied by the hub set $cal(H)$). We aim to compute the probability $p(x)$ that the intersection of all $N$ subsets $A_k$ contains exactly $x$ elements, where $x in \{0, 1, dots, m}$ and $m=c-h$. A non-zero value of $x$ means that $x$ non-hub nodes simultaneously appear in the cache of every node in the network, which could allow such a node to displace an existing hub.
 
 We first define $q(x)$, the probability that the intersection of the $N$ subsets $A_k$ contains at least $x$ elements:
 $
@@ -669,44 +669,53 @@ To reason about the convergence of the Elevator algorithm, we consider three pos
 To prove convergence with high probability, it is therefore sufficient to show that the first two scenarios, i.e., network disconnection and formation of multiple hub clusters, are highly unlikely to occur in practice. Once these cases are ruled out, the system will converge to the stable set of $h$ hubs with high probability.
 
 #proposition[
-If the network contains at least one hub, then the network is strongly connected with high probability.
+If the network contains at least one hub, then after at most $O(log N)$ additional protocol cycles, the network is strongly connected with probability at least $1 - N^(-1)$.
 ] <prop:convergence1>
 
 #proof[
 The presence of at least one hub ensures that every node has an outgoing connection to the hub, which makes the network weakly connected. Additionally, each node has at least one random successor, chosen uniformly across the network, because each node requests a random incoming connection from the hub. Therefore, starting from any node $n$, any other node can be reached by following a sequence of random outgoing connections.
 
-It is possible that the network temporarily forms two or more clusters, in which case some nodes might not be reachable from others. However, this is unlikely:
-- If a node is in a small cluster, there is a high probability that it's random outgoing connection points to a node in another cluster.
-- If a node is in a big cluster, there are many nodes in its cluster, so it is likely that at least one node has a random outgoing connection to a node in another cluster.
+It is possible that the network temporarily forms two or more clusters, in which case some nodes might not be reachable from others. However, this is unlikely: consider a small cluster $S$ of size $s <= N/2$. Each of its nodes has $c - h >= 1$ random outgoing connections drawn uniformly from all $N$ nodes. The probability that a given random connection stays inside $S$ is $s/N <= 1/2$. Hence the probability that _all_ $c-h$ random connections of a given node $v$ stay inside its component is at most $(s/N)^(c-h) <= (1/2)^(c-h)$. Taking a union bound over all $N$ nodes of the network (each may be in such a small component), the probability that at least one node has *no* outgoing connection leaving its component is at most $N dot (1/2)^(c-h)$ (note: a union bound over only the $s <= N/2$ nodes of $S$ would give the tighter factor $N/2$; using $N$ is a valid but slightly looser bound). For $c - h >= log_2 N + 1$ this is less than $1/2$, so with probability at least $1/2$ at least one node escapes $S$ in one cycle. Repeating over $O(log N)$ cycles yields a failure probability at most $N^(-Omega(1))$.
 
-Even if after a protocol cycle the network is temporarily not strongly connected, it will regain strong connectivity with high probability in the next cycle, thanks to new random outgoing connections. Thus, the network may lose this property momentarily, but it will eventually recover it after a few cycles.
+- If a node $v$ is in a cluster of size $s$, each of its $c-h$ random connections leaves the cluster independently with probability $1 - s/N >= 1/2$; so $v$ has an escaping connection with probability $1 - (s/N)^(c-h) >= 1 - 2^(-(c-h))$.
+- If the cluster is large ($s > N/2$), the complementary cluster has size less than $N/2$; since every node in the small side has random connections that leave with probability at least $1/2$, the analysis above applies symmetrically.
+
+Even if, after a protocol cycle, the network is temporarily not strongly connected, it will regain strong connectivity with probability at least $1 - N dot 2^(-(c-h))$ (which exceeds $1 - N^(-1)$ whenever $c - h >= log_2 N + log_2 N = 2 log_2 N$) in the next cycle, thanks to new random outgoing connections. Thus, the network may lose this property momentarily, but it will eventually recover it after a few cycles.
 ]
 
 #proposition[
-If the network contains between one and $h-1$ hubs, an additional hub will eventually appear with high probability.
+If the network contains a number of hubs $h_i$ between one and $h-1$, then within $T$ additional protocol cycles at least one additional hub appears with probability at least $1 - (1 - N^(-(N-1)))^T$. In particular, choosing $T = N^(N-1) ln N$ suffices to make this probability exceed $1 - 1/N$.
 ] <prop:convergence2>
 
 #proof[
-Each hub provides a random outgoing connection to every node in the network. This means there is a small, but non-zero, probability that all nodes points to the same node. If this occurs, that node will be selected as a new hub.
+Each hub provides a random outgoing connection to every node in the network. This means there is a small, but non-zero, probability that all nodes point to the same node. If this occurs, that node will be selected as a new hub.
 
-Although the probability for all nodes to select the same node simultaneously is low, it is strictly greater than zero. Therefore, given enough protocol cycles, this event is bound to happen eventually. Consequently, the network will eventually contain at least one additional hub, beyond the original hub.
+More precisely, a hub $u$ returns a uniformly random node $v$ to each of the $N-1$ non-hub nodes that query it. The probability that all of these $N-1$ nodes receive the same node $v^*$ during a given cycle is at least $(1/N)^(N-1)$ (picking any specific $v^*$ from $u$'s backward list). Hence the probability that at least one new hub appears in a given cycle is at least $q_0 = (1/N)^(N-1) > 0$. Since $q_0 > 0$ and cycles are independent, the number of cycles until such an event occurs follows a geometric distribution with success probability $q_0$: after $T$ cycles, the probability of not having seen the event is $(1 - q_0)^T <= e^(-q_0 T)$. Setting $T = ⌈ q_0^(-1) ln N ⌉ = ⌈ N^(N-1) ln N ⌉$ yields a failure probability at most $1/N$. Consequently, the network will eventually contain at least one additional hub beyond the existing ones.
 ]
 
 #proposition[
-Once the network reaches a state with a number of hubs between $1$ and $h-1$, this number cannot decrease.
+Once the network reaches a state with a number of hubs $h_i in [1, h-1]$, the number of hubs does not decrease over the next protocol cycle with probability at least $1 - P_("new")$, where $P_("new") = N(N-h_i)((c-h_i)/N)^c$ is the upper bound defined in Equation @eq:P_replace. Under the failure-free assumption of this section (constant $N$, synchronous execution), this probability tends to $1$ exponentially fast as $N$ grows.
 ] <prop:convergence3>
 
 #proof[
-Consider a system state where the number of hubs is $h_i$, with $1 <= h_i <= h-1$. If a node is chosen as a hub, it will be included in the caches of other nodes according to the algorithm. In this scenario:
+Consider a system state where the number of hubs is $h_i$, with $1 <= h_i <= h-1$. The analysis is conducted under the failure-free, synchronous assumption stated at the beginning of the theoretical study.
+
+By definition, hubs occupy dedicated slots in every node's cache; they are never evicted by normal cache replacement as long as fewer than $h$ hubs are known. A random non-hub node $v$ could in principle appear in the caches of all $c$ successors of some node $n$ in a given cycle, giving $v$ an apparent frequency equal to that of a hub. However, since the system currently has only $h_i < h$ hubs, there are still $h - h_i >= 1$ free hub slots at every node; $v$ would therefore be promoted to a potential hub at $n$ _in addition to_ the existing $h_i$ hubs, not _instead of_ them. Hence a single random non-hub node cannot displace any existing hub.
+
+The _only_ scenario in which an existing hub could be evicted from node $n$'s hub list is if, within a single cycle, _more than_ $h - h_i$ distinct random non-hub nodes simultaneously appear frequently enough to fill all free hub slots, thereby competing with existing hubs for the $h$ available positions. By Equation @eq:P_replace, the probability that even a single random non-hub node appears in the caches of all $c$ successors of $n$ in a given cycle is at most $(c-h_i)^c / N^(c-1)$, which is exponentially small in $c$. The probability that $h - h_i + 1$ or more such nodes appear simultaneously is therefore negligible.
+
+Even in the rare event that some node $n$ temporarily replaces one or more hubs with random non-hub nodes, those random nodes are extremely unlikely to reappear in $n$'s cache in the next cycle (their selection probability remains the same small value $(c-h_i)^c / N^(c-1)$). With high probability, $n$ returns to the correct hub set in the immediately following cycle. The only genuinely dangerous scenario is if _many_ nodes, _in the same cycle_, simultaneously replace their hubs with distinct random non-hub nodes, causing the network-wide hub consensus to collapse. This joint probability is at most $P_("new") = N(N-h_i)((c-h_i)/N)^c$ (a union bound over all nodes and all candidate non-hub nodes, as computed in @eq:P_replace), which decreases exponentially fast as $c$ grows. This also explains empirically why a small $c$ leads to an unstable hub set: the per-cycle displacement probability is non-negligible only when $c$ is small.
+
+Therefore, the number of hubs decreases with probability at most $P_("new")$, and remains the same or increases with probability at least $1 - P_("new")$, which tends to $1$ exponentially fast.
 
 - Any newly selected node as a hub increases the total number of hubs by $1$, but does not remove any of the previously selected hubs from the network.
-- Therefore, the set of existing hubs is preserved in subsequent cycles.
+- Therefore, the set of existing hubs is preserved in subsequent cycles with probability at least $1 - P_("new")$.
 
-As a consequence, the number of hubs in the network cannot decrease while it remains below $h$. This establishes that, once the system enters a state with $1 <= h_i <= h-1$ hubs, the number of hubs is non-decreasing until it reaches $h$.
+As a consequence, the number of hubs in the network does not decrease (with probability at least $1 - P_("new")$) while it remains below $h$. This establishes that, once the system enters a state with $1 <= h_i <= h-1$ hubs, the number of hubs is non-decreasing until it reaches $h$ with high probability.
 ]
 
 #proposition[
-Let $h$ be the desired number of hubs in the network. Once the network contains at least one hub, it will converge with high probability to a stable state containing exactly $h$ hubs.
+Let $h$ be the desired number of hubs and assume that $c - h >= 2 log_2 N$. Once the network contains at least one hub, it converges to a stable state containing exactly $h$ hubs with probability at least $1 - h dot N^(-1) - h dot e^(-q_0 T)$, where $q_0 = N^(-(N-1))$ is the per-cycle lower-bound probability of a new hub appearing (see @prop:convergence2) and $T$ is the number of additional cycles allowed. In particular, for $T = ⌈ q_0^(-1) ln(h dot N) ⌉$ the failure probability is at most $2h/N = O(h/N)$, which tends to $0$ as $N$ grows, for any fixed $h$.
 ] <prop:convergence4>
 
 #proof[
@@ -724,17 +733,17 @@ Therefore, starting from at least one hub, the network converges with high proba
 ]
 
 #proposition[
-With sufficiently large $c$, the Elevator algorithm generates at least one hub after a finite number of cycles with high probability.
+For $c >= 2 log_2 N + h$, starting from a uniform $c$-out random graph, the Elevator algorithm produces at least one hub within $O(log N "/" log(p dot K))$ cycles with probability at least $1 - 2N^(-1)$, where $p$ and $K = c$ are the parameters of the geometric growth model described in the Time to Convergence section.
 ] <prop:convergence5>
 
 #proof[
-Initially, each node selects $c$ neighbors uniformly at random. With high probability, these selections are spread across the network and are representative of the network as a whole, ensuring that no isolated cluster is formed before the first cycle.
+Initially, each node selects $c$ neighbors uniformly at random. The resulting random $c$-out graph is strongly connected with probability at least $1 - N^(-1)$ when $c >= 2 log_2 N$ (by the coupon-collector argument applied to the union of out-neighborhoods: the probability that any node has no predecessor is at most $N (1 - c/N)^N <= N e^(-c) <= N^(-1)$ for $c >= 2 ln N$).
 
-Each node then selects $h$ nodes as potential hubs, following the preferential attachment rules of the Elevator protocol. With high probability, the chosen potential hubs form a subset representative of the entire network. Each node subsequently requests its potential hubs for random incoming connections. Since the potential hubs are representative of the network, with high probability, each node receives $c-h$ random incoming connections from a subset that is also representative of the network. Thus, after a cycle of the protocol, the list of successors of each node remains representative of the network, maintaining connectivity and minimizing the risk of cluster formation. This state is preserved in subsequent cycles.
+Each node then selects $h$ nodes as potential hubs. Because the graph is connected and node degrees concentrate around $c$ (binomial tails), the node with the highest indegree has indegree $i_0 = Theta(sqrt(c log N "/" N) dot N) = Omega(sqrt(c N log N))$ with probability $1 - o(1)$. By the geometric growth model described in the Time to Convergence section, this leading indegree grows as $d_t = i_0 (p dot K)^t$; it reaches $N$ (i.e., the node becomes a hub known by all) after $t^* = ⌈ log(N/i_0) / log(p dot K) ⌉ = O(log N)$ cycles, provided $p dot K > 1$.
 
 In the following cycles, nodes select the top $h$ candidates from their frequency maps. The number of potential hubs gradually decreases, until at least one node emerges as a hub.
 
-Therefore, with sufficiently large $c$, the probability of creating disconnected clusters is very low, and the algorithm converges to a state with at least one hub after a finite number of cycles with high probability.
+Therefore, for $c >= 2 log_2 N + h$, the probability of the initial graph being disconnected is at most $N^(-1)$, and conditional on connectivity, the first hub appears within $O(log N)$ cycles. By a union bound, the total failure probability is at most $2N^(-1) = o(1)$.
 ]
 
 #proposition[
