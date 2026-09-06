@@ -7,6 +7,11 @@
 #import "@preview/touying:0.6.1": *
 #import themes.simple: *
 
+// touying: university
+// nombre de page
+// logo sorbonne
+// footer plutot que header
+
 #let thanks(body) = {
   footnote(numbering: _ => [\*])[#body]
   counter(footnote).update(n => n - 1)
@@ -46,29 +51,34 @@
   07 September 2026
 ]
 
-== Me
+// == About Me
+
+// #slide[
+//   #set align(horizon)
+//   #set align(center)
+
+//   #align(left)[
+//     - #text(weight: "bold")[2018] — Engineering degree from Polytech Sorbonne
+//     - #text(weight: "bold")[2019 – 2023] — Blockchain engineer at *Sia Partners*, then *Deloitte*
+//     - #text(weight: "bold")[2023 – present] — PhD at LIP6, Sorbonne Université
+//     - #text(weight: "bold")[Next] — Blockchain & AI consultant at *Temeritati*
+//   ]
+// ]
+
+== Context
 
 #slide[
   #set align(horizon)
   #set align(center)
 
-  #v(2em)
-  *Mohamed Amine LEGHERABA*
-  #v(1.5em)
-
-  #align(left)[
-    - #text(weight: "bold")[2018] — Engineering degree from Polytech Sorbonne
-    - #text(weight: "bold")[2019 – 2023] — Blockchain engineer at *Sia Partners*, then *Deloitte*
-    - #text(weight: "bold")[2023 – present] — PhD at LIP6, Sorbonne Université
-    - #text(weight: "bold")[Next] — Blockchain & AI consultant at *Temeritati*
-  ]
+  #image("nemo_stack_clean.png")
 ]
 
 // == Plan
 
 // = Context
 
-== Machine Learning
+== Supervised Classification
 
 #slide[
   #set text(size: 18pt)
@@ -110,34 +120,6 @@
   })
 ]
 
-== Datasets & Models
-
-#slide[
-  #set align(horizon)
-  #set align(center)
-  #set text(size: 26pt)
-
-  #v(0.5em)
-  #stack(dir: ltr, spacing: 1.5em,
-    // BLOC 1 : Spambase + Logistic regression (sans boîte)
-    align(center + horizon)[
-      #text(size: 20pt)[*Spambase* + *Logistic regression*]
-      #v(0.3em)
-      #image("spambase_features.png", height: 5.5cm)
-      #v(0.2em)
-      #text(size: 20pt)[4601 emails, binary  \   57 parameters]
-    ],
-    // BLOC 2 : MNIST + LeNet5 (sans boîte)
-    align(center + horizon)[
-      #text(size: 20pt)[*MNIST* + *LeNet5*]
-      #v(0.3em)
-      #image("../Images/Dataset/MNIST_dataset_example.png", height: 5.5cm)
-      #v(0.2em)
-      #text(size: 20pt)[70k digits, 10 classes  \   CNN, ~60k parameters]
-    ],
-  )
-]
-
 == Federated Learning #thanks[#cite(<mcmahan2017communication>, form: "full")]
 
 #slide[
@@ -168,37 +150,10 @@
   )
 ]
 
-== Blockchain-based Federated Learning #thanks[#cite(<wang2021systematic>, form: "full")]
+== Structured vs Unstructured networks
+
 #slide[
-
-  #set align(horizon)
-  #set align(center)
-
-  #fletcher-diagram(
-    spacing: (20mm, 18mm),
-    node-stroke: 0.8pt,
-    edge-stroke: 1pt,
-
-    // --- Smart contract (center) ---
-    labelbox((1.5, 0.7),
-      [*Smart contract*],
-      name: <sc>),
-
-    // --- Participants ---
-    imagebox((0,0), image("computer.svg", width: 70pt), name: <n1>),
-    imagebox((1.5,0), image("computer.svg", width: 70pt), name: <n2>),
-    imagebox((3,0), image("computer.svg", width: 70pt), name: <n3>),
-    imagebox((0,1.3), image("computer.svg", width: 70pt), name: <n4>),
-    imagebox((3,1.3), image("computer.svg", width: 70pt), name: <n5>),
-
-    // --- Peer-to-peer connections between nodes ---
-    edge(<n1>, <n2>, marks: "-"),
-    edge(<n2>, <n3>, marks: "-"),
-    edge(<n3>, <n5>, marks: "-"),
-    edge(<n5>, <n4>, marks: "-"),
-    edge(<n4>, <n1>, marks: "-"),
-    edge(<n1>, <n3>, marks: "-"),
-  )
+  show differences
 ]
 
 == Gossip Learning #thanks[#cite(<ormandi2013gossip>, form: "full")]
@@ -236,6 +191,7 @@ node((1.8,0),"5", name: "5", radius: 1em)
 ]
   // #image("gossip_algorithm.png", height: 75%, width: 130%)
   ]
+
 
 // == Gossip Learning vs Federated Learning
 
@@ -288,33 +244,6 @@ node((1.8,0),"5", name: "5", radius: 1em)
     content((text_x, mid_y), anchor: "west", details.at(i))
   }
 })
-]
-
-== Services in a P2P Network
-
-#slide[
-  #set align(horizon)
-  #set align(center)
-  #set text(size: 28pt)
-
-  #v(1.5em)
-  #grid(
-    columns: (1fr, 1fr, 1fr),
-    row-gutter: 2em,
-    column-gutter: 1em,
-    box(width: 100%, height: 3em, fill: luma(92%), stroke: gray.lighten(30%) + 1pt,
-        inset: 0.4em, align(center + horizon)[*Peer sampling*]),
-    box(width: 100%, height: 3em, fill: luma(92%), stroke: gray.lighten(30%) + 1pt,
-        inset: 0.4em, align(center + horizon)[*Peer discovery*]),
-    box(width: 100%, height: 3em, fill: luma(92%), stroke: gray.lighten(30%) + 1pt,
-        inset: 0.4em, align(center + horizon)[*Data request*]),
-    box(width: 100%, height: 3em, fill: luma(92%), stroke: gray.lighten(30%) + 1pt,
-        inset: 0.4em, align(center + horizon)[*Membership management*]),
-    box(width: 100%, height: 3em, fill: luma(92%), stroke: gray.lighten(30%) + 1pt,
-        inset: 0.4em, align(center + horizon)[*Topology management*]),
-    box(width: 100%, height: 3em, fill: luma(92%), stroke: gray.lighten(30%) + 1pt,
-        inset: 0.4em, align(center + horizon)[*Information dissemination*]),
-  )
 ]
 
 == Peer sampling
@@ -584,13 +513,13 @@ Before and after a shuffling operation. Node 1 sends addresses {itself, 2, 3} to
 
 #slide[
   #set align(center)
-  #set text(size: 18pt)
+  #set text(size: 20pt)
 
   #grid(
     columns: (1fr, 1fr),
     column-gutter: 1.5em,
     align(center)[
-      #text(size: 19pt, weight: "bold")[Mechanism]
+      #text(size: 20pt, weight: "bold")[Mechanism]
       #v(0.6em)
       #align(left)[
         1. Each node asks its *neighbours* for *their* neighbour lists.
@@ -601,12 +530,12 @@ Before and after a shuffling operation. Node 1 sends addresses {itself, 2, 3} to
       ]
     ],
     align(center)[
-      #text(size: 19pt, weight: "bold")[Observed]
+      #text(size: 20pt, weight: "bold")[Observed]
       #v(0.6em)
       #align(left)[
-        - after a few cycles, *hubs emerge* (the preferred $h$ are the same for everyone);
-        - hubs are *elected at random* among the network nodes;
-        - even after *hub failures*, new nodes are elected as hubs.
+        - After a few cycles, *hubs emerge* (the preferred $h$ are the same for everyone);
+        - Hubs are *elected at random* among the network nodes;
+        - Even after *hub failures*, new nodes are elected as hubs.
       ]
     ]
   )
@@ -693,12 +622,14 @@ fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
   #set align(center)
   #set text(size: 20pt)
 
-  #align(left)[
     - *Proof of stability*: once converged, the set of $h$ hubs stays constant (w.h.p.).
-    - *Proof of convergence*: the network converges (w.h.p.) to exactly $h$ hubs.
-    - *Fast convergence*: in *$O(log N)$* protocol cycles.
-  ]
+  ][
+  - Proof of convergence
+][
+  - Speed of convergence
 ]
+
+
 
 == Simulations
 
@@ -746,15 +677,6 @@ image("Elevator_context_1000_100xp_diameter_color.svg", fit: "cover")
 )
 
 ]
-== Resilience against byzantines attacks 
-#slide[
-  #v(-1cm)
-  #set align(horizon)
-  #set align(center)
-  // #set text(size: 15pt)
-  #image("elevator.ElevatorVCounter_5percentcounter_1000_nb_hubs_100_cycles.svg", width: 60%)
-]
-
 
 == Real TCP/IP experiments
 
@@ -778,6 +700,31 @@ image("Elevator_context_1000_100xp_diameter_color.svg", fit: "cover")
       #image("../Images/Victor/graphe_4HUBS_Cycles12.svg", width: 100%)
     ],
   )
+]
+
+== Malicious nodes
+#slide[
+  #set align(horizon)
+  #set align(center)
+
+  attacks
+]
+
+== LIFT
+#slide[
+  #set align(horizon)
+  #set align(center)
+
+  Present Lift
+]
+
+== Resilience against colluding attackers 
+#slide[
+  #v(-1cm)
+  #set align(horizon)
+  #set align(center)
+  // #set text(size: 15pt)
+  #image("elevator.ElevatorVCounter_5percentcounter_1000_nb_hubs_100_cycles.svg", width: 60%)
 ]
 
 == Architecture
@@ -882,6 +829,34 @@ to the nodes`, fill: blue.lighten(60%), stroke: dash_hub, inset: 0.5em)
     edge(label("6"), label("1"), "-|>")
     edge(label("6"), label("5"), "-|>")
 })
+]
+
+== Datasets & Models
+
+#slide[
+  #set align(horizon)
+  #set align(center)
+  #set text(size: 26pt)
+
+  #v(0.5em)
+  #stack(dir: ltr, spacing: 1.5em,
+    // BLOC 1 : Spambase + Logistic regression (sans boîte)
+    align(center + horizon)[
+      #text(size: 20pt)[*Spambase* + *Logistic regression*]
+      #v(0.3em)
+      #image("spambase_features.png", height: 5.5cm)
+      #v(0.2em)
+      #text(size: 20pt)[4601 emails, binary  \   57 parameters]
+    ],
+    // BLOC 2 : MNIST + LeNet5 (sans boîte)
+    align(center + horizon)[
+      #text(size: 20pt)[*MNIST* + *LeNet5*]
+      #v(0.3em)
+      #image("../Images/Dataset/MNIST_dataset_example.png", height: 5.5cm)
+      #v(0.2em)
+      #text(size: 20pt)[70k digits, 10 classes  \   CNN, ~60k parameters]
+    ],
+  )
 ]
 
 == Context of experiments
@@ -1130,7 +1105,7 @@ to the nodes`, fill: blue.lighten(60%), stroke: dash_hub, inset: 0.5em)
   ]
 ]
 
-== Perspectives — medium term
+== Perspectives — medium & long term
 
 #slide[
   #set align(horizon)
@@ -1138,28 +1113,13 @@ to the nodes`, fill: blue.lighten(60%), stroke: dash_hub, inset: 0.5em)
   #set text(size: 19pt)
 
   #align(left)[
-    - *Byzantine robustness in the learning layer* (poisoning & privacy attacks), encryption and digital signatures.
-    - *Large-scale real-world deployment* of Elevator and HEAL.
-    - Evaluate HEAL with *large machine-learning models* (hundreds of millions of parameters).
-  ]
-]
-
-== Perspectives — long term
-
-#slide[
-  #set align(horizon)
-  #set align(center)
-  #set text(size: 19pt)
-
-  #align(left)[
+    - Better robustness at the Overlay layer (using)
+    - *Byzantine robustness in the learning layer* (poisoning & privacy attacks)
     - Extend HEAL to *unsupervised and reinforcement learning*.
     - *Vertical federated learning* (different features per participant).
-    - *Formal convergence guarantees* for HEAL (partial participation, non-IID, dynamic topologies).
-    - *Incentive mechanism* against free-riding (e.g. blockchain / Lightning).
-    - *Industrial deployment* of the full stack (autonomous vehicles, drone swarms).
+    - *Formal convergence guarantees* for HEAL.
   ]
 ]
-
 
 == Publications
 
@@ -1173,9 +1133,9 @@ to the nodes`, fill: blue.lighten(60%), stroke: dash_hub, inset: 0.5em)
     - #cite(<legheraba2024emergent>, form: "full")
     - #cite(<legheraba2025lift>, form: "full") — *Outstanding Paper Award*
     - #cite(<legheraba2025heal>, form: "full")
+    - #cite(<boutebicha2026netys>, form: "full")
     - #cite(<legheraba2025noeuds>, form: "full")
     - #cite(<legheraba2025etoiles>, form: "full")
-    #v(0.8em)
     - A journal extension (journal version of this work) has been *submitted to the
       IEEE/ACM Transactions on Networking*; we are awaiting the *final review*
       (currently in *minor revision*).
@@ -1693,3 +1653,62 @@ Before and after a shuffling operation. Node 1 sends addresses {itself, 2, 3} to
       ]
 ]
 
+== Blockchain-based Federated Learning #thanks[#cite(<wang2021systematic>, form: "full")]
+#slide[
+
+  #set align(horizon)
+  #set align(center)
+
+  #fletcher-diagram(
+    spacing: (20mm, 18mm),
+    node-stroke: 0.8pt,
+    edge-stroke: 1pt,
+
+    // --- Smart contract (center) ---
+    labelbox((1.5, 0.7),
+      [*Smart contract*],
+      name: <sc>),
+
+    // --- Participants ---
+    imagebox((0,0), image("computer.svg", width: 70pt), name: <n1>),
+    imagebox((1.5,0), image("computer.svg", width: 70pt), name: <n2>),
+    imagebox((3,0), image("computer.svg", width: 70pt), name: <n3>),
+    imagebox((0,1.3), image("computer.svg", width: 70pt), name: <n4>),
+    imagebox((3,1.3), image("computer.svg", width: 70pt), name: <n5>),
+
+    // --- Peer-to-peer connections between nodes ---
+    edge(<n1>, <n2>, marks: "-"),
+    edge(<n2>, <n3>, marks: "-"),
+    edge(<n3>, <n5>, marks: "-"),
+    edge(<n5>, <n4>, marks: "-"),
+    edge(<n4>, <n1>, marks: "-"),
+    edge(<n1>, <n3>, marks: "-"),
+  )
+]
+
+== Services in a P2P Network
+
+#slide[
+  #set align(horizon)
+  #set align(center)
+  #set text(size: 28pt)
+
+  #v(1.5em)
+  #grid(
+    columns: (1fr, 1fr, 1fr),
+    row-gutter: 2em,
+    column-gutter: 1em,
+    box(width: 100%, height: 3em, fill: luma(92%), stroke: gray.lighten(30%) + 1pt,
+        inset: 0.4em, align(center + horizon)[*Peer sampling*]),
+    box(width: 100%, height: 3em, fill: luma(92%), stroke: gray.lighten(30%) + 1pt,
+        inset: 0.4em, align(center + horizon)[*Peer discovery*]),
+    box(width: 100%, height: 3em, fill: luma(92%), stroke: gray.lighten(30%) + 1pt,
+        inset: 0.4em, align(center + horizon)[*Data request*]),
+    box(width: 100%, height: 3em, fill: luma(92%), stroke: gray.lighten(30%) + 1pt,
+        inset: 0.4em, align(center + horizon)[*Membership management*]),
+    box(width: 100%, height: 3em, fill: luma(92%), stroke: gray.lighten(30%) + 1pt,
+        inset: 0.4em, align(center + horizon)[*Topology management*]),
+    box(width: 100%, height: 3em, fill: luma(92%), stroke: gray.lighten(30%) + 1pt,
+        inset: 0.4em, align(center + horizon)[*Information dissemination*]),
+  )
+]
