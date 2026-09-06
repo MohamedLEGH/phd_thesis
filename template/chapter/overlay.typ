@@ -9,7 +9,7 @@
 = Overlay Management in Peer to Peer Systems <chap:overlay>
 
 Peer-to-peer systems have a long history, from early file-sharing networks such
-as Napster and BitTorrent to anonymisation overlays such as Tor, and more
+as Napster and BitTorrent to anonymization overlays such as Tor, and more
 recently to blockchain-based infrastructures. What these systems share is a
 common architectural principle: nodes communicate directly with one another
 without relying on a central coordinator, forming a logical overlay network on
@@ -17,7 +17,7 @@ top of the physical Internet. A detailed account of this history and the
 motivations behind peer-to-peer architectures is provided in @sec:p2p-history.
 
 These applications — from file sharing to distributed computing and
-decentralised finance — all rely on a common foundation: a logical overlay
+decentralized finance — all rely on a common foundation: a logical overlay
 network that governs how peers discover one another, exchange messages, and
 maintain connectivity. Overlay management refers to the mechanisms used to
 construct, maintain, and adapt this logical topology. In centralized approaches,
@@ -63,12 +63,12 @@ directed overlay graph $G = (V, E)$ at time $t$, the outdegree distribution is t
 distribution of $"outdegree"_G (v)$ over all $v in V$, while the indegree distribution
 is the distribution of $"indegree"_G (v)$ over all $v in V$.
 
-Degree distributions serve as a primary tool for characterising the topology produced
+Degree distributions serve as a primary tool for characterizing the topology produced
 by an overlay management protocol. As the number of nodes may reach several thousands,
-direct graph visualisation becomes impractical; degree distributions provide a compact
+direct graph visualization becomes impractical; degree distributions provide a compact
 summary of the structural properties of the network. Moreover, deviations from the
 expected distribution — such as an unexpected concentration of indegree on a small
-subset of nodes — may signal undesired behaviour in the overlay protocol, such as load
+subset of nodes — may signal undesired behavior in the overlay protocol, such as load
 imbalance or the unintended emergence of bottlenecks.
 
 In the overlay model adopted in this thesis, the outdegree is constrained by design and
@@ -82,7 +82,7 @@ $P(k) tilde k^gamma$, leading to the emergence of highly connected nodes (hubs).
 ==== Clustering Coefficient
 
 The clustering coefficient (see @def:clusteringcoef) measures the tendency of nodes to
-form tightly connected groups, quantifying how likely it is that the neighbours of a
+form tightly connected groups, quantifying how likely it is that the neighbors of a
 node are also connected to each other. In a dynamic peer-to-peer network, the clustering
 coefficient can be computed at each time step on the snapshot $G(t)$, yielding a
 time-dependent metric that reflects the local cohesiveness of the network as it evolves.
@@ -92,9 +92,9 @@ structures.
 In the context of overlay management, monitoring the clustering coefficient provides
 critical insights into the trade-offs between connectivity, routing efficiency, and
 maintenance overhead. A low clustering coefficient typically indicates a topology
-approaching a random graph, which favours uniform load distribution and short average
+approaching a random graph, which favors uniform load distribution and short average
 path lengths. Conversely, a high clustering coefficient suggests
-denser, more locally interconnected structures that can enhance neighbourhood discovery and fault tolerance through redundant alternative paths, at the
+denser, more locally interconnected structures that can enhance neighborhood discovery and fault tolerance through redundant alternative paths, at the
 cost of increased link maintenance overhead and potential routing bottlenecks.
 
 ==== Average Path Length
@@ -112,7 +112,7 @@ Similarly to the average path length, the diameter is computed at each time step
 
 A small diameter is highly desirable, as it guarantees that even in the worst case, any node can reach another within a bounded number of hops. Overlays exhibiting small diameters provide strict upper bounds on message dissemination delay and improve robustness against network fragmentation. In contrast, a large or rapidly increasing diameter may signal structural inefficiencies, degraded connectivity, or early-stage partitioning.
 
-In the context of overlay management, monitoring the diameter is essential for verifying worst-case routing guarantees and assessing the convergence speed of maintenance mechanisms under churn. While the average path length characterises typical communication latency, the diameter exposes tail-latency risks and worst-case bottlenecks that can critically impact time-sensitive applications, consensus protocols, or structured lookups. Together with the average path length, the diameter provides a complete picture of the overlay's latency distribution and structural resilience.
+In the context of overlay management, monitoring the diameter is essential for verifying worst-case routing guarantees and assessing the convergence speed of maintenance mechanisms under churn. While the average path length characterizes typical communication latency, the diameter exposes tail-latency risks and worst-case bottlenecks that can critically impact time-sensitive applications, consensus protocols, or structured lookups. Together with the average path length, the diameter provides a complete picture of the overlay's latency distribution and structural resilience.
 
 ==== Metrics for Byzantine Resilience
 
@@ -122,11 +122,11 @@ In the context of overlay management, three complementary dimensions are typical
 
 1. *Protocol Liveness and Convergence:* The most fundamental metric is whether the overlay protocol continues to operate and eventually reaches a stable, desired configuration despite the presence of Byzantine nodes. This can be quantified by tracking the time-to-convergence, the success rate of membership operations (joins, leaves, repairs), or the fraction of protocol cycles that complete without deadlocks or livelocks. A resilient system should maintain bounded convergence times and preserve its target topology invariants under adversarial conditions.
 
-2. *Byzantine Infiltration in Partial Views:* Since Byzantine nodes aim to remain embedded in the network to influence routing, data aggregation, or consensus, monitoring their representation in honest nodes' partial views provides a direct measure of containment. Relevant indicators include the average proportion of Byzantine peers in $P(i)$ across honest nodes $i$, the maximum Byzantine degree observed in the overlay, or the eviction rate of suspicious neighbours by honest participants.
+2. *Byzantine Infiltration in Partial Views:* Since Byzantine nodes aim to remain embedded in the network to influence routing, data aggregation, or consensus, monitoring their representation in honest nodes' partial views provides a direct measure of containment. Relevant indicators include the average proportion of Byzantine peers in $P(i)$ across honest nodes $i$, the maximum Byzantine degree observed in the overlay, or the eviction rate of suspicious neighbors by honest participants.
 
-3. *Overhead of Resilience Mechanisms:* When Byzantine-tolerant countermeasures are deployed (e.g., redundant messaging, consistency checks, reputation systems, or secure neighbour selection), their impact on system efficiency must be quantified. Key metrics include the relative increase in convergence time compared to the benign baseline, the additional state or bandwidth consumed per node, and the algorithmic complexity introduced in message routing or view maintenance. An effective resilience strategy minimises this overhead while guaranteeing safety, reflecting the classic trade-off between security and performance in distributed systems.
+3. *Overhead of Resilience Mechanisms:* When Byzantine-tolerant countermeasures are deployed (e.g., redundant messaging, consistency checks, reputation systems, or secure neighbor selection), their impact on system efficiency must be quantified. Key metrics include the relative increase in convergence time compared to the benign baseline, the additional state or bandwidth consumed per node, and the algorithmic complexity introduced in message routing or view maintenance. An effective resilience strategy minimizes this overhead while guaranteeing safety, reflecting the classic trade-off between security and performance in distributed systems.
 
-In the remainder of this chapter, we will analyse the main overlay management protocols described in the literature, comparing them on the basis of the metrics defined above.
+In the remainder of this chapter, we will analyze the main overlay management protocols described in the literature, comparing them on the basis of the metrics defined above.
 
 == Structured Networks
 
@@ -546,7 +546,7 @@ When a node $i$ joins the network, it first obtains a list of peer addresses eit
 
     + cache.append($"G"_"preferred"$)
   ],
-  caption: [Phenix algorithm (initialisation).],
+  caption: [Phenix algorithm (initialization).],
 ) <Phenix-algorithm>
 
 #figure(
@@ -771,7 +771,7 @@ The remaining protocols — Brahms @bortnikov2008brahms, Basalt @basalt,
 Secure Peer Sampling @jesi2010secure, SecureCyclon @antonov2023securecyclon,
 and AUPE @mukam2024aupe — all target random graph topologies and share the
 same structural baseline as the gossip protocols from which they derive.
-Their behaviour with respect to diameter, information propagation speed,
+Their behavior with respect to diameter, information propagation speed,
 crash and churn resilience, flexibility, and hub election is therefore
 identical to that of standard gossip overlays, as assessed in the previous
 section. Only three criteria differ meaningfully.

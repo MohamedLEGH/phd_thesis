@@ -52,8 +52,8 @@ distributed systems perspective, it extends decentralized computation to the
 learning setting: instead of collaboratively computing a global statistic, each
 node maintains a local model and participates in the learning process exclusively
 through peer-to-peer interactions. From a machine learning perspective, it
-relaxes the centralisation assumption by keeping data local and moving models
-across nodes rather than data. We now formalise this setting.
+relaxes the centralization assumption by keeping data local and moving models
+across nodes rather than data. We now formalize this setting.
 
 #figure(
   canvas(length: 1.2cm, {
@@ -328,7 +328,7 @@ at each protocol step.
 ] <def:dl-node>
 
 #remark[
-  From a multi-agent systems perspective @marl-book, each decentralized learning node can be viewed as an autonomous agent: its local state $s_i$ corresponds to the agent's internal memory, its neighbourhood $P(i)$ and the evolving overlay topology constitute its local environment, and the empirical loss defines the objective to be minimised. Although this multi-agent framing establishes a natural conceptual bridge to cooperative reinforcement learning and decentralized control, formalising our nodes as agents within a multi-agent learning framework lies explicitly outside the scope of this work.
+  From a multi-agent systems perspective @marl-book, each decentralized learning node can be viewed as an autonomous agent: its local state $s_i$ corresponds to the agent's internal memory, its neighborhood $P(i)$ and the evolving overlay topology constitute its local environment, and the empirical loss defines the objective to be minimized. Although this multi-agent framing establishes a natural conceptual bridge to cooperative reinforcement learning and decentralized control, formalizing our nodes as agents within a multi-agent learning framework lies explicitly outside the scope of this work.
 ]
 
 // #remark[
@@ -344,7 +344,7 @@ Having defined the learning node, we can now state the
 global learning objective. Each learning node $i$ defines a local empirical loss $L_i (theta)$ (see @def:loss-function, given in the Appendix, @sec:appendix_ml).
 
 The global objective of the decentralized learning system is to
-collectively minimise the aggregate loss over all nodes, in the sense
+collectively minimize the aggregate loss over all nodes, in the sense
 of @def:global-objective:
 $
 min_(theta in RR^p) L_"global" (theta), quad
@@ -353,10 +353,10 @@ $
 
 #remark[
 No single node has access to the full loss $L_"global" (theta)$, since
-$cal(D)_i$ is local to node $i$. The minimisation must therefore be
+$cal(D)_i$ is local to node $i$. The minimization must therefore be
 achieved collaboratively, through the exchange of model parameters
 $theta_i$ or gradients $nabla L_i (theta_i)$ between
-neighbouring nodes, without any node ever observing the data of another.
+neighboring nodes, without any node ever observing the data of another.
 ]
 
 Building on the notion of convergence introduced in @def:convergence,
@@ -1425,7 +1425,7 @@ complicate the maintenance of the ring structure and may disrupt the learning pr
 The aggregation strategies surveyed in this section differ
 fundamentally in their underlying network topology, which directly
 shapes their convergence speed, scalability, and fault tolerance
-properties. @tab:aggregation-strategies-topology summarises the main
+properties. @tab:aggregation-strategies-topology summarizes the main
 strategies discussed, together with their associated topologies.
 
 #figure(

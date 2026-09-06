@@ -9,7 +9,7 @@ Federated and decentralized learning protocols are inherently difficult to
 evaluate analytically: their behavior depends on the dynamic interplay between
 network topology, asynchronous message passing, heterogeneous data
 distributions, and fault injection — conditions that resist closed-form
-characterisation and demand empirical investigation at scale. Conducting such
+characterization and demand empirical investigation at scale. Conducting such
 experiments on physical infrastructure is costly, barely reproducible, and
 ill-suited to the systematic exploration of parameter spaces that comparative
 evaluation requires. Simulation is therefore not an auxiliary tool in this

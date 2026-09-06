@@ -445,7 +445,7 @@ The total per-cycle overhead for HEAL is therefore $2(n-h) dot s + h(h-1)$.
     [Epidemic Learning],   [$n dot c$],
     [*HEAL*],              [$2(n-h) dot s + h(h-1)$],
   ),
-  caption: [Comparison of decentralised learning frameworks in terms of communication
+  caption: [Comparison of decentralized learning frameworks in terms of communication
   overhead per cycle, where $n$ is the total number of nodes (including server\/hubs),
   $c$ is the number of outgoing connections, $h$ is the number of hubs, and $s$ is the
   number of hubs to which each node sends its model.],
@@ -490,9 +490,9 @@ All simulations were run on 16 vCPU, using 64G of memory, on a cluster composed 
 We evaluate our protocol on two learning tasks: 1) binary classification and 2) multinomial
 classification, as defined in the Appendix (@def:binary-classification and
 @def:multinomial-classification, given in @sec:appendix_ml). Binary classification constitutes a straightforward
-baseline that allows us to verify the correctness of the protocol, whilst multinomial
+baseline that allows us to verify the correctness of the protocol, while multinomial
 classification is more complex, enabling us to compare our protocol more precisely with
-other decentralised protocols.
+other decentralized protocols.
 
 The binary classification task is evaluated on the Spambase dataset (@sec:datasets), which
 comprises 4601 samples split into 90% for training and 10% for testing. We use a logistic
@@ -502,7 +502,7 @@ trained using SGD with a learning rate of $0.1$ and a batch size of 32.
 
 The multinomial classification task is evaluated on the MNIST dataset (@sec:datasets),
 which provides 60,000 training images and 10,000 test images. We use a LeNet5
-@lecun1989backpropagation convolutional neural network, originally designed for this dataset, with approximately 60,000 parameters and an output over 10 classes. The model is trained using the Adam optimiser @kingma2014adam with a learning rate of $0.001$, a weight decay of $0.01$, and a batch size of 32.
+@lecun1989backpropagation convolutional neural network, originally designed for this dataset, with approximately 60,000 parameters and an output over 10 classes. The model is trained using the Adam optimizer @kingma2014adam with a learning rate of $0.001$, a weight decay of $0.01$, and a batch size of 32.
 
 In both cases, the dataset is partitioned across the network nodes in an IID fashion. The data partition is performed randomly and uniformly across nodes.
 
@@ -521,7 +521,7 @@ In both cases, the dataset is partitioned across the network nodes in an IID fas
 
 ==== Baselines
 
-The decentralised learning protocols considered in the literature were surveyed in
+The decentralized learning protocols considered in the literature were surveyed in
 @chap:learning. Revisiting them through the lens of HEAL's layered architecture reveals
 that a given protocol is in fact the result of two independent choices: a network topology
 and an aggregation strategy. Not all combinations are valid — some aggregation strategies
@@ -531,7 +531,7 @@ Static topologies are simpler to deploy but offer no resilience to node failures
 Dynamic topologies are more complex to maintain, yet they enable greater model mixing in
 gossip-based networks and provide inherent resilience to failures.
 
-// @tab:baselines summarises the valid combinations of topology and aggregation strategy
+// @tab:baselines summarizes the valid combinations of topology and aggregation strategy
 // considered in our evaluation.
 
 #figure(
@@ -586,21 +586,21 @@ HEAL is evaluated under five scenarios. The first is a fault-free baseline, agai
 all other scenarios are compared, allowing us to assess the performance of HEAL under
 normal operating conditions. The remaining scenarios follow the fault taxonomy introduced
 in @chap:elevator, with the exception of Byzantine failures, which are outside the scope
-of this thesis for the decentralised learning component.
+of this thesis for the decentralized learning component.
 
 The second scenario simulates the failure of 20% of nodes, testing whether the protocol
 maintains acceptable learning performance when a non-negligible fraction of participants
 becomes unavailable. The third and fourth scenarios simulate the failure of a single hub
 and the failure of all 5 hubs respectively, verifying that HEAL does not exhibit a single
-point of failure — a key design requirement for any decentralised protocol. Finally, the
+point of failure — a key design requirement for any decentralized protocol. Finally, the
 fifth scenario introduces churn, where 10% of nodes leave the network and are replaced by
 new nodes at each cycle, testing whether the protocol remains functional under the
 dynamic membership conditions typical of real peer-to-peer networks.
 
-For Federated Learning and Gaia, which are centralised by nature, node failures are
+For Federated Learning and Gaia, which are centralized by nature, node failures are
 applied exclusively to non-server nodes, as the failure of a server unconditionally halts
 training in these protocols. This asymmetry is inherent to their architecture and further
-motivates the need for fully decentralised alternatives such as HEAL.
+motivates the need for fully decentralized alternatives such as HEAL.
 
 === Results
 
@@ -850,7 +850,7 @@ We have summarized our results in @tab:results-churn. The final accuracy, at cyc
 === Summary
 
 The experimental results demonstrate that HEAL achieves competitive learning performance
-whilst providing resilience properties that centralised and gossip-based approaches cannot
+while providing resilience properties that centralized and gossip-based approaches cannot
 offer simultaneously.
 
 In a fault-free environment, HEAL reaches a final accuracy of 0.90 on Spambase and 0.97
@@ -884,7 +884,7 @@ targeting wireless edge networks.
 
 FLAIR departs from HEAL in three layers. At the network layer, FLAIR operates over
 WiFi rather than a general-purpose internet overlay. At the overlay layer, nodes are
-organised into clusters using a protocol inspired by LEACH @heinzelman2000energy, a
+organized into clusters using a protocol inspired by LEACH @heinzelman2000energy, a
 well-known cluster-based routing protocol designed for energy-constrained networks, in
 which cluster heads are elected periodically and rotate among nodes. At the aggregation
 layer, model aggregation is performed locally within each cluster, rather than globally
@@ -1145,7 +1145,7 @@ in-cluster decentralized learning.
 
 The layered architecture of FLAIR directly supports a set of desirable properties for
 decentralized learning over wireless networks. Several of these properties are shared
-with HEAL, whilst others are specific to the wireless and cluster-based setting.
+with HEAL, while others are specific to the wireless and cluster-based setting.
 
 Model convergence is promoted by the iterative in-cluster aggregation design: within
 each cluster, the CH performs repeated averaging over member updates across
@@ -1187,7 +1187,7 @@ requires only single-hop communication within each cluster, making it deployable
 standard Wi-Fi hardware without any additional infrastructure. Since each cluster
 operates independently, the protocol scales naturally with the number of nodes:
 adding nodes to the network increases the number of clusters or their size, without
-introducing any centralised bottleneck.
+introducing any centralized bottleneck.
 
 === Experimental setup
 
@@ -1197,7 +1197,7 @@ scenarios considered.
 
 ==== Simulation environment
 
-All experiments were conducted using ns-3 @riley2010ns, a discrete-event network simulator that provides faithful modeling of IEEE 802.11 wireless communications, including ad-hoc mode and single-hop transmissions. Unlike Gossipy, which simulates the networking layer whilst performing real model training, ns-3 simulates the full network stack, including wireless channel conditions, interference, and packet scheduling. In our setup, the machine learning component is not simulated: the models are actually trained, and this training is executed directly inside ns-3 (in C++), without resorting to any third-party or external learning framework. All baseline algorithms — as well as the models — are thus included and re-implemented in ns-3 to ensure strict comparability under identical network conditions. The details of this integration are reported in the Appendix (@sec:flair-ns3).
+All experiments were conducted using ns-3 @riley2010ns, a discrete-event network simulator that provides faithful modeling of IEEE 802.11 wireless communications, including ad-hoc mode and single-hop transmissions. Unlike Gossipy, which simulates the networking layer while performing real model training, ns-3 simulates the full network stack, including wireless channel conditions, interference, and packet scheduling. In our setup, the machine learning component is not simulated: the models are actually trained, and this training is executed directly inside ns-3 (in C++), without resorting to any third-party or external learning framework. All baseline algorithms — as well as the models — are thus included and re-implemented in ns-3 to ensure strict comparability under identical network conditions. The details of this integration are reported in the Appendix (@sec:flair-ns3).
 
 All simulations were run on a dedicated server equipped with two Intel Xeon E5-2660 v3
 processors (10 cores, 2 threads per core, 2.6 GHz base frequency), 125 GB of RAM, and
@@ -1335,7 +1335,7 @@ between distant locations. Learning is performed on the Watering the Plants data
 of 100 nodes. FLAIR achieves the highest final accuracy ($approx 0.91$), surpassing
 C-FL, HEAL, and Gossip Learning ($approx 0.90$), and clearly outperforming Gaia
 ($approx 0.88$). These results demonstrate that the clustering-based design of FLAIR
-accelerates convergence whilst sustaining higher steady-state accuracy. Compared to
+accelerates convergence while sustaining higher steady-state accuracy. Compared to
 Gaia, convergence is up to $2.5 times$ faster, and compared to Gossip Learning, the
 protocol requires significantly fewer cycles to stabilize. Overall, FLAIR combines the
 scalability of decentralized designs with the efficiency of clustering, providing
@@ -1388,7 +1388,7 @@ amortize the impact of node removals.
 
 Temporary crashes caused only short-lived perturbations, with accuracy rapidly recovering
 once nodes rejoined and maintaining a trajectory close to the baseline. With
-$E_"round" = 3$, the system quickly returned to baseline accuracy, whilst with
+$E_"round" = 3$, the system quickly returned to baseline accuracy, while with
 $E_"round" = 1$, perturbations persisted longer and induced minor oscillations. An
 interesting observation is that once accuracy stabilized, subsequent temporary crashes
 had only a marginal effect.
@@ -1450,7 +1450,7 @@ effectively adapts to dynamic topologies.
 
 @fig:fl_rounds_comparison shows the accuracy evolution under two local update settings. With
 $E_"round" = 3$, convergence is faster in early stages, exceeding 70% within 10 epochs,
-whilst $E_"round" = 1$ initially converges more slowly but eventually closes the gap.
+while $E_"round" = 1$ initially converges more slowly but eventually closes the gap.
 Both configurations converge near the centralized baseline of 71.9%, with final
 accuracies of 71.2% and 71.4% respectively.
 
@@ -1499,7 +1499,7 @@ cluster-head election mechanism, which facilitates load balancing and enhances s
 robustness without requiring any fixed infrastructure. By confining aggregation to the
 cluster level and rotating cluster-heads at every round, FLAIR achieves progressive
 global model mixing without inter-cluster communication, keeping communication overhead
-low whilst preserving convergence.
+low while preserving convergence.
 
 The experimental evaluation conducted in ns-3 validated these properties across four
 scenarios. In static networks, FLAIR achieved faster convergence and higher final
@@ -1529,7 +1529,7 @@ principled and productive approach to building decentralized learning systems.
 HEAL addresses the fundamental tension between convergence speed and fault resilience by
 leveraging the Elevator overlay to dynamically elect hub nodes as distributed
 aggregators. Simulation results on the MNIST dataset show that HEAL achieves 99% of the
-accuracy of Federated Learning whilst remaining fully decentralized and fault-tolerant.
+accuracy of Federated Learning while remaining fully decentralized and fault-tolerant.
 With 5 hubs, HEAL reaches 0.95 accuracy in 76 cycles — comparable to Gaia and
 significantly faster than all gossip-based baselines. With 7 hubs and $s = 3$, this
 reduces to 33 cycles, making HEAL $2.3 times$ faster than the second-best result.

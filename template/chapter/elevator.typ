@@ -546,7 +546,7 @@ Therefore, even if in the previous cycle an additional node temporarily became a
 
 To prove point (ii), it should be noted that for the number of hubs to decrease, one or more nodes must not choose one of the nodes already selected as a hub in their list of potential hubs. 
 
-Given that we are in a stable state, with each node having the same $h$ nodes as hubs in its list, the only way for a node not to choose one of the previous hubs as a potential hub for the next cycle is for a random node to appear in the list of connections of the node's $c$ outgoing neighbours, i.e., as frequently as a hub, and it would also need to have a smaller ID than a hub already present. 
+Given that we are in a stable state, with each node having the same $h$ nodes as hubs in its list, the only way for a node not to choose one of the previous hubs as a potential hub for the next cycle is for a random node to appear in the list of connections of the node's $c$ outgoing neighbors, i.e., as frequently as a hub, and it would also need to have a smaller ID than a hub already present. 
 
 If this happens, and since there can only be a maximum of $h$ nodes chosen as potential hubs by a node $n$, then one of the potential hubs of node $n$ will be removed and replaced by a random node. We therefore need to calculate the probability of this event occurring.
 
@@ -559,7 +559,7 @@ $Pr[i in "Succ"(m)] approx (c-h)/N.$
 Here we assume independence in the selection of the $c-h$ nodes, which is not strictly true (as once a node has been chosen as a successor, it cannot be selected again). However, this approximation becomes reasonable when $N$ is large.
 
 Next, we calculate the probability that node $i$ appears in the list of all $c$ successors of node $n$.  
-Since the choices of successors are independent across the $c$ neighbours of $n$, this probability is:
+Since the choices of successors are independent across the $c$ neighbors of $n$, this probability is:
 $
 Pr[i in inter.big_(m in "Succ"(n)) "Succ"(m)] 
 = ((c-h)/N)^c.

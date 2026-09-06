@@ -22,26 +22,26 @@ phd_thesis/
 ├── Phd_thesis_typdiff_v9_to_v11.pdf      # PDF du diff visuel entre v9 et v11
 ├── AGENTS.md                             # Ce fichier — analyse du dépôt, du manuscrit, note
 ├── presentation/
-│   ├── slides.typ                        # Présentation Touying pour la soutenance (78 pages PDF)
-│   ├── slides.pdf                        # PDF compilé de la présentation
+│   ├── slides.typ                        # Présentation Touying pour la soutenance (thème university)
+│   ├── slides.pdf                        # PDF compilé de la présentation (61 pages)
 │   └── (assets)                          # Figures SVG/PDF/PNG, architecture.tex, ref.bib, plot_classification.py
 ├── template/
-│   ├── References.bib                    # Bibliographie BibTeX (167 entrées, 1532 lignes)
+│   ├── References.bib                    # Bibliographie BibTeX (169 entrées)
 │   ├── customization/
 │   │   ├── colors.typ                    # Palette de couleurs (cover, headings, liens)
 │   │   └── great-theorems-customized.typ # Personnalisation du package great-theorems
 │   ├── chapter/
-│   │   ├── abstract.typ                  # Abstract en anglais (35 lignes)
-│   │   ├── remerciements.typ             # Remerciements (74 lignes)
-│   │   ├── resume_fr.typ                 # Résumé en français (257 lignes)
-│   │   ├── introduction.typ              # Introduction générale (78 lignes, ~3 500 mots)
-│   │   ├── model.typ                     # Chap. 2 : Modèle formel (693 lignes, ~6 800 mots)
+│   │   ├── abstract.typ                  # Abstract en anglais (~28 lignes)
+│   │   ├── remerciements.typ             # Remerciements (66 lignes, sur une page)
+│   │   ├── resume_fr.typ                 # Résumé en français (263 lignes)
+│   │   ├── introduction.typ              # Introduction générale (140 lignes, ~3 500 mots)
+│   │   ├── model.typ                     # Chap. 2 : Modèle formel (690 lignes, ~6 800 mots)
 │   │   ├── overlay.typ                   # Chap. 3 : État de l'art overlays P2P (861 lignes, ~15 100 mots)
-│   │   ├── elevator.typ                  # Chap. 4 : Elevator & Lift (1 372 lignes, ~14 600 mots)
-│   │   ├── machine_learning.typ          # Chap. 5 : État de l'art ML décentralisé (1 482 lignes, ~8 500 mots)
-│   │   ├── heal.typ                      # Chap. 6 : HEAL & FLAIR (1 559 lignes, ~12 500 mots)
+│   │   ├── elevator.typ                  # Chap. 4 : Elevator & Lift (1 381 lignes, ~14 600 mots)
+│   │   ├── machine_learning.typ          # Chap. 5 : État de l'art ML décentralisé (1 481 lignes, ~8 500 mots)
+│   │   ├── heal.typ                      # Chap. 6 : HEAL & FLAIR (1 585 lignes, ~12 500 mots)
 │   │   ├── conclusions_outlook.typ       # Chap. 7 : Conclusions et perspectives (341 lignes, ~4 000 mots)
-│   │   ├── publications.typ              # Liste des publications (27 lignes)
+│   │   ├── publications.typ              # Liste des publications (29 lignes)
 │   │   ├── appendix.typ                  # Annexes (2 676 lignes, ~19 000 mots)
 │   │   ├── simulators.typ                # Chapitre sur les simulateurs (commenté, non inclus)
 │   │   └── variants_heal.typ             # Variantes de HEAL (commenté, non inclus)
@@ -97,9 +97,10 @@ phd_thesis/
 
 - Chaque chapitre importe ses propres packages (fletcher, lovelace, theorion, cetz) — pas d'import centralisé
 - Les chapitres commentés (`simulators.typ`, `variants_heal.typ`) sont exclus du build via `// #include`
-- La date de soutenance est mise à `01/01/1970` (placeholder)
-- Le jury contient des noms génériques `"Prénom Nom"` (à compléter)
-- Les figures référencées par les chapitres sont en SVG vectoriel (58 appels `image()`), 2 PNG et 1 webp ARPANET — plus aucun PDF direct dans les appels d'images
+- La date de soutenance est `07/09/2026` (page de garde, `main.typ`)
+- Le jury est complet sur la page de garde : 8 membres (directrice, co-directeur, 2 rapporteurs, 4 examinateurs) + 2 invitées (Megumi Kaneko, Kenza Harkouken Saiah)
+- Orthographe : anglais américain uniformisé dans tous les chapitres (pas de formes britanniques `-ise`/`behaviour`) ; les fichiers français (`remerciements.typ`, `resume_fr.typ`) sont en français
+- Les figures du chap. 6 (FLAIR) sont en PDF ; ailleurs SVG/PDF/PNG mélangés (~143 blocs `figure` dans les chapitres)
 
 ---
 
@@ -110,30 +111,38 @@ phd_thesis/
 | Composant | Version | Usage |
 |---|---|---|
 | `touying` | 0.6.1 | Moteur de slides (navigation, overlay, animations) |
-| `themes.simple` | (inclus dans touying) | Thème de présentation (défaut, sobre) |
-| `fletcher` | 0.5.8 | Diagrammes de graphes inline (utilisé : 3 `#fletcher-diagram`, reducer actif) |
+| `themes.university` | (inclus dans touying) | Thème de présentation (header + footer 3 couleurs, barre de progression) |
+| `fletcher` | 0.5.8 | Diagrammes de graphes inline (utilisé : plusieurs `fletcher-diagram`, reducer actif) |
 | `lovelace` | 0.3.0 | Pseudocode algorithmique (`pseudocode-list`, `pseudocode`) |
+| `cetz` | 0.4.2 | Dessins vectoriels |
+| `great-theorems` | 0.1.2 | Environnements théorèmes |
 
 ### Thème et style
 
-- **Thème** : `simple` (aucune couleur personnalisée — palette par défaut du thème)
+- **Thème** : `university` (couleurs par défaut : primary `#04364A`, secondary `#176B87`, tertiary `#448C95`)
+- **Config** : `university-theme.with(aspect-ratio: "16-9", config-info(title/short-title/author/institution/date))` — config-info : titre de la thèse, author « Mohamed Amine Legheraba », institution « LIP6 · Sorbonne Université », date « September 7, 2026 »
 - **Police** : aucune fonte déclarée (polices par défaut du système)
-- **Ratio** : 16:9 (`aspect-ratio: "16-9"`)
-- **Footer** : `footer: []` (vide, pas de numéro de slide ni barre de progression)
-- **Date de soutenance** : *07 September 2026* (slide titre)
+- **Ratio** : 16:9
+- **Footer** : actif (3 cellules colorées : auteur / titre / date+numéro de slide) — fourni par le thème
+- **Date de soutenance** : *September 7, 2026* (config-info)
 
-### Structure des slides (78 pages PDF compilées)
+### Structure des slides (61 pages PDF compilées)
 
-Le PDF compilé fait **78 pages** — certains `#slide[...]` multi-blocs `][` génèrent plusieurs frames. Sections (`==`) et titres (`=`) :
+Le PDF compilé fait **61 pages** — certains `#slide[...]` multi-blocs `][` génèrent plusieurs frames. Sections (`==`) principales (hors appendix, lignes ~74-1145) :
 
 | Section | Contenu |
 |---|---|
-| **Title slide** | « Resilient and Efficient Decentralized Learning », auteurs, 07 September 2026 |
-| `== Me` / `== Plan` | Intro personnelle + plan |
-| `= Context` | FL centralisé, Blockchain-based FL (**marqué `todo`**), Gossip Learning, comparaison FL vs Gossip, Peer sampling |
-| `= Elevator & HEAL protocols` | Architecture, topologie hub & hub sampling, algorithme Elevator, exemple de topologie, Hub Learning Protocol, contextes d'expériences, résilience (crash/churn), byzantin |
-| `= Next steps` | Nœuds hétérogènes, réseau physique (+ une section `==` vide) |
-| `= Appendix` | Algorithmes hub learning, background thread, simulation, métriques, contextes, churn, algorithme FL, hub learning main idea |
+| `== Context` | Contexte NEMO/IA + image `nemo_stack_clean.png` |
+| `== Supervised Classification` | Définitions ML supervisé |
+| `== Federated Learning` | FL centralisé (+ citation McMahan) |
+| `== Structured vs Unstructured networks` | 2 diagrammes fletcher côte à côte (grid) |
+| `== Gossip Learning` | Diagramme fletcher + pseudocode (grid 2 colonnes) |
+| `== Architecture`, `== Peer sampling`, `== Metrics`, `== Failures` | Cadre général |
+| `== Elevator`, `== LIFT`, `== Hub-based topology`, ... | Contributions overlay |
+| `== Hub Learning Protocol (HEAL)`, `== Datasets & Models` | Contributions apprentissage |
+| `== FLAIR architecture/algorithm/results` | FLAIR |
+| `== Conclusion`, `== Perspectives`, `== Publications` | Clôture (Publications inclut FLAIR NETYS 2026) |
+| `= Appendix` (l. ~1146+) | Backup : algorithmes hub learning, simulation, métriques, FL, etc. (contenu en double/archivé) |
 
 ### Commande de compilation
 
@@ -145,7 +154,7 @@ typst compile --root . presentation/slides.typ presentation/slides.pdf
 
 ### Pièges de code (Touying)
 
-- **Pas de `][` dans les `#slide[...]`** : Touying utilise `][` comme séparateur de blocs de contenu — chaque bloc devient une frame séparée (le fichier en contient 5, d'où 78 pages pour ~55 blocs). Un `#grid(columns: ..)[cell1][cell2]` à l'intérieur d'un `#slide[]` sera interprété comme deux blocs de slide séparés. Utiliser `#table(...)` à la place pour les grilles multi-cellules.
+- **Pas de `][` dans les `#slide[...]`** : Touying utilise `][` comme séparateur de blocs de contenu — chaque bloc devient une frame séparée. Un `#grid(columns: ..)[cell1][cell2]` à l'intérieur d'un `#slide[]` sera interprété comme deux blocs de slide séparés. Utiliser `#grid(...)` avec les contenus comme arguments (sans `#` dans le contexte code, comme `fletcher-diagram(...)`, `pseudocode-list(...)`) pour les mises en page multi-cellules.
 - **Pas de syntaxe LaTeX en mode math** : `\delta` → `delta`, `\subseteq` → `subset.eq`, `\log` → `log`, `\text{...}` → `"..."`, `\frac{a}{b}` → `a/b`, etc.
 - **`str()` n'accepte pas le contenu** : pour les labels numériques dans les grilles, utiliser `str(num)` pour les entiers mais pas pour le contenu Typst.
 - **Warning touying 0.6.1** : à la compilation, un warning apparaît sur `@preview/touying:0.6.1/src/pdfpc.typ` (query `<pdfpc>`) — sans conséquence sur le PDF généré.
@@ -159,6 +168,8 @@ typst compile --root . presentation/slides.typ presentation/slides.pdf
 
 > *Peut-on construire un système d'apprentissage décentralisé qui égale l'efficacité du federated learning centralisé, tout en étant entièrement décentralisé et résilient aux pannes et aux participants malveillants ?*
 
+**Cadre de la thèse (révisé)** : la contribution principale est présentée comme une **architecture en couches pour l'apprentissage décentralisé** (abstract, introduction, résumé FR) — une couche overlay (Elevator) et une couche d'apprentissage fédéré décentralisé (HEAL), avec Lift en extension byzantine et FLAIR comme adaptation aux réseaux sans fil.
+
 ### 3.2 Contributions
 
 | # | Contribution | Chapitre | Publication |
@@ -166,7 +177,7 @@ typst compile --root . presentation/slides.typ presentation/slides.pdf
 | 1 | **Elevator** — Protocole d'overlay P2P à émergence de hubs par attachement préférentiel | 4 | OUI (conf. internationale) |
 | 2 | **Lift** — Extension byzantine-résiliente d'Elevator (redistribution déterministe via PRNG) | 4 | OUI (Outstanding Paper Award) |
 | 3 | **HEAL** — Apprentissage fédéré décentralisé hiérarchique sur Elevator | 6 | OUI (conf. internationale + nationale) |
-| 4 | **FLAIR** — Adaptation de HEAL aux réseaux sans fil (clustering LEACH-like) | 6 | Non publié (preuve de concept de modularité) |
+| 4 | **FLAIR** — Adaptation de HEAL aux réseaux sans fil (clustering LEACH-like) | 6 | OUI — accepté/présenté à NETYS 2026 (`boutebicha2026netys`, à paraître ; version arXiv `boutebicha2026flair` dans le .bib) |
 
 ### 3.3 Architecture en couches
 
@@ -215,12 +226,12 @@ typst compile --root . presentation/slides.typ presentation/slides.pdf
 |---|---|
 | Mots totaux (chapters + appendix) | ~84 000 |
 | Lignes de code Typst | ~10 000 |
-| Références bibliographiques | 167 |
+| Références bibliographiques | 169 |
 | Figures / Images | 518 fichiers image dans `Images/` (PDF/SVG/PNG) ; ~143 blocs `figure` dans les chapitres |
 | Définitions formelles | 74+ |
 | Propositions / Preuves | 17+ (chapitre Elevator) |
-| Publications issues de la thèse | 5 (dont 1 Outstanding Paper Award) |
-| Langue du manuscrit | Anglais (sauf remerciements, résumé FR) |
+| Publications issues de la thèse | 7 (dont 1 Outstanding Paper Award) |
+| Langue du manuscrit | Anglais américain (uniformisé), sauf remerciements et résumé en français |
 
 ---
 
@@ -248,7 +259,7 @@ typst compile --root . presentation/slides.typ presentation/slides.pdf
 
 2. **Échelle expérimentale modeste** — Elevator : 1 000 nœuds (la communauté P2P valide à 10K–100K). HEAL : 100 nœuds seulement. Seulement **5 runs** par configuration, sans barres d'erreur ni écart-type.
 
-3. **Benchmarks ML datés** — LeNet5/MNIST (2010) et régression logistique/Spambase (1994) sont en deçà des standards 2024-2026. L'abstract mentionne « text classification » sans évaluation correspondante dans les chapitres.
+3. **Benchmarks ML datés** — LeNet5/MNIST (2010) et régression logistique/Spambase (1994) sont en deçà des standards 2024-2026.
 
 4. **Absence de garantie de convergence pour HEAL** — La convergence est purement empirique. Aucun théorème, même sous hypothèses IID simplifiées. C'est un manque théorique significatif.
 
@@ -305,13 +316,13 @@ typst compile --root . presentation/slides.typ presentation/slides.pdf
 
 ### Incohérences détectées
 
-1. L'abstract mentionne « image and text classification tasks » mais l'évaluation HEAL ne couvre que Spambase (binaire) et MNIST (image). Pas de tâche de classification de texte.
-2. La date de soutenance est `01/01/1970` (placeholder) — alors que les slides indiquent *07 September 2026*.
-3. Les membres du jury sont des placeholders (`"Prénom Nom"`, `"Titre"`).
+1. ~~L'abstract mentionne « image and text classification tasks » mais l'évaluation HEAL ne couvre que Spambase et MNIST~~ — **résolu** : Spambase est une tâche de classification de texte (emails) et MNIST d'images ; l'abstract révisé (architecture en couches) est cohérent avec l'introduction et le résumé FR.
+2. ~~La date de soutenance est `01/01/1970` (placeholder)~~ — **résolu** : `07/09/2026` (page de garde, cohérent avec les slides).
+3. ~~Les membres du jury sont des placeholders (`"Prénom Nom"`, `"Titre"`)~~ — **résolu** : jury complet (8 membres + 2 invitées) sur la page de garde.
 4. ~~Le chapitre FLAIR mentionne CIFAR-10 dans les figures~~ — **résolu** : le fichier `Images/HEAL/normal_accuracy_Cifar_10_color.{svg,pdf}` existe toujours mais `heal.typ` ne le référence plus (aucune mention « cifar » dans les chapitres).
 5. Le chapitre `simulators.typ` est commenté mais son contenu est référencé indirectement dans le résumé français et l'appendice.
-6. `presentation/slides.typ` a des modifications non commitées (git status : `M`) et contient une slide « Blockchain-based Federated Learning » marquée `todo` + une section `==` vide (l. 531).
+6. `presentation/slides.typ` : thème `university` (commit `5d7fe10`), sections restructurées — certaines sections en double subsistent dans l'appendix ; l'ancienne section « Blockchain-based Federated Learning » et « == Me » sont commentées (pas supprimées).
 
 ---
 
-*Dernière mise à jour : 2026-08-28 — vérification de l'exactitude : structure, section présentation (touying 0.6.1, simple theme, 78 pages), stats et incohérences*
+*Dernière mise à jour : 2026-09-06 — alignement sur l'état final du manuscrit (abstract/intro/résumé FR « architecture en couches », orthographe US, date 07/09/2026, jury complet, FLAIR accepté NETYS 2026) et de la présentation (thème university, 61 pages)*

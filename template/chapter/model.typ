@@ -87,7 +87,7 @@ In our model, the network captures how nodes are interconnected and how interact
 By introducing the network abstraction, we move from the behavior of an individual node to the collective behavior of a set of interacting nodes, which is a fundamental step toward understanding the dynamics of peer-to-peer systems.
 
 === Network Assumptions
-A peer-to-peer network is typically implemented as a virtual network, also called an overlay network, on top of a physical network. A clear distinction must therefore be made between the physical network, such as the Internet, and the overlay network. Each node in the overlay network is hosted on a node of the physical network, but the reverse is not necessarily true. Moreover, two neighbouring nodes in the overlay network are not necessarily neighbours in the physical network. An overlay network can itself be implemented on top of another overlay network. For example, the Lightning Network @poon2016bitcoin operates as an overlay on top of the Bitcoin network, which itself relies on the Internet protocol stack.
+A peer-to-peer network is typically implemented as a virtual network, also called an overlay network, on top of a physical network. A clear distinction must therefore be made between the physical network, such as the Internet, and the overlay network. Each node in the overlay network is hosted on a node of the physical network, but the reverse is not necessarily true. Moreover, two neighboring nodes in the overlay network are not necessarily neighbors in the physical network. An overlay network can itself be implemented on top of another overlay network. For example, the Lightning Network @poon2016bitcoin operates as an overlay on top of the Bitcoin network, which itself relies on the Internet protocol stack.
 
 We abstract the underlying physical network, as peer-to-peer algorithms do not directly operate on physical networking mechanisms. We assume that the underlying network provides basic communication primitives required by the overlay network.
 
@@ -313,7 +313,7 @@ $
 #definition(title: "Clustering Coefficient")[
 Let $G = (V, E)$ be a graph. For any vertex $v in V$ with $"degree"_G (v) >= 2$,
 the local clustering coefficient of $v$, denoted $C(v)$, is defined as the fraction
-of pairs of neighbours of $v$ that are themselves connected:
+of pairs of neighbors of $v$ that are themselves connected:
 
 $
 C(v) = frac(|{ {u, w} in E | u in "neigh"_G (v), w in "neigh"_G (v) }|, binom("degree"_G (v), 2))
@@ -330,8 +330,8 @@ C(G) = frac(1, |V|) sum_(v in V) C(v)
 $
 
 The global clustering coefficient takes values in $[0, 1]$, where $C(G) = 0$ indicates
-that no two neighbours of any node are connected, and $C(G) = 1$ indicates that every
-neighbourhood forms a complete subgraph.
+that no two neighbors of any node are connected, and $C(G) = 1$ indicates that every
+neighborhood forms a complete subgraph.
 ] <def:clusteringcoef>
 
 === Overlay Network Modeling
@@ -395,11 +395,11 @@ $
 i.e., nodes to which $v$ can send messages. A node does not necessarily maintain a list of its predecessors, only its successors.
 ]
 
-// - Each node _n_ has a list of addresses of other nodes in the network in its local state. This list is called the *partial view*  or the *neighbours* of _n_. We consider that participants have an unbounded memory, although the size of their partial view is bounded by the constant $c$, with $c << N$, and $N$ the size of the network.
+// - Each node _n_ has a list of addresses of other nodes in the network in its local state. This list is called the *partial view*  or the *neighbors* of _n_. We consider that participants have an unbounded memory, although the size of their partial view is bounded by the constant $c$, with $c << N$, and $N$ the size of the network.
 
 #assumption()[
 It is assumed that a node must know the address of another node in order to send it a message.  
-Consequently, each node communicates only with its neighbours at distance 1 in the overlay network.
+Consequently, each node communicates only with its neighbors at distance 1 in the overlay network.
 ]
 
 #assumption(title: "Directed Channel Reply")[
