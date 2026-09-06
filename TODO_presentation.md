@@ -11,7 +11,7 @@ Travail à faire sur la présentation, à traiter élément par élément.
 7. Faire une animation pour Elevator.
 8. Rajouter Lift.
 9. Rajouter les 3 slides pour la partie théorique.
-10. Rajouter un tableau qui résume l'état de l'art.
+10. ~~Rajouter un tableau qui résume l'état de l'art.~~ ✅ **FAIT** — slide « State of the Art Summary » : tableau ✓/✗ (centralized, federated, decentralized/structured, gossip, local learning) avec colonnes Decentralized / Local data / Fast convergence / Fault-tolerant / No overlay overhead + mention « no generalizing model » pour local learning ; conclusion « No single solution is fully satisfactory ».
 11. Rajouter un tableau à la fin qui explique notre apport.
 12. Rajouter une slide limitations.
 
