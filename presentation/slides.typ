@@ -99,8 +99,8 @@
       title((-0.6, -0.7), [*Model*])
 
       // flèche du couple (image chat + label Cat) vers le modèle
-      edge(<cat_lbl>, <ml>, "->")
-      edge(<cat_img>, <ml>, "->", label: [(data, label)], label-size: 19pt, label-side: left)
+      edge(<cat_lbl>, <ml>, "->", stroke: 3pt)
+      edge(<cat_img>, <ml>, "->", label: [(data, label)], label-size: 19pt, label-side: left, stroke: 3pt)
 
       // barre verticale pointillée bleue à droite du modèle (sépare l'inférence)
       node((0, -3), name: <sep_top>, stroke: none, fill: none)
@@ -110,10 +110,10 @@
       title((2,-2.7), [*Prediction*])
 
       imagebox((0.5,-1.3), image("cat2.svg", width: 100pt))
-      edge("->")
+      edge("->", stroke: 3pt)
       imagebox((1.8,-1.3), image("machine.svg", width: 120pt),name: <machine_trained>)
       title((1.8,-.7), [*Trained Model*])
-      edge(<machine_trained>, <cat_lbl2>, "->")
+      edge(<machine_trained>, <cat_lbl2>, "->", stroke: 3pt)
       labelbox((3,-1.3), "Cat", name: <cat_lbl2>)
 
   })
@@ -171,19 +171,6 @@
     column-gutter: 2em,
 
     fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
-      node((0,0), name: "1", radius: 1em)
-      edge(label("5"), "-", stroke: 1pt)
-      edge(label("2"), "-", stroke: 1pt)
-      node((0.3,1), name: "2", radius: 1em)
-      edge(label("5"), "-", stroke: 1pt)
-      edge(label("3"), "-", stroke: 1pt)
-      node((1,1.5), name: "3", radius: 1em)
-      node((1.8,1), name: "4", radius: 1em)
-      edge(label("5"), "-", stroke: 1pt)
-      node((1.8,0), name: "5", radius: 1em)
-    }),
-
-    fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
       node((0,1), name: "1", radius: 1em)
       edge(label("5"), "-", stroke: 1pt)
       edge(label("6"), "-", stroke: 1pt)
@@ -196,6 +183,19 @@
       edge(label("5"), "-", stroke: 1pt)
       node((0.5,0.2), name: "5", radius: 1em)
       node((0.5,1.8), name: "6", radius: 1em)
+    }),
+
+    fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
+      node((0,0), name: "1", radius: 1em)
+      edge(label("5"), "-", stroke: 1pt)
+      edge(label("2"), "-", stroke: 1pt)
+      node((0.3,1), name: "2", radius: 1em)
+      edge(label("5"), "-", stroke: 1pt)
+      edge(label("3"), "-", stroke: 1pt)
+      node((1,1.5), name: "3", radius: 1em)
+      node((1.8,1), name: "4", radius: 1em)
+      edge(label("5"), "-", stroke: 1pt)
+      node((1.8,0), name: "5", radius: 1em)
     }),
   )
 ]
@@ -348,11 +348,11 @@
 
   #hubdef(title: "Hub")[
     Let $G = (V, E)$ be the directed overlay graph, where each node $v in V$ keeps
-    a partial view $P(v) subset.eq V$.
+    a partial view $C(v) subset.eq V$.
     #v(0.4em)
     A node $h in V$ is a *hub* if it appears in the partial view of every node:
     #v(0.4em)
-    $ forall v in V, quad h in P(v) $
+    $ forall v in V, quad h in C(v) $
   ]
 
   #v(0.5em)
@@ -412,7 +412,7 @@
         node((2.2, 0), "C", name: "c", radius: 0.6em)
         node((-1.2, -1.6), "D", name: "d", radius: 0.6em)
         node((1.2, -1.6), "E", name: "e", radius: 0.6em)
-        node((0, 2), "F", name: "f", radius: 0.6em)
+        node((0, 1.3), "F", name: "f", radius: 0.6em)
         node((-2, 1.4), "G", name: "g", radius: 0.6em)
         edge(<b>, <a>, "-|>")
         edge(<c>, <a>, "-|>")
@@ -425,7 +425,7 @@
   )
 
   #v(0.8em)
-  #text(size: 12pt)[Preferential attachment — Barabási & Albert #cite(<barabasi2002evolution>, form: "full")]
+  #text(size: 12pt)[#cite(<barabasi2002evolution>, form: "full")]
 ]
 
 == Random Attachment
@@ -992,7 +992,8 @@ to the nodes`, fill: blue.lighten(60%), stroke: dash_hub, inset: 0.5em)
     edge(label("6"), label("1"), "-|>")
     edge(label("6"), label("5"), "-|>")
 })
-  #text(size: 12pt)[#cite(<legheraba2025heal>, form: "full")]
+
+#text(size: 12pt)[#cite(<legheraba2025heal>, form: "full")]
 
 ]
 
@@ -1053,9 +1054,9 @@ to the nodes`, fill: blue.lighten(60%), stroke: dash_hub, inset: 0.5em)
 
 #grid(
   columns: (1fr),
-  image("normal_accuracy_MNIST_color.svg", width: 75%), 
-  image("various_hub_accuracy_MNIST_color.svg", width: 75%),
-  image("hub_learning_accuracy_allcontexts_color.svg", width: 75%)
+  image("normal_accuracy_MNIST_color.svg", width: 70%), 
+  image("various_hub_accuracy_MNIST_color.svg", width: 70%),
+  image("hub_learning_accuracy_allcontexts_color.svg", width: 70%)
   )
 ]
 
@@ -1232,7 +1233,31 @@ to the nodes`, fill: blue.lighten(60%), stroke: dash_hub, inset: 0.5em)
 
 = Conclusion
 
-== Conclusion
+== Overview
+
+#slide[
+  #set align(horizon)
+  #set align(center)
+  #set text(size: 16pt)
+
+  #let ok = text(fill: green)[✓]
+  #let no = text(fill: red)[✗]
+
+  #table(
+    columns: (auto, auto, auto, auto, auto, auto, auto),
+    inset: 6pt,
+    align: (left, center, center, center, center, center, center),
+    table.header(
+      [], [*Decentralized*], [*Fast convergence*], [*Fault-tolerant*], [*Resistant to colluding*], [*Learning*], [*Network type*],
+    ),
+    [*Elevator*], ok, ok, ok, no, text(fill: gray)[—], [P2P],
+    [*Elevator + Lift*], ok, ok, ok, ok, text(fill: gray)[—], [P2P],
+    [*Elevator + HEAL*], ok, ok, ok, no, ok, [P2P],
+    [*FLAIR*], ok, ok, ok, no, ok, [Wireless],
+  )
+]
+
+== Limitations
 
 #slide[
   #set align(horizon)
@@ -1240,15 +1265,14 @@ to the nodes`, fill: blue.lighten(60%), stroke: dash_hub, inset: 0.5em)
   #set text(size: 19pt)
 
   #align(left)[
-    - *Elevator*: a self-organising overlay that makes hubs emerge — provides a
-      *structured overlay* for structured aggregation without any coordinator.
-    - *HEAL*: federated learning directly onto the structured overlay —
-      recovers the efficiency of FL while staying decentralised.
-    - *Lift*: hardens hub election against colluding byzantines (up to 10%).
-    - *FLAIR*: validates the modular architecture in wireless networks (LEACH-style clustering).
-    #v(0.5em)
-    *Answer:* structured aggregation is possible *without centralisation*, if the
-    overlay layer is designed with that goal in mind.
+    - *Simple ML models.* Benchmarks are modest — logistic regression on
+      Spambase, LeNet5 on MNIST. No large-scale task, so convergence and
+      accuracy conclusions remain to be confirmed on more ambitious models.
+    #v(0.8em)
+    - *Combinatorial explosion.* Network parameters ($N$, $c$, $h$),
+      failure/churn scenarios, fraction of malicious nodes, ML hyper-parameters,
+      and seeds define an enormous space — only a small fraction can be
+      explored.
   ]
 ]
 
@@ -1280,7 +1304,7 @@ to the nodes`, fill: blue.lighten(60%), stroke: dash_hub, inset: 0.5em)
   #set text(size: 19pt)
 
   #align(left)[
-    - Better robustness at the Overlay layer (using)
+    - Better robustness at the Overlay layer
     - *Byzantine robustness in the learning layer* (poisoning & privacy attacks)
     - Extend HEAL to *unsupervised and reinforcement learning*.
     - *Vertical federated learning* (different features per participant).
@@ -1318,6 +1342,26 @@ to the nodes`, fill: blue.lighten(60%), stroke: dash_hub, inset: 0.5em)
 #show: appendix
 
 = Appendix
+
+== Conclusion (detailed)
+
+#slide[
+  #set align(horizon)
+  #set align(center)
+  #set text(size: 19pt)
+
+  #align(left)[
+    - *Elevator*: a self-organising overlay that makes hubs emerge — provides a
+      *structured overlay* for structured aggregation without any coordinator.
+    - *HEAL*: federated learning directly onto the structured overlay —
+      recovers the efficiency of FL while staying decentralised.
+    - *Lift*: hardens hub election against colluding byzantines (up to 10%).
+    - *FLAIR*: validates the modular architecture in wireless networks (LEACH-style clustering).
+    #v(0.5em)
+    *Answer:* structured aggregation is possible *without centralisation*, if the
+    overlay layer is designed with that goal in mind.
+  ]
+]
 
 == Federated Learning
 
