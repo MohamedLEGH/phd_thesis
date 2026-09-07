@@ -25,6 +25,7 @@
     author: [Mohamed Amine Legheraba],
     institution: [LIP6 · Sorbonne Université],
     date: [September 7, 2026],
+    logo: image("../Logos/SORBONNE UNIVERSITÉ/SORBONNE_UNIVERSITE.svg", height: 18pt, alt: "Sorbonne Université"),
   ),
 )
 
@@ -43,19 +44,11 @@
 // #let cetz-canvas = touying-reducer.with(reduce: cetz.canvas, cover: cetz.draw.hide.with(bounds: true))
 #let fletcher-diagram = touying-reducer.with(reduce: fletcher.diagram, cover: fletcher.hide)
 
-#title-slide[
-  = Resilient and Efficient Decentralized Learning
-  #v(2em)
-
-  *Mohamed Amine Legheraba*
-  
-  Supervisors: Maria Potop-Butucaru, Sebastien Tixeuil
-  
-  Sorbonne University, LIP6, NPA
-  // #footnote[Sorbonne University] <uni> #h(1em)
-
-  07 September 2026
-]
+#title-slide(authors: ([
+  Mohamed Amine Legheraba
+  #v(0.4em)
+  #text(size: 0.7em)[Supervisors: Maria Potop-Butucaru, Sébastien Tixeuil]
+]))
 
 // == About Me
 
