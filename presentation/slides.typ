@@ -77,7 +77,7 @@
   #set align(horizon)
   #set align(center)
 
-  #image("nemo_stack_clean.png", width: 464pt)
+  #image("nemo_stack_clean.png", width: 80%)
 ]
 
 // == Plan
@@ -287,51 +287,54 @@
   #text(size: 16pt, weight: "bold")[No single solution is fully satisfactory]
 ]
 
-== Architecture
+== Contributions
 
 #slide[
   #set align(horizon)
   #set align(center)
-  // #set text(size: 15pt)
 
-#cetz.canvas({
-  import cetz.draw: *
-  let w = 8
-  let h = 1.6
-  let spacing = 2
-  let colors = (
-    rgb(70%, 70%, 70%),
-    rgb(75%, 90%, 75%),
-    rgb(75%, 85%, 95%),
-    rgb(85%, 75%, 90%),
+  #grid(
+    columns: (1fr, 1fr),
+    column-gutter: 1.5em,
+    align(center)[
+      #cetz.canvas({
+        import cetz.draw: *
+        let w = 8
+        let h = 1.6
+        let spacing = 2
+        let colors = (
+          rgb(70%, 70%, 70%),
+          rgb(75%, 90%, 75%),
+          rgb(75%, 85%, 95%),
+          rgb(85%, 75%, 90%),
+        )
+        let labels = (
+          "Network Layer",
+          "Overlay Layer",
+          "Aggregation Layer",
+          "Application Layer",
+        )
+
+        for i in range(4) {
+          rect((0, i*spacing), (w, h + (i*spacing)), name: "rect_"+str(i), fill: colors.at(i))
+          content((w/2, i*spacing + h/2), labels.at(i), anchor: "center")
+        }
+      })
+    ],
+    align(left + horizon)[
+      #text(size: 25pt, weight: "bold")[Outline]
+      #v(1em)
+      #text(size: 25pt)[
+        - *Elevator* — overlay (hub election)
+        #v(0.6em)
+        - *Lift* — malicious resilience
+        #v(0.6em)
+        - *HEAL* — model aggregation
+        #v(0.6em)
+        - *FLAIR* — wireless networks adaptation
+      ]
+    ],
   )
-  let labels = (
-    "Network Layer",
-    "Overlay Layer",
-    "Aggregation Layer",
-    "Application Layer",
-  )
-  let details = (
-    "Physical network",
-    "Elevator",
-    "HEAL",
-    "Supervised ML models",
-  )
-
-  for i in range(4) {
-    rect((0, i*spacing), (w, h + (i*spacing)), name: "rect_"+str(i), fill: colors.at(i))
-    // label centré au centre géométrique du rectangle
-    content((w/2, i*spacing + h/2), labels.at(i), anchor: "center")
-
-    let mid_y = (i*spacing) + h/2
-    let arrow_x_start = w + 0.15
-    let arrow_x_end = w + 1.5
-    let text_x = w + 1.7
-
-    line((arrow_x_start, mid_y), (arrow_x_end, mid_y), mark: (end: ">"))
-    content((text_x, mid_y), anchor: "west", details.at(i))
-  }
-})
 ]
 
 == Peer sampling

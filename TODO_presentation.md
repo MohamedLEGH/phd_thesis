@@ -14,6 +14,7 @@ Travail à faire sur la présentation, à traiter élément par élément.
 10. ~~Rajouter un tableau qui résume l'état de l'art.~~ ✅ **FAIT** — slide « State of the Art Summary » : tableau ✓/✗ (centralized, federated, decentralized/structured, gossip, local learning) avec colonnes Decentralized / Local data / Fast convergence / Fault-tolerant / No overlay overhead + mention « no generalizing model » pour local learning ; conclusion « No single solution is fully satisfactory ».
 11. Rajouter un tableau à la fin qui explique notre apport.
 12. Rajouter une slide limitations.
+13. Mettre les logos (Sorbonne Université, LIP6, CNRS…) sur la première page (slide titre).
 
 Il y a d'autres choses ensuite, mais on commence par cette todo.
 
