@@ -812,20 +812,71 @@ image("Elevator_context_1000_100xp_diameter_color.svg", fit: "cover")
   )
 ]
 
+= Lift
+
 == Malicious nodes
 #slide[
   #set align(horizon)
   #set align(center)
+  #set text(size: 20pt)
 
-  attacks
+  #pseudocode-list(
+    booktabs: true,
+    title: [Coordinated attack — lying about neighbors],
+  )[
+    - addresses of all colluding nodes: *colluders*
+    - backward list: *backward_peers*
+    + *loop*
+      + (request, peer) $arrow.l$ receive()
+      + *if* request == CACHE_REQUEST
+        + backward_peers.add(peer)
+        + colluders.shuffle()
+        + modified_cache $arrow.l$ colluders[0:c]
+        + send(modified_cache, peer)
+  ]
+
+  #v(0.8em)
+  #text(size: 16pt)[Each colluding node answers with a fake cache that only
+  contains *other colluding nodes*, inflating their visibility.]
 ]
 
-== LIFT
+== Attack outcome
+
 #slide[
   #set align(horizon)
   #set align(center)
 
-  Present Lift
+  #image("../Images/CANDAR/elevator.ElevatorVByzantine2_5percentrandom_1000_nb_hubs_100_cycles.pdf", width: 80%)
+
+]
+
+== LIFT
+
+#slide[
+  #set align(horizon)
+  #set align(center)
+  #set text(size: 20pt)
+
+  #text(size: 15pt)[After convergence, correct nodes *deterministically* re-draw the hubs
+  from a shared random seed — attackers cannot bias the outcome.]
+  #v(1em)
+
+  #pseudocode-list(
+    booktabs: true,
+    title: [Hub redistribution],
+  )[
+    - current hub list: *H*
+    - network size: *N*
+    - target hubs: *h*
+    + seed $arrow.l$ sort(H)
+    + prng $arrow.l$ Random(seed)
+    + selected $arrow.l$ ${}$
+    + *while* selected.size() < h
+      + id $arrow.l$ prng.nextInt(N)
+      + *if* id *not in* selected
+        + selected $arrow.l$ selected $union$ {id}
+    + H $arrow.l$ selected
+  ]
 ]
 
 == Resilience against colluding attackers 
@@ -834,8 +885,10 @@ image("Elevator_context_1000_100xp_diameter_color.svg", fit: "cover")
   #set align(horizon)
   #set align(center)
   // #set text(size: 15pt)
-  #image("elevator.ElevatorVCounter_5percentcounter_1000_nb_hubs_100_cycles.svg", width: 60%)
+  #image("elevator.ElevatorVCounter_5percentcounter_1000_nb_hubs_100_cycles.svg", width: 80%)
 ]
+
+= HEAL
 
 == Architecture
 
@@ -1082,6 +1135,7 @@ to the nodes`, fill: blue.lighten(60%), stroke: dash_hub, inset: 0.5em)
 // ]
 // == Next steps
 
+= FLAIR
 
 == FLAIR architecture
 
@@ -1176,6 +1230,7 @@ to the nodes`, fill: blue.lighten(60%), stroke: dash_hub, inset: 0.5em)
   )
 ]
 
+= Conclusion
 
 == Conclusion
 
