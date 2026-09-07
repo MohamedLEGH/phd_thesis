@@ -6,7 +6,7 @@ Travail à faire sur la présentation, à traiter élément par élément.
 2. ~~Améliorer la slide sur le federated learning (ajouter un court pseudo-code).~~ ✅ **FAIT** — schéma agrandi + 2 pseudo-codes (Server/Client) en vrai pseudocode (affectations `←`, loop), citation McMahan en bas de slide.
 3. ~~Ajouter une slide de comparaison gossip learning vs federated learning.~~ ✅ **FAIT** — slide activée avec figure `gossip_results.png` + citation Hegedűs et al. 2021 (JPDC).
 4. ~~Rajouter le plan sur la slide architecture.~~ ✅ **FAIT** — slide « Contributions » : canvas 4 couches + « Outline » (Elevator/Lift/HEAL/FLAIR).
-5. Revoir le code de FLAIR pour comprendre en détails les simu.
+5. ~~Revoir le code de FLAIR pour comprendre en détails les simu.~~ ✅ **FAIT** — code analysé (`sources/TARP/flair-tarp.cc` : WiFi 802.11b ad-hoc, capteurs fixes + robots mobiles RandomWalk2d, élection CH par score, brassage par rotation CH/mobilité) ; slides FLAIR mises à jour (802.11b, algorithme simplifié en 4 étapes).
 6. ~~Mettre les axes sur les figures.~~ ✅ **FAIT** (réglé par l'utilisateur).
 7. Faire une animation pour Elevator.
 8. ~~Rajouter Lift.~~ ✅ **FAIT** — slides : pseudo-code attaquants colludants, figure attaque réussie (5% hubs capturés), pseudo-code Lift (redistribution déterministe).

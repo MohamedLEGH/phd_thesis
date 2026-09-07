@@ -107,7 +107,7 @@
       node((0, 1), name: <sep_bot>, stroke: none, fill: none)
       edge(<sep_top>, <sep_bot>, stroke: (paint: rgb("#02a9e0"), dash: "dashed", thickness: 1pt))
 
-      title((2,-2.7), [*Prediction*])
+      title((1.7,-2.7), [*Prediction*])
 
       imagebox((0.5,-1.3), image("cat2.svg", width: 100pt))
       edge("->", stroke: 3pt)
@@ -348,11 +348,11 @@
 
   #hubdef(title: "Hub")[
     Let $G = (V, E)$ be the directed overlay graph, where each node $v in V$ keeps
-    a partial view $C(v) subset.eq V$.
+    a partial view $P(v) subset.eq V$.
     #v(0.4em)
     A node $h in V$ is a *hub* if it appears in the partial view of every node:
     #v(0.4em)
-    $ forall v in V, quad h in C(v) $
+    $ forall v in V, quad h in P(v) $
   ]
 
   #v(0.5em)
@@ -603,7 +603,7 @@ fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
     edge(label("11"), label("8"), "-|>")
 }),
   figure(
-  image("Elevator_normal_1000_100xp_indegree_color.svg", width: 90%), caption: [Indegree distribution of a network generated with Elevator, with 1000 nodes and 10 hubs])
+  image("Elevator_normal_1000_100xp_indegree_color.svg", width: 110%), caption: [Indegree distribution of a network generated with Elevator, with 1000 nodes and 10 hubs])
 )
 ]
 
@@ -738,6 +738,7 @@ fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
       #v(0.5em)
       #align(left)[
         - *Accuracy*
+        - *Convergence time*
       ]
     ]
   )
@@ -776,14 +777,18 @@ fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
 
 == Resilience
 #slide[
-  // #set align(horizon)
-  // #set align(center)
+  #set align(horizon)
+  #set align(center)
   // #set text(size: 15pt)
 
 #grid(
   columns: (1fr, 1fr),
   image("Elevator_context_1000_100xp_indegree_color.svg", fit: "cover"),
-image("Elevator_context_1000_100xp_diameter_color.svg", fit: "cover")
+  stack(dir: ttb, spacing: 4pt, align(center)[
+    #image("Elevator_context_1000_100xp_diameter_color.svg", fit: "cover")
+    #v(-1.5cm)
+    #text(size: 10pt)[Cycle]
+  ]),
 )
 
 ]
@@ -801,7 +806,7 @@ image("Elevator_context_1000_100xp_diameter_color.svg", fit: "cover")
     align(center)[
       #align(left)[
         - *Go* + *libp2p* over *TCP/IP streams* (+ light *HTTP* per node);
-        - networks of *20 to 50 nodes* on *1–2 machines*;
+        - networks up to *100 nodes*;
         - modes: *synchronous / externally-synchronized / asynchronous*;
         - *hubs emerge within the first few cycles* — matching theory & simulation.
       ]
@@ -858,7 +863,8 @@ image("Elevator_context_1000_100xp_diameter_color.svg", fit: "cover")
   #set text(size: 20pt)
 
   #text(size: 15pt)[After convergence, correct nodes *deterministically* re-draw the hubs
-  from a shared random seed — attackers cannot bias the outcome.]
+  from a shared random seed — attackers can no longer keep their hub position
+  (effective against infiltration at low collusion rates).]
   #v(1em)
 
   #pseudocode-list(
@@ -885,7 +891,7 @@ image("Elevator_context_1000_100xp_diameter_color.svg", fit: "cover")
   #set align(horizon)
   #set align(center)
   // #set text(size: 15pt)
-  #image("elevator.ElevatorVCounter_5percentcounter_1000_nb_hubs_100_cycles.svg", width: 80%)
+  #image("elevator.ElevatorVCounter_5percentcounter_1000_nb_hubs_100_cycles.pdf", width: 75%)
 ]
 
 = HEAL
@@ -995,34 +1001,6 @@ to the nodes`, fill: blue.lighten(60%), stroke: dash_hub, inset: 0.5em)
 
 #text(size: 12pt)[#cite(<legheraba2025heal>, form: "full")]
 
-]
-
-== Datasets & Models
-
-#slide[
-  #set align(horizon)
-  #set align(center)
-  #set text(size: 26pt)
-
-  #v(0.5em)
-  #stack(dir: ltr, spacing: 1.5em,
-    // BLOC 1 : Spambase + Logistic regression (sans boîte)
-    align(center + horizon)[
-      #text(size: 20pt)[*Spambase* + *Logistic regression*]
-      #v(0.3em)
-      #image("spambase_features.png", height: 5.5cm)
-      #v(0.2em)
-      #text(size: 20pt)[4601 emails, binary  \   57 parameters]
-    ],
-    // BLOC 2 : MNIST + LeNet5 (sans boîte)
-    align(center + horizon)[
-      #text(size: 20pt)[*MNIST* + *LeNet5*]
-      #v(0.3em)
-      #image("../Images/Dataset/MNIST_dataset_example.png", height: 5.5cm)
-      #v(0.2em)
-      #text(size: 20pt)[70k digits, 10 classes  \   CNN, ~60k parameters]
-    ],
-  )
 ]
 
 == Context of experiments
@@ -1162,7 +1140,7 @@ to the nodes`, fill: blue.lighten(60%), stroke: dash_hub, inset: 0.5em)
     "Learning Task Layer",
   )
   let details = (
-    "Reliable packet delivery over wireless (IEEE 802.11)",
+    "Reliable packet delivery over wireless (IEEE 802.11b)",
     "Resource-aware cluster formation & head election",
     "Local aggregation within clusters by cluster-heads",
     "Supervised ML models (classification, regression, ...)",
@@ -1188,21 +1166,18 @@ to the nodes`, fill: blue.lighten(60%), stroke: dash_hub, inset: 0.5em)
 #slide[
   #set align(horizon)
   #set align(center)
-  #set text(size: 20pt)
+  #set text(size: 21pt)
 
-  #block(width: 88%)[
-    FLAIR operates in *rounds* (clustering inspired by LEACH); a fraction $p in (0,1)$ of nodes serve as
-    *cluster-heads* (CHs) each round, and the role *rotates* to balance the load.
+  #block(width: 90%)[
+    FLAIR operates in *rounds* (LEACH-style clustering):
+    #v(0.6em)
+    1. Each node computes its *resource score* (CPU, RAM, GPU, bandwidth).
     #v(0.5em)
-    A node eligible (not a CH during the last $1\/p$ rounds) elects itself if
-    $x < T(n)$, with $x tilde "Uniform"(0,1)$ drawn via a *VRF*:
-    #v(0.3em)
-    $T(n) = p dot R_n \/ (1 - p dot (r mod 1\/p))$
-    #v(0.3em)
-    with $R_n = alpha dot "CPU"_n + beta dot "RAM"_n + gamma dot "GPU"_n + delta dot "BW"_n$
-    (resource score; $alpha + beta + gamma + delta = 1$).
+    2. Each round, a fraction of nodes *elect themselves as cluster-heads* (CHs) — the role rotates.
     #v(0.5em)
-    Nodes join the nearest CH; the CH *aggregates locally* within its cluster.
+    3. Nodes send their *local models* to their nearest CH, which aggregates them.
+    #v(0.5em)
+    4. CHs *change every round* → the aggregated models keep *mixing across clusters*.
   ]
 ]
 
@@ -1218,7 +1193,7 @@ to the nodes`, fill: blue.lighten(60%), stroke: dash_hub, inset: 0.5em)
     align(center)[
       #block(width: 95%)[
         - Static network (100 nodes): *highest accuracy* $approx 0.91$
-          (C-FL / HEAL $approx 0.90$, Gossip $approx 0.88$)
+          (C-FL / HEAL / Gossip $approx 0.90$, Gaia $approx 0.88$)
         - Convergence up to *2.5x faster* than Gaia
         - Resilient to *permanent / temporary / random crashes*
           (up to 90% nodes)
@@ -1287,7 +1262,7 @@ to the nodes`, fill: blue.lighten(60%), stroke: dash_hub, inset: 0.5em)
     - *Capability-aware hub election* (heterogeneous nodes) and sensitivity to the initial topology.
     - Optimise Elevator (message complexity, memory, simplicity).
     - Address *data heterogeneity* in HEAL (personalisation, locally-weighted aggregation).
-    - A unified *Python simulator* for peer sampling + ML.
+    - A unified *Python simulator* for networking + ML.
   ]
 
   #v(1em)
@@ -1305,10 +1280,10 @@ to the nodes`, fill: blue.lighten(60%), stroke: dash_hub, inset: 0.5em)
 
   #align(left)[
     - Better robustness at the Overlay layer
-    - *Byzantine robustness in the learning layer* (poisoning & privacy attacks)
-    - Extend HEAL to *unsupervised and reinforcement learning*.
-    - *Vertical federated learning* (different features per participant).
-    - *Formal convergence guarantees* for HEAL.
+    - Byzantine robustness in the learning layer (poisoning & privacy attacks)
+    - Extend HEAL to unsupervised and reinforcement learning
+    - Vertical federated learning (different features per participant).
+    - Formal convergence guarantees for HEAL.
   ]
 ]
 
@@ -1967,5 +1942,33 @@ Before and after a shuffling operation. Node 1 sends addresses {itself, 2, 3} to
         messages to, $P(v) subset.eq V$, with $|P(v)| <= c$, $c << N$,
         and $P(v) = "neigh"_G (v)$.      ]
     ]
+  )
+]
+
+== Datasets & Models
+
+#slide[
+  #set align(horizon)
+  #set align(center)
+  #set text(size: 26pt)
+
+  #v(0.5em)
+  #stack(dir: ltr, spacing: 1.5em,
+    // BLOC 1 : Spambase + Logistic regression (sans boîte)
+    align(center + horizon)[
+      #text(size: 20pt)[*Spambase* + *Logistic regression*]
+      #v(0.3em)
+      #image("spambase_features.png", height: 5.5cm)
+      #v(0.2em)
+      #text(size: 20pt)[4601 emails, binary  \   57 parameters]
+    ],
+    // BLOC 2 : MNIST + LeNet5 (sans boîte)
+    align(center + horizon)[
+      #text(size: 20pt)[*MNIST* + *LeNet5*]
+      #v(0.3em)
+      #image("../Images/Dataset/MNIST_dataset_example.png", height: 5.5cm)
+      #v(0.2em)
+      #text(size: 20pt)[70k digits, 10 classes  \   CNN, ~60k parameters]
+    ],
   )
 ]
