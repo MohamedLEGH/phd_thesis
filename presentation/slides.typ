@@ -337,44 +337,105 @@
   )
 ]
 
-== Peer sampling
+= Elevator
+
+== Hub-based topology
 
 #slide[
   #set align(horizon)
   #set align(center)
 
-  #let pvdef = mathblock(
+  #let hubdef = mathblock(
     blocktitle: "Definition",
     fill: rgb(75%, 90%, 75%),
     stroke: rgb(40%, 65%, 40%),
     radius: 0.3em,
-    inset: 0.6em,
+    inset: 0.8em,
   )
 
-  #grid(
-    columns: (1fr, 1fr),
-    column-gutter: 1em,
-    align(center)[
-      #fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
-        node((0, 2.2), [*Server*\ peer list $P$], shape: rect,
-          fill: blue.lighten(70%), stroke: blue.darken(20%) + 0.8pt, name: <srv>)
-        node((0, 0), [*Node*], shape: rect,
-          fill: green.lighten(70%), stroke: green.darken(20%) + 0.8pt, name: <nd>)
-        edge(<nd>, <srv>, "-|>", label: [request peers],
-        label-side: left, label-size: 18pt)
-        edge(<srv>, <nd>, "-|>", label: [return random \ [$\{p_1, ..., p_N\}$]], label-size: 18pt, bend: 30deg)
-      })
-    ],
-    align(center)[
-      #pvdef(title: "Partial View")[
-        The *partial view* of $v$, denoted $P(v)$, is the set of nodes $v$ can send
-        messages to, $P(v) subset.eq V$, with $|P(v)| <= c$, $c << N$,
-        and $P(v) = "neigh"_G (v)$.      ]
-    ]
-  )
+  #hubdef(title: "Hub")[
+    Let $G = (V, E)$ be the directed overlay graph, where each node $v in V$ keeps
+    a partial view $P(v) subset.eq V$.
+    #v(0.4em)
+    A node $h in V$ is a *hub* if it appears in the partial view of every node:
+    #v(0.4em)
+    $ forall v in V, quad h in P(v) $
+  ]
+
+  #v(0.5em)
+
+  #text(size: 12pt)[#cite(<legheraba2024emergent>, form: "full")]
 ]
 
-== Decentralized peer sampling
+== Preferential Attachment
+
+#slide[
+  #set align(horizon)
+  #set align(center)
+  #set text(size: 15pt)
+
+  #grid(
+    columns: (1fr, 1fr, 1fr),
+    column-gutter: 1em,
+
+    align(center)[
+      #text(size: 20pt, weight: "bold")[1. One node is more connected]
+      #v(0.6em)
+      #fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
+        node((0, 1), "A", name: "a", radius: 0.6em, fill: orange.lighten(40%))
+        node((-1, 0), "B", name: "b", radius: 0.6em)
+        node((1, 0), "C", name: "c", radius: 0.6em)
+        node((0, -1.2), "D", name: "d", radius: 0.6em)
+        edge(<b>, <a>, "-|>")
+        edge(<c>, <a>, "-|>")
+        edge(<a>, <d>, "-|>")
+        edge(<b>, <d>, "-|>")
+      })
+    ],
+
+    align(center)[
+      #text(size: 20pt, weight: "bold")[2. It attracts more connections]
+      #v(0.6em)
+      #fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
+        node((0, 1), "A", name: "a", radius: 0.7em, fill: orange.lighten(40%))
+        node((-1.5, 0.3), "B", name: "b", radius: 0.6em)
+        node((1.5, 0.3), "C", name: "c", radius: 0.6em)
+        node((-0.8, -1.2), "D", name: "d", radius: 0.6em)
+        node((1, -1.2), "E", name: "e", radius: 0.6em)
+        edge(<b>, <a>, "-|>")
+        edge(<c>, <a>, "-|>")
+        edge(<d>, <a>, "-|>")
+        edge(<e>, <a>, "-|>")
+        edge(<b>, <d>, "-|>")
+      })
+    ],
+
+    align(center)[
+      #text(size: 20pt, weight: "bold")[3. Snowball effect: it becomes a hub]
+      #v(0.6em)
+      #fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
+        node((0, 0.5), "A", name: "a", radius: 1.1em, fill: orange.lighten(30%))
+        node((-2.2, 0), "B", name: "b", radius: 0.6em)
+        node((2.2, 0), "C", name: "c", radius: 0.6em)
+        node((-1.2, -1.6), "D", name: "d", radius: 0.6em)
+        node((1.2, -1.6), "E", name: "e", radius: 0.6em)
+        node((0, 2), "F", name: "f", radius: 0.6em)
+        node((-2, 1.4), "G", name: "g", radius: 0.6em)
+        edge(<b>, <a>, "-|>")
+        edge(<c>, <a>, "-|>")
+        edge(<d>, <a>, "-|>")
+        edge(<e>, <a>, "-|>")
+        edge(<f>, <a>, "-|>")
+        edge(<g>, <a>, "-|>")
+      })
+    ],
+  )
+
+  #v(0.8em)
+  #text(size: 12pt)[Preferential attachment — Barabási & Albert #cite(<barabasi2002evolution>, form: "full")]
+]
+
+== Random Attachment
 
 #slide[
   #set align(horizon)
@@ -431,178 +492,19 @@ Before and after a shuffling operation. Node 1 sends addresses {itself, 2, 3} to
 #text(size: 12pt)[#cite(<stavrou2002lightweight>, form: "full")]
 ]
 
-== Metrics
-
-#slide[
-  // #set align(horizon)
-  #set align(center)
-  #set text(size: 28pt)
-
-  #grid(
-    columns: (1fr, 1fr),
-    align(center)[
-      #text(size: 28pt, weight: "bold")[Overlay]
-      #v(0.5em)
-      #align(left)[
-        - *In-degree distribution*
-        - *Clustering coefficient*
-        - *Average path length*
-        - *Diameter*
-        - *Convergence time*
-      ]
-    ],
-    align(center)[
-      #text(size: 28pt, weight: "bold")[Machine learning]
-      #v(0.5em)
-      #align(left)[
-        - *Accuracy*
-      ]
-    ]
-  )
-]
-
-== Failures
-
-#slide[
-  // #set align(horizon)
-  #set align(center)
-  #set text(size: 28pt)
-
-  #grid(
-    columns: (1fr, 1fr),
-    align(center)[
-      #text(size: 28pt, weight: "bold")[Overlay]
-      #v(0.5em)
-      #align(left)[
-        - *Crash failures*
-        - *Churn* (dynamic joins / leaves)
-        - *Byzantine failures*
-      ]
-    ],
-    align(center)[
-      #text(size: 28pt, weight: "bold")[Machine learning]
-      #v(0.5em)
-      #align(left)[
-        - *Privacy attacks*
-        - *Poisoning attacks*
-      ]
-    ]
-  )
-  #v(1em)
-  #text(size: 14pt)[*Note:* ML-level failures are not addressed in this thesis]
-]
-
-== Architecture
+== Combining both ideas?
 
 #slide[
   #set align(horizon)
   #set align(center)
-  // #set text(size: 15pt)
-
-#cetz.canvas({
-  import cetz.draw: *
-  let w = 8
-  let h = 1.6
-  let spacing = 2
-  let colors = (
-    rgb(70%, 70%, 70%),
-    rgb(75%, 90%, 75%),
-    rgb(75%, 85%, 95%),
-    rgb(85%, 75%, 90%),
-  )
-  let labels = (
-    "Network Layer",
-    "Overlay Layer",
-    "Aggregation Layer",
-    "Application Layer",
-  )
-  let details = (
-    "Physical network",
-    underline("Elevator"),
-    "HEAL",
-    "Supervised ML models",
-  )
-
-  for i in range(4) {
-    rect((0, i*spacing), (w, h + (i*spacing)), name: "rect_"+str(i), fill: colors.at(i))
-    // label centré au centre géométrique du rectangle
-    content((w/2, i*spacing + h/2), labels.at(i), anchor: "center")
-
-    let mid_y = (i*spacing) + h/2
-    let arrow_x_start = w + 0.15
-    let arrow_x_end = w + 1.5
-    let text_x = w + 1.7
-
-    line((arrow_x_start, mid_y), (arrow_x_end, mid_y), mark: (end: ">"))
-    content((text_x, mid_y), anchor: "west", details.at(i))
-  }
-})
-]
-
-
-// = Elevator & HEAL protocols
-
-== Hub-based topology
-
-#slide[
-  #set align(horizon)
-  #set align(center)
-
-  #let hubdef = mathblock(
-    blocktitle: "Definition",
-    fill: rgb(75%, 90%, 75%),
-    stroke: rgb(40%, 65%, 40%),
-    radius: 0.3em,
-    inset: 0.8em,
-  )
-
-  #hubdef(title: "Hub")[
-    Let $G = (V, E)$ be the directed overlay graph, where each node $v in V$ keeps
-    a partial view $P(v) subset.eq V$.
-    #v(0.4em)
-    A node $h in V$ is a *hub* if it appears in the partial view of every node:
-    #v(0.4em)
-    $ forall v in V, quad h in P(v) $
-  ]
-
-  #v(0.5em)
-
-  #text(size: 12pt)[#cite(<legheraba2024emergent>, form: "full")]
-]
-
-== Preferential Attachment
-
-#slide[
-  #set align(horizon)
-  #set align(center)
-  #set text(size: 22pt)
+  #set text(size: 30pt)
 
   #block(width: 90%)[
-    *Preferential Attachment* — drawing from the concept pioneered by
-    Barabási and Albert #thanks[#cite(<barabasi2002evolution>, form: "full")], new connections are
-    established preferentially with nodes that already have many connections.
-    #v(0.6em)
-    This enables the organic emergence of hubs: selected nodes naturally
-    assume central roles based on their connectivity, without any explicit
-    distinction other than their number of incoming links.
-  ]
-]
-
-== Random Attachment
-
-#slide[
-  #set align(horizon)
-  #set align(center)
-  #set text(size: 22pt)
-
-  #block(width: 90%)[
-    *Random Attachment* — inspired by gossip-based peer sampling algorithms
-    #thanks[#cite(<stavrou2002lightweight>, form: "full")] #thanks[#cite(<jelasity2007gossip>, form: "full")], nodes maintain a
-    representative and diverse subset of the network.
-    #v(0.6em)
-    This prevents excessive clustering and dependency on specific hubs. When
-    hubs disappear (failures or departure), other nodes are opportunistically
-    elevated to hub status, ensuring continuity and adaptability.
+    *Preferential attachment* makes hubs emerge…
+    #v(1em)
+    *Random attachment* keeps the network resilient…
+    #v(1.5em)
+    #text(weight: "bold")[Can we combine both to get *hubs* that are *resilient*?]
   ]
 ]
 
@@ -712,21 +614,78 @@ fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
 )
 ]
 
-== Mathematical analysis
+== Stability
 
 #slide[
   #set align(horizon)
   #set align(center)
   #set text(size: 20pt)
 
-    - *Proof of stability*: once converged, the set of $h$ hubs stays constant (w.h.p.).
-  ][
-  - Proof of convergence
-][
-  - Speed of convergence
+  #let defbox = mathblock(
+    blocktitle: "Definition",
+    fill: rgb(75%, 90%, 75%),
+    stroke: rgb(40%, 65%, 40%),
+    radius: 0.3em,
+    inset: 0.8em,
+  )
+
+  #defbox(title: "Stability")[
+    Once Elevator has converged to a set of $h$ hubs, both the list of hubs
+    and their number $h$ remain constant (with high probability) over time.
+    #v(0.4em)
+    Formally, after convergence time $T$:
+    $ Pr[forall t >= T, H(t) = H(T) and forall v in V, C_v (t)[1:h] = H(t)] = 1 $
+  ]
 ]
 
+== Convergence
 
+#slide[
+  #set align(horizon)
+  #set align(center)
+  #set text(size: 19pt)
+
+  #let defbox = mathblock(
+    blocktitle: "Definition",
+    fill: rgb(75%, 90%, 75%),
+    stroke: rgb(40%, 65%, 40%),
+    radius: 0.3em,
+    inset: 0.8em,
+  )
+  #let proofbox = mathblock(
+    blocktitle: "Idea of the proof",
+    fill: rgb(75%, 85%, 95%),
+    stroke: rgb(40%, 65%, 90%),
+    radius: 0.3em,
+    inset: 0.8em,
+  )
+
+  #defbox(title: "Convergence")[
+    The network converges to a stable state containing *exactly* $h$ hubs
+    shared by all nodes.
+  ]
+
+  #v(0.8em)
+
+  #proofbox[
+    - A new hub is produced with *non-zero probability* at each cycle.
+    #v(0.4em)
+    - The number of hubs *cannot decrease* (until it reaches $h$).
+    #v(0.4em)
+    - Once at least one hub exists, the network is *strongly connected* (w.h.p.)
+      and produces a new hub.
+  ]
+]
+
+== Speed of convergence
+
+#slide[
+  #set align(horizon)
+  #set align(center)
+
+  #image("../Images/models/indegree_Nsize_comparison_models.pdf", height: 90%)
+
+]
 
 == Simulations
 
@@ -759,6 +718,67 @@ fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
       ]
     ]
   )
+]
+
+== Metrics
+
+#slide[
+  // #set align(horizon)
+  #set align(center)
+  #set text(size: 28pt)
+
+  #grid(
+    columns: (1fr, 1fr),
+    align(center)[
+      #text(size: 28pt, weight: "bold")[Overlay]
+      #v(0.5em)
+      #align(left)[
+        - *In-degree distribution*
+        - *Clustering coefficient*
+        - *Average path length*
+        - *Diameter*
+        - *Convergence time*
+      ]
+    ],
+    align(center)[
+      #text(size: 28pt, weight: "bold")[Machine learning]
+      #v(0.5em)
+      #align(left)[
+        - *Accuracy*
+      ]
+    ]
+  )
+]
+
+== Failures
+
+#slide[
+  // #set align(horizon)
+  #set align(center)
+  #set text(size: 28pt)
+
+  #grid(
+    columns: (1fr, 1fr),
+    align(center)[
+      #text(size: 28pt, weight: "bold")[Overlay]
+      #v(0.5em)
+      #align(left)[
+        - *Crash failures*
+        - *Churn* (dynamic joins / leaves)
+        - *Byzantine failures*
+      ]
+    ],
+    align(center)[
+      #text(size: 28pt, weight: "bold")[Machine learning]
+      #v(0.5em)
+      #align(left)[
+        - *Privacy attacks*
+        - *Poisoning attacks*
+      ]
+    ]
+  )
+  #v(1em)
+  #text(size: 14pt)[*Note:* ML-level failures are not addressed in this thesis]
 ]
 
 == Resilience
@@ -1817,5 +1837,43 @@ Before and after a shuffling operation. Node 1 sends addresses {itself, 2, 3} to
         inset: 0.4em, align(center + horizon)[*Topology management*]),
     box(width: 100%, height: 3em, fill: luma(92%), stroke: gray.lighten(30%) + 1pt,
         inset: 0.4em, align(center + horizon)[*Information dissemination*]),
+  )
+]
+
+
+== Peer sampling
+
+#slide[
+  #set align(horizon)
+  #set align(center)
+
+  #let pvdef = mathblock(
+    blocktitle: "Definition",
+    fill: rgb(75%, 90%, 75%),
+    stroke: rgb(40%, 65%, 40%),
+    radius: 0.3em,
+    inset: 0.6em,
+  )
+
+  #grid(
+    columns: (1fr, 1fr),
+    column-gutter: 1em,
+    align(center)[
+      #fletcher-diagram(node-fill: green.lighten(60%), node-stroke: 1pt, {
+        node((0, 2.2), [*Server*\ peer list $P$], shape: rect,
+          fill: blue.lighten(70%), stroke: blue.darken(20%) + 0.8pt, name: <srv>)
+        node((0, 0), [*Node*], shape: rect,
+          fill: green.lighten(70%), stroke: green.darken(20%) + 0.8pt, name: <nd>)
+        edge(<nd>, <srv>, "-|>", label: [request peers],
+        label-side: left, label-size: 18pt)
+        edge(<srv>, <nd>, "-|>", label: [return random \ [$\{p_1, ..., p_N\}$]], label-size: 18pt, bend: 30deg)
+      })
+    ],
+    align(center)[
+      #pvdef(title: "Partial View")[
+        The *partial view* of $v$, denoted $P(v)$, is the set of nodes $v$ can send
+        messages to, $P(v) subset.eq V$, with $|P(v)| <= c$, $c << N$,
+        and $P(v) = "neigh"_G (v)$.      ]
+    ]
   )
 ]
