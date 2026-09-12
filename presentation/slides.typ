@@ -348,11 +348,11 @@
 
   #hubdef(title: "Hub")[
     Let $G = (V, E)$ be the directed overlay graph, where each node $v in V$ keeps
-    a partial view $P(v) subset.eq V$.
+    a partial view $C(v) subset.eq V$.
     #v(0.4em)
     A node $h in V$ is a *hub* if it appears in the partial view of every node:
     #v(0.4em)
-    $ forall v in V, quad h in P(v) $
+    $ forall v in V, quad h in C(v) $
   ]
 
   #v(0.5em)
